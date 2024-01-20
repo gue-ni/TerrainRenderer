@@ -1,11 +1,20 @@
 #pragma once
+#include <memory>
+
 #include "../gfx/gfx.h"
 #include "Window.h"
-#include <memory>
-class Game : public Window {
-public:
-    Game(size_t width, size_t height);
 
-private:
-    std::unique_ptr<gfx::gl::ShaderProgram> m_shader { nullptr };
+using namespace gfx;
+using namespace gfx::gl;
+
+class Game : public Window
+{
+ public:
+  Game(size_t width, size_t height);
+  void run() override;
+
+ private:
+  std::unique_ptr<ShaderProgram> m_shader{nullptr};
+
+  void render();
 };

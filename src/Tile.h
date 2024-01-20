@@ -1,6 +1,9 @@
 /* */
 #pragma once
-class Tile {
-public:
-private:
+#include "../gfx/image.h"
+using namespace gfx;
+class Tile : public Image
+{
+ public:
+ private:
 };
