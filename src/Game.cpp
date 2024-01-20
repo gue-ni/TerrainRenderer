@@ -1,6 +1,14 @@
 #include "Game.h"
 
-Game::Game(size_t width, size_t height) : Window(width, height) { glEnable(GL_CULL_FACE); }
+Game::Game(size_t width, size_t height) : Window(width, height)
+{
+  glEnable(GL_CULL_FACE);
+
+  float fov = 45.0f;
+  auto projection = glm::perspective(glm::radians(fov), float(width) / float(height), 0.01f, 100.0f);
+  m_camera.set_projection_matrix(projection);
+  m_camera.set_local_position(glm::vec3(0.0f, 10.f, 0.0f));
+}
 
 void Game::render()
 {
