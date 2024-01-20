@@ -1,22 +1,73 @@
 #include "Chunk.h"
 
-Chunk::Chunk(size_t size) : m_vao(std::make_unique<VertexArrayObject>()), m_vbo(std::make_unique<VertexBuffer>())
+#include <algorithm>
+#include <iostream>
+
+auto print = [](const auto& v) { std::cout << v << std::endl; };
+
+Chunk::Chunk(uint vertex_count /* num vertices */)
+    : m_vao(std::make_unique<VertexArrayObject>()),
+      m_vbo(std::make_unique<VertexBuffer>()),
+      m_ebo(std::make_unique<ElementBuffer>())
 {
+  assert(vertex_count >= 2);
+#if 0
   const std::vector<ChunkVertex> vertices = {
       {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},  // bottom left
       {{0.5f, 0.0f, 0.0f}, {1.0f, 0.0f}},  // bottom right
-      {{0.5f, 0.5f, 0.0f}, {1.0f, 1.0f}},  // top right
-
-      {{0.5f, 0.5f, 0.0f}, {1.0f, 1.0f}},  // top right
       {{0.0f, 0.5f, 0.0f}, {0.0f, 1.0f}},  // top left
-      {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},  // bottom left
+      {{0.5f, 0.5f, 0.0f}, {1.0f, 1.0f}},  // top right
   };
 
-  m_vertex_count = vertices.size();
+  const std::vector<unsigned int> indices = {
+    0, 1, 3, 
+    3, 2, 0
+  };
+#else
+  std::vector<ChunkVertex> vertices;
+  std::vector<uint> indices;
+
+  float stride = 0.3f;
+
+  //float dim
+
+  auto dimensions = glm::vec2(stride * (vertex_count-1));
+
+  for (uint y = 0; y < vertex_count; ++y) {
+    for (uint x = 0; x < vertex_count; ++x) {
+      auto pos = glm::vec3(x * stride, y * stride, 0.0f);
+      auto uv = glm::vec2(pos.x, pos.y) / dimensions;
+      ChunkVertex vertex = {pos, uv};
+      vertices.push_back(vertex);
+    }
+  }
+
+  for (unsigned x = 0; x < vertex_count - 1; ++x) {
+    for (unsigned y = 0; y < vertex_count - 1; ++y) {
+      auto bottom_left = (y * vertex_count) + x;
+      auto bottom_right = bottom_left + 1;
+      auto top_left = ((y + 1) * vertex_count) + x;
+      auto top_right = top_left + 1;
+
+      indices.insert(indices.end(), {
+                                        bottom_left, bottom_right, top_right,  // triangle 1
+                                        top_right, top_left, bottom_left       // triangle 2
+                                    });
+    }
+  }
+
+#endif
+
+  m_vertex_count = static_cast<GLsizei>(indices.size());
 
   m_vao->bind();
+
   m_vbo->bind();
   m_vbo->buffer_data(std::span(vertices));
+
+  m_ebo->bind();
+  m_ebo->buffer_data(std::span(indices));
+
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(ChunkVertex), (void*)(offsetof(ChunkVertex, pos)));
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(ChunkVertex), (void*)(offsetof(ChunkVertex, uv)));
@@ -29,7 +80,7 @@ void Chunk::draw(ShaderProgram* shader, const glm::vec2& position) const
   shader->bind();
   // TODO: set uniforms
   m_vao->bind();
-  glDrawArrays(GL_TRIANGLES, 0, m_vertex_count);
+  glDrawElements(GL_TRIANGLES, m_vertex_count, GL_UNSIGNED_INT, 0);
   m_vao->unbind();
   shader->unbind();
 }

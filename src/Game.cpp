@@ -1,6 +1,6 @@
 #include "Game.h"
 
-Game::Game(size_t width, size_t height) : Window(width, height) {}
+Game::Game(size_t width, size_t height) : Window(width, height) { glEnable(GL_CULL_FACE); }
 
 void Game::render()
 {
@@ -36,6 +36,7 @@ void Game::read_input()
   }
 }
 
-void Game::update(float dt) {
+void Game::update(float dt)
+{
   // TODO: update camera position
 }
