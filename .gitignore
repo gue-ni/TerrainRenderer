@@ -1,0 +1,5 @@
+.vs/
+libraries/
+x64/
+*.filters
+*.user
