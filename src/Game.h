@@ -2,6 +2,7 @@
 #include <memory>
 
 #include "../gfx/gfx.h"
+#include "TerrainRenderer.h"
 #include "Window.h"
 
 using namespace gfx;
@@ -11,10 +12,14 @@ class Game : public Window
 {
  public:
   Game(size_t width, size_t height);
-  void run() override;
+  void run();
 
  private:
-  std::unique_ptr<ShaderProgram> m_shader{nullptr};
+  bool m_quit{false};
+  Camera m_camera;
+  TerrainRenderer m_terrain_renderer;
 
+  void read_input();
+  void update(float dt);
   void render();
 };

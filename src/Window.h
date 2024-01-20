@@ -6,21 +6,16 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 
+#include <string>
+
 class Window
 {
  public:
-  Window(size_t width, size_t height);
+  Window(size_t width, size_t height, const std::string& name = "SDL2/OpenGL Window");
   ~Window();
-  virtual void run() = 0;
 
  protected:
   size_t m_width, m_height;
   SDL_Window* m_window{nullptr};
   SDL_GLContext m_context{nullptr};
-
-  bool m_quit{false};
-
-  void read_input();
-
- private:
 };
