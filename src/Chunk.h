@@ -20,7 +20,7 @@ inline std::ostream& operator<<(std::ostream& os, const ChunkVertex& v)
 class Chunk
 {
  public:
-  Chunk(uint size);
+  Chunk(uint vertex_count, float size = 1.0f);
   void draw(ShaderProgram* shader, const glm::vec2& position) const;
 
  private:

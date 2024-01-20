@@ -5,13 +5,14 @@
 
 #include "Chunk.h"
 
+using namespace gfx;
 using namespace gfx::gl;
 
 class TerrainRenderer
 {
  public:
   TerrainRenderer();
-  void render(const glm::vec2& center);
+  void render(const Camera& camera, const glm::vec2& center);
 
  private:
   bool m_wireframe{true};

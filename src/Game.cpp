@@ -10,7 +10,7 @@ void Game::render()
 
   auto camera_position = m_camera.get_world_position();
   auto center = glm::vec2(camera_position.x, camera_position.z);
-  m_terrain_renderer.render(center);
+  m_terrain_renderer.render(m_camera, center);
 
   SDL_GL_SwapWindow(m_window);
 }

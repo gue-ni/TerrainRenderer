@@ -5,7 +5,7 @@
 
 auto print = [](const auto& v) { std::cout << v << std::endl; };
 
-Chunk::Chunk(uint vertex_count /* num vertices */)
+Chunk::Chunk(uint vertex_count, float size)
     : m_vao(std::make_unique<VertexArrayObject>()),
       m_vbo(std::make_unique<VertexBuffer>()),
       m_ebo(std::make_unique<ElementBuffer>())
@@ -27,7 +27,7 @@ Chunk::Chunk(uint vertex_count /* num vertices */)
   std::vector<ChunkVertex> vertices;
   std::vector<uint> indices;
 
-  float stride = 0.3f;
+  float stride = size / (vertex_count - 1);
 
   //float dim
 

@@ -1,11 +1,13 @@
 #include "TerrainRenderer.h"
 
+#include "../gfx/gfx.h"
+
 const std::string shader_vert = R"(
 #version 430
 layout (location = 0) in vec3 a_pos;
 layout (location = 1) in vec2 a_tex;
 
-uniform mat4 model, view, projection;
+uniform mat4 model, view, proj;
 
 out vec2 uv;
 
@@ -25,11 +27,11 @@ void main() {
 )";
 
 TerrainRenderer::TerrainRenderer()
-    : m_shader(std::make_unique<ShaderProgram>(shader_vert, shader_frag)), m_debug_chunk(3)
+    : m_shader(std::make_unique<ShaderProgram>(shader_vert, shader_frag)), m_debug_chunk(5, 0.75f)
 {
 }
 
-void TerrainRenderer::render(const glm::vec2& center)
+void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 {
   // TODO:
   // construct QuadTree
@@ -39,6 +41,10 @@ void TerrainRenderer::render(const glm::vec2& center)
   if (m_wireframe) {
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   }
+
+  m_shader->set_uniform("model", glm::mat4(1.0f));
+  m_shader->set_uniform("view", camera.get_view_matrix());
+  m_shader->set_uniform("proj", camera.get_projection_matrix());
 
   m_debug_chunk.draw(m_shader.get(), glm::vec2(0.0f));
 
