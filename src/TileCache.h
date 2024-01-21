@@ -5,22 +5,31 @@
 */
 #pragma once
 
+#include <format>
 #include <memory>
+#include <numbers>
 #include <string>
 #include <unordered_map>
 
 #include "../gfx/gfx.h"
+#include "QuadTree.h"
 
 using namespace gfx;
 using namespace gfx::gl;
 
 struct TileName {
   unsigned zoom, x, y;
+
+  std::string to_string() const { return std::format("{}/{}/{}", zoom, x, y); }
+};
+
+struct Coordinate {
+  float lat, lon;
 };
 
 namespace wms
 {
-constexpr float PI = 3.1415f;
+constexpr float PI = std::numbers::pi_v<float>;
 
 inline int long2tilex(float lon, int z) { return (int)(floor((lon + 180.0f) / 360.0f * (1 << z))); }
 
@@ -38,6 +47,19 @@ inline float tiley2lat(int y, int z)
   return 180.0f / PI * atan(0.5f * (exp(n) - exp(-n)));
 }
 
+inline glm::vec2 tile2lat_long(int x, int y, int z) { return glm::vec2(tilex2long(x, z), tiley2lat(y, z)); }
+
+// inline Bounds bounding_box(const TileName& tile_name) { return bounding_box(tile_name.x, tile_name.y,
+// tile_name.zoom); }
+
+//
+inline Bounds bounding_box(int x, int y, int z)
+{
+  auto min = tile2lat_long(x, y, z);
+  auto max = tile2lat_long(x + 1, y + 1, z);
+  return {min, max};
+}
+
 };  // namespace wms
 
 class TileCache
@@ -47,11 +69,16 @@ class TileCache
   Texture* get_tile_texture() { return m_debug_texture.get(); }
   Texture* get_tile_texture(const glm::vec2& min, const glm::vec2& max, unsigned lod = 0);
 
+  // get the tile that contains point at a specific level of detail
+  Texture* get_tile_texture(const glm::vec2& point, unsigned lod = 0);
+
  private:
   const glm::vec2 m_min, m_max;
   const std::string m_tile_root_path = "C:/Users/jakob/Pictures/tiles";
   const TileName m_root_tile{.zoom = 10, .x = 536, .y = 356};
   std::unique_ptr<Texture> m_debug_texture{nullptr};
+  std::unordered_map<std::string, std::unique_ptr<Texture>> m_cache;
 
-  std::unique_ptr<Texture> load_texture(const TileName& tile_name);
+  std::unique_ptr<Texture> load_texture_from_disk(const TileName&);
+  Texture* load_texture_from_cache(const TileName&);
 };

@@ -4,24 +4,59 @@
 #include <format>
 #include <iostream>
 
+#include "Common.h"
+
 TileCache::TileCache(const glm::vec2& min, const glm::vec2& max) : m_min(min), m_max(max)
 {
-  m_debug_texture = load_texture(m_root_tile);
+  // m_debug_texture = load_texture_from_disk(m_root_tile);
 }
 
-Texture* TileCache::get_tile_texture(const glm::vec2& min, const glm::vec2& max, unsigned lod)
+Texture* TileCache::get_tile_texture(const glm::vec2& point, unsigned lod)
 {
-  // assert((m_min <= min && min <= m_max) && (min <= m_max && m_max <= max));
-  // TODO: calculate which tile to get from disk
-  return m_debug_texture.get();
+  assert((m_min.x <= point.x && point.x <= m_max.x) && (m_min.y <= point.y && point.y <= m_max.y));
+
+  // return m_debug_texture.get();
+
+  // convert point to lat/lon (offset from root tile corner)
+  // calculate tile name from lat/lon
+  // load tile from disk
+  // caching?
+
+  Coordinate min_coord;
+  min_coord.lat = wms::tiley2lat(m_root_tile.y, m_root_tile.zoom);
+  min_coord.lon = wms::tilex2long(m_root_tile.x, m_root_tile.zoom);
+
+  Coordinate max_coord;
+  max_coord.lat = wms::tiley2lat(m_root_tile.y + 1, m_root_tile.zoom);
+  max_coord.lon = wms::tilex2long(m_root_tile.x + 1, m_root_tile.zoom);
+
+  // map to [0, 1]
+  glm::vec2 factor = map_range(point, m_min, m_max, glm::vec2(0.0f), glm::vec2(1.0f));
+
+  factor.y = 1.0 - factor.y;
+
+  //factor = glm::vec2(1.0f) - factor;
+
+  float lat = glm::mix(min_coord.lat, max_coord.lat, factor.y);
+  float lon = glm::mix(min_coord.lon, max_coord.lon, factor.x);
+
+  TileName tile_name;
+  tile_name.zoom = m_root_tile.zoom + lod;
+  tile_name.x = wms::long2tilex(lon, tile_name.zoom);
+  tile_name.y = wms::lat2tiley(lat, tile_name.zoom);
+
+  return load_texture_from_cache(tile_name);
 }
 
-std::unique_ptr<Texture> TileCache::load_texture(const TileName& tile_name)
+std::unique_ptr<Texture> TileCache::load_texture_from_disk(const TileName& tile)
 {
-  std::string path = std::format("{}/{}/{}/{}/texture.jpg", m_tile_root_path, tile_name.zoom, tile_name.x, tile_name.y);
+  std::cout << "load from disk: " << tile.to_string() << std::endl;
+
+  std::string path = std::format("{}/{}/{}/{}/texture.jpg", m_tile_root_path, tile.zoom, tile.x, tile.y);
+  //std::string path = std::format("{}/{}-{}-{}.png", m_tile_root_path, tile.zoom, tile.x, tile.y);
 
   Image image;
-  image.read(path);
+  image.read(path, true);
   assert(image.loaded());
 
   auto texture = std::make_unique<Texture>();
@@ -33,4 +68,14 @@ std::unique_ptr<Texture> TileCache::load_texture(const TileName& tile_name)
   texture->set_image(image);
 
   return texture;
+}
+
+Texture* TileCache::load_texture_from_cache(const TileName& tile_name)
+{
+  std::string name = tile_name.to_string();
+
+  if (!m_cache.contains(name)) {
+    m_cache[name] = load_texture_from_disk(tile_name);
+  }
+  return m_cache[name].get();
 }

@@ -55,7 +55,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   // if changes are necessary, load new tiles
   // render tiles
 
-  const float min_node_size = 0.25f;
+  const float min_node_size = 1.25f;
   QuadTree quad_tree(m_bounds.min, m_bounds.max, min_node_size);
 
   quad_tree.insert(center);
@@ -72,7 +72,8 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
 #if 1
   for (auto* tile : tiles) {
-    Texture* albedo = m_tile_cache.get_tile_texture(tile->min, tile->max, tile->lod);
+    //Texture* albedo = m_tile_cache.get_tile_texture(tile->min, tile->max, tile->lod);
+    Texture* albedo = m_tile_cache.get_tile_texture(tile->center(), tile->lod);
 
     if (albedo) {
       albedo->bind(0);
