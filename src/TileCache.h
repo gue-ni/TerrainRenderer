@@ -18,6 +18,28 @@ struct TileName {
   unsigned zoom, x, y;
 };
 
+namespace wms
+{
+constexpr float PI = 3.1415f;
+
+inline int long2tilex(float lon, int z) { return (int)(floor((lon + 180.0f) / 360.0f * (1 << z))); }
+
+inline int lat2tiley(float lat, int z)
+{
+  float latrad = lat * PI / 180.0f;
+  return (int)(floor((1.0f - asinh(tan(latrad)) / PI) / 2.0f * (1 << z)));
+}
+
+inline float tilex2long(int x, int z) { return x / (float)(1 << z) * 360.0f - 180.0f; }
+
+inline float tiley2lat(int y, int z)
+{
+  float n = PI - 2.0f * PI * y / (float)(1 << z);
+  return 180.0f / PI * atan(0.5f * (exp(n) - exp(-n)));
+}
+
+};  // namespace wms
+
 class TileCache
 {
  public:
