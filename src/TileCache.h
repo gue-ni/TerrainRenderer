@@ -32,7 +32,7 @@ namespace wms
 {
 constexpr float PI = std::numbers::pi_v<float>;
 
-inline int long2tilex(float lon, int z) { return (int)(floor((lon + 180.0f) / 360.0f * (1 << z))); }
+inline int lon2tilex(float lon, int z) { return (int)(floor((lon + 180.0f) / 360.0f * (1 << z))); }
 
 inline int lat2tiley(float lat, int z)
 {
@@ -40,7 +40,7 @@ inline int lat2tiley(float lat, int z)
   return (int)(floor((1.0f - asinh(tan(latrad)) / PI) / 2.0f * (1 << z)));
 }
 
-inline float tilex2long(int x, int z) { return x / (float)(1 << z) * 360.0f - 180.0f; }
+inline float tilex2lon(int x, int z) { return x / (float)(1 << z) * 360.0f - 180.0f; }
 
 inline float tiley2lat(int y, int z)
 {
@@ -48,18 +48,7 @@ inline float tiley2lat(int y, int z)
   return 180.0f / PI * atan(0.5f * (exp(n) - exp(-n)));
 }
 
-inline glm::vec2 tile2lat_long(int x, int y, int z) { return glm::vec2(tilex2long(x, z), tiley2lat(y, z)); }
-
-// inline Bounds bounding_box(const TileName& tile_name) { return bounding_box(tile_name.x, tile_name.y,
-// tile_name.zoom); }
-
-//
-inline Bounds bounding_box(int x, int y, int z)
-{
-  auto min = tile2lat_long(x, y, z);
-  auto max = tile2lat_long(x + 1, y + 1, z);
-  return {min, max};
-}
+inline glm::vec2 tile2lat_lon(int x, int y, int z) { return glm::vec2(tilex2lon(x, z), tiley2lat(y, z)); }
 
 };  // namespace wms
 

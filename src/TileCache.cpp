@@ -26,11 +26,11 @@ Texture* TileCache::get_tile_texture(const glm::vec2& point, unsigned lod)
 
   Coordinate min_coord;
   min_coord.lat = wms::tiley2lat(m_root_tile.y, m_root_tile.zoom);
-  min_coord.lon = wms::tilex2long(m_root_tile.x, m_root_tile.zoom);
+  min_coord.lon = wms::tilex2lon(m_root_tile.x, m_root_tile.zoom);
 
   Coordinate max_coord;
   max_coord.lat = wms::tiley2lat(m_root_tile.y + 1, m_root_tile.zoom);
-  max_coord.lon = wms::tilex2long(m_root_tile.x + 1, m_root_tile.zoom);
+  max_coord.lon = wms::tilex2lon(m_root_tile.x + 1, m_root_tile.zoom);
 
   // map to [0, 1]
   glm::vec2 factor = map_range(point, m_min, m_max, glm::vec2(0.0f), glm::vec2(1.0f));
@@ -41,7 +41,7 @@ Texture* TileCache::get_tile_texture(const glm::vec2& point, unsigned lod)
 
   TileName tile_name;
   tile_name.zoom = zoom;
-  tile_name.x = wms::long2tilex(lon, tile_name.zoom);
+  tile_name.x = wms::lon2tilex(lon, tile_name.zoom);
   tile_name.y = wms::lat2tiley(lat, tile_name.zoom);
 
   return load_texture_from_cache(tile_name);
