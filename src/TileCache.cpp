@@ -51,16 +51,7 @@ std::unique_ptr<Texture> TileCache::load_texture_from_disk(const TileName& tile)
 {
   std::cout << "load from disk: " << tile.to_string() << std::endl;
 
-  std::string path = std::format("{}/{}/{}/{}/texture.jpg", m_tile_root_path, tile.zoom, tile.x, tile.y);
-
-  Image image;
-  image.read(path, true);
-
-  if (!image.loaded()) {
-    std::cerr << "Could not load " << std::quoted(path) << std::endl;
-  }
-
-  assert(image.loaded());
+  Image image = m_provider.get_tile(tile.zoom, tile.x, tile.y);
 
   auto texture = std::make_unique<Texture>();
   texture->bind();

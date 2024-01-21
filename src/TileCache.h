@@ -13,6 +13,7 @@
 
 #include "../gfx/gfx.h"
 #include "QuadTree.h"
+#include "TileProvider.h"
 
 using namespace gfx;
 using namespace gfx::gl;
@@ -75,9 +76,10 @@ class TileCache
 
  private:
   const glm::vec2 m_min, m_max;
-  const std::string m_tile_root_path = "C:/Users/jakob/Pictures/tiles";
   const TileName m_root_tile;
   const unsigned m_max_zoom_level;
+
+  LocalTileProvider m_provider;  // TODO: make this generic
 
   std::unique_ptr<Texture> m_debug_texture{nullptr};
   std::unordered_map<std::string, std::unique_ptr<Texture>> m_cache;

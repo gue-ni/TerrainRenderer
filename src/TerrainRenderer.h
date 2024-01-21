@@ -5,6 +5,7 @@
 #include "Chunk.h"
 #include "QuadTree.h"
 #include "TileCache.h"
+#include "TileProvider.h"
 
 using namespace gfx;
 using namespace gfx::gl;

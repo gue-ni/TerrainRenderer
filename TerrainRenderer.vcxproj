@@ -136,7 +136,6 @@
     <ClCompile Include="src/Game.cpp" />
     <ClCompile Include="src/main.cpp" />
     <ClCompile Include="src/TerrainRenderer.cpp" />
-    <ClCompile Include="src/Tile.cpp" />
     <ClCompile Include="src/TileCache.cpp" />
     <ClCompile Include="src/Window.cpp" />
     <ClCompile Include="gfx/gl.cpp" />
@@ -150,9 +149,9 @@
     <ClInclude Include="src/Game.h" />
     <ClInclude Include="src/Common.h" />
     <ClInclude Include="src/TerrainRenderer.h" />
-    <ClInclude Include="src/Tile.h" />
     <ClInclude Include="src/TileCache.h" />
     <ClInclude Include="src/Window.h" />
+    <ClInclude Include="src/TileProvider.h" />
     <ClInclude Include="gfx/gfx.h" />
     <ClInclude Include="gfx/gl.h" />
     <ClInclude Include="gfx/image.h" />
