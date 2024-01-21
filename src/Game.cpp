@@ -16,9 +16,6 @@ void Game::render()
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  auto terrain_center = glm::vec2(0.5f, 0.0f);
-
-  m_terrain_renderer.set_wireframe(false);
   m_terrain_renderer.render(m_camera, m_last_click_location);
 
   SDL_GL_SwapWindow(m_window);
@@ -41,6 +38,16 @@ void Game::read_input()
     if (sdl_event.type == SDL_QUIT) {
       m_quit = true;
       break;
+    }
+
+    if (sdl_event.type == SDL_KEYDOWN && sdl_event.key.repeat == 0) {
+      if (sdl_event.key.keysym.sym == SDLK_SPACE) {
+        m_terrain_renderer.wireframe = !m_terrain_renderer.wireframe;
+      }
+
+      if (sdl_event.key.keysym.sym == SDLK_ESCAPE) {
+        m_quit = true;
+      }
     }
 
     if (sdl_event.type == SDL_MOUSEBUTTONDOWN) {

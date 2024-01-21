@@ -17,11 +17,7 @@ out vec2 uv;
 
 void main() {
   uv = a_tex;
-#if 0
-  gl_Position = vec4(a_pos, 1);
-#else
   gl_Position = proj * view * model * vec4(a_pos, 1.0);
-#endif
 }
 )";
 
@@ -40,31 +36,29 @@ void main() {
 }
 )";
 
+constexpr uint MAX_ZOOM_LEVEL = 14;
+constexpr TileName ROOT_TILE = {.zoom = 11, .x = 1072, .y = 712};
+
 TerrainRenderer::TerrainRenderer(const glm::vec2& min, const glm::vec2& max)
     : m_shader(std::make_unique<ShaderProgram>(shader_vert, shader_frag)),
       m_debug_chunk(5, 1.0f),
       m_bounds({min, max}),
-      m_tile_cache(min, max)
+      m_tile_cache(min, max, ROOT_TILE, MAX_ZOOM_LEVEL)
 {
 }
 
 void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 {
-  // TODO:
-  // construct QuadTree
-  // if changes are necessary, load new tiles
-  // render tiles
+  const float min_node_size = 0.02f;
+  const uint max_depth = 3;
 
-  const float min_node_size = 1.25f;
-  QuadTree quad_tree(m_bounds.min, m_bounds.max, min_node_size);
+  QuadTree quad_tree(m_bounds.min, m_bounds.max, min_node_size, max_depth);
 
   quad_tree.insert(center);
 
   auto tiles = quad_tree.get_children();
 
-  // std::cout << "Tile Count: " << tiles.size() << std::endl;
-
-  if (m_wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   m_shader->bind();
   m_shader->set_uniform("view", camera.get_view_matrix());
@@ -72,7 +66,6 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
 #if 1
   for (auto* tile : tiles) {
-    //Texture* albedo = m_tile_cache.get_tile_texture(tile->min, tile->max, tile->lod);
     Texture* albedo = m_tile_cache.get_tile_texture(tile->center(), tile->lod);
 
     if (albedo) {

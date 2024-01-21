@@ -66,8 +66,9 @@ class TileCache
 {
  public:
   TileCache(const glm::vec2& min, const glm::vec2& max);
-  Texture* get_tile_texture() { return m_debug_texture.get(); }
-  Texture* get_tile_texture(const glm::vec2& min, const glm::vec2& max, unsigned lod = 0);
+  TileCache(const glm::vec2& min, const glm::vec2& max, const TileName& root_tile, unsigned max_zoom_level);
+
+  Texture* get_debug_texture() { return m_debug_texture.get(); }
 
   // get the tile that contains point at a specific level of detail
   Texture* get_tile_texture(const glm::vec2& point, unsigned lod = 0);
@@ -75,7 +76,9 @@ class TileCache
  private:
   const glm::vec2 m_min, m_max;
   const std::string m_tile_root_path = "C:/Users/jakob/Pictures/tiles";
-  const TileName m_root_tile{.zoom = 10, .x = 536, .y = 356};
+  const TileName m_root_tile;
+  const unsigned m_max_zoom_level;
+
   std::unique_ptr<Texture> m_debug_texture{nullptr};
   std::unordered_map<std::string, std::unique_ptr<Texture>> m_cache;
 

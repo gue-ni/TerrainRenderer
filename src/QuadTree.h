@@ -31,12 +31,13 @@ struct Node : public Bounds {
 class QuadTree
 {
  public:
-  QuadTree(const glm::vec2& min, const glm::vec2& max, float min_node_size);
+  QuadTree(const glm::vec2& min, const glm::vec2& max, float min_node_size, unsigned max_depth);
   void insert(const glm::vec2& point);
   std::vector<Node*> get_children();
 
  private:
   const float MIN_NODE_SIZE;
+  const unsigned MAX_DEPTH;
   std::unique_ptr<Node> m_root{nullptr};
   void split(std::unique_ptr<Node>& node);
   void insert(std::unique_ptr<Node>& child, const glm::vec2& point);

@@ -14,10 +14,10 @@ class TerrainRenderer
  public:
   TerrainRenderer(const glm::vec2& min, const glm::vec2& max);
   void render(const Camera& camera, const glm::vec2& center);
-  void set_wireframe(bool mode) { m_wireframe = mode; }
+
+  bool wireframe{false};
 
  private:
-  bool m_wireframe{true};
   std::unique_ptr<ShaderProgram> m_shader{nullptr};
 
   Chunk m_debug_chunk;
