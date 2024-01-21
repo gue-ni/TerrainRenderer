@@ -1,13 +1,16 @@
 #include "Game.h"
 
-Game::Game(size_t width, size_t height) : Window(width, height), m_terrain_renderer(glm::vec2(-1.0f), glm::vec2(1.0f))
+Game::Game(size_t width, size_t height)
+    : Window(width, height), m_terrain_renderer(glm::vec2(-100.0f), glm::vec2(100.0f))
 {
-  glEnable(GL_CULL_FACE);
+  // glEnable(GL_CULL_FACE);
+
+  SDL_CaptureMouse(SDL_TRUE);
 
   float fov = 45.0f;
-  auto projection = glm::perspective(glm::radians(fov), float(width) / float(height), 0.01f, 100.0f);
+  auto projection = glm::perspective(glm::radians(fov), float(width) / float(height), 0.01f, 10000.0f);
   m_camera.set_projection_matrix(projection);
-  m_camera.set_local_position(glm::vec3(0.0f, 0.f, 2.5f));
+  m_camera.set_local_position(glm::vec3(0.0f, 4.f, 0.0f));
 }
 
 void Game::render()
@@ -16,7 +19,8 @@ void Game::render()
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  m_terrain_renderer.render(m_camera, m_last_click_location);
+  auto camera_position = m_camera.get_local_position();
+  m_terrain_renderer.render(m_camera, glm::vec2(camera_position.x, camera_position.z));
 
   SDL_GL_SwapWindow(m_window);
 }
@@ -35,9 +39,27 @@ void Game::read_input()
 {
   SDL_Event sdl_event;
   while (SDL_PollEvent(&sdl_event) != 0) {
-    if (sdl_event.type == SDL_QUIT) {
-      m_quit = true;
-      break;
+    switch (sdl_event.type) {
+      case SDL_QUIT: {
+        m_quit = true;
+        break;
+      }
+      case SDL_MOUSEMOTION: {
+        const float sensitivity = 0.10f;
+        float delta_yaw = static_cast<float>(sdl_event.motion.xrel) * sensitivity;
+        float delta_pitch = static_cast<float>(sdl_event.motion.yrel) * sensitivity;
+
+        glm::quat rotate_by = glm::quat(glm::radians(glm::vec3(-delta_pitch, -delta_yaw, 0.0f)));
+        glm::quat new_rotation = m_camera.get_local_rotation() * rotate_by;
+        m_camera.set_local_rotation(new_rotation);
+        break;
+      }
+      case SDL_MOUSEBUTTONDOWN: {
+        break;
+      }
+      case SDL_KEYDOWN: {
+        break;
+      }
     }
 
     if (sdl_event.type == SDL_KEYDOWN && sdl_event.key.repeat == 0) {
@@ -61,10 +83,33 @@ void Game::read_input()
         m_last_click_location = glm::vec2(-1.0f) + click * (glm::vec2(1.0f) - glm::vec2(-1.0f));
         m_last_click_location = -glm::vec2(-m_last_click_location.x, m_last_click_location.y);
 
-        //std::cout << click << ", " << m_last_click_location << std::endl;
+        // std::cout << click << ", " << m_last_click_location << std::endl;
       }
     }
   }
+
+  const Uint8* key_states = SDL_GetKeyboardState(nullptr);
+
+  auto right = m_camera.get_local_x_axis();
+  auto forward = m_camera.get_local_z_axis();
+  auto position = m_camera.get_local_position();
+
+  float speed = 0.01f;
+
+  if (key_states[SDL_SCANCODE_W]) {
+    position -= forward * speed;
+  }
+  if (key_states[SDL_SCANCODE_A]) {
+    position -= right * speed;
+  }
+  if (key_states[SDL_SCANCODE_S]) {
+    position += forward * speed;
+  }
+  if (key_states[SDL_SCANCODE_D]) {
+    position += right * speed;
+  }
+
+  m_camera.set_local_position(position);
 }
 
 void Game::update(float dt)

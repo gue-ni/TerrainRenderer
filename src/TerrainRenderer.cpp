@@ -29,13 +29,14 @@ in vec2 uv;
 out vec4 FragColor;
 
 uniform sampler2D u_albedo_texture;
+uniform sampler2D u_heightmap_texture;
 
 void main() {
   FragColor = vec4(texture(u_albedo_texture, uv).rgb, 1);
 }
 )";
 
-constexpr uint MAX_ZOOM_LEVEL = 14;
+constexpr uint MAX_ZOOM_LEVEL = 15;
 
 constexpr TileName ROOT_TILE_1 = {.zoom = 11, .x = 1072, .y = 712};
 
@@ -49,6 +50,12 @@ constexpr TileName ROOT_TILE_3 = {
     .zoom = 11,
     .x = 1086,
     .y = 719,
+};
+
+constexpr TileName ROOT_TILE_4 = {
+    .zoom = 11,
+    .x = 1101,
+    .y = 1327,
 };
 
 TerrainRenderer::TerrainRenderer(const glm::vec2& min, const glm::vec2& max)
@@ -78,16 +85,20 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_shader->set_uniform("proj", camera.get_projection_matrix());
 
   for (auto* tile : tiles) {
-#if 1
     Texture* albedo = m_tile_cache.get_tile_texture(tile->center(), tile->depth);
-#else
-    Texture* albedo = nullptr;
-#endif
+
+    Texture* heightmap = nullptr;
 
     if (albedo) {
       albedo->bind(0);
       m_shader->set_uniform("u_albedo_texture", 0);
     }
+
+    if (heightmap) {
+      heightmap->bind(1);
+      m_shader->set_uniform("u_heightmap_texture", 1);
+    }
+
     m_chunk.draw(m_shader.get(), tile->min, tile->max);
   }
 

@@ -27,6 +27,8 @@ struct Coordinate {
   float lat, lon;
 };
 
+enum TileType { ALBEDO, HEIGHT, NORMAL };
+
 namespace wms
 {
 constexpr float PI = std::numbers::pi_v<float>;

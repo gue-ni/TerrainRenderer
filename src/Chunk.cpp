@@ -30,8 +30,8 @@ Chunk::Chunk(uint vertex_count, float size)
 
   for (uint y = 0; y < vertex_count; ++y) {
     for (uint x = 0; x < vertex_count; ++x) {
-      auto pos = glm::vec3(x * stride, y * stride, 0.0f);
-      auto uv = glm::vec2(pos.x, pos.y) / dimensions;
+      auto pos = glm::vec3(x * stride, 0.0f, y * stride);
+      auto uv = glm::vec2(pos.x, pos.z) / dimensions;
       ChunkVertex vertex = {pos, uv};
       vertices.push_back(vertex);
     }
@@ -86,7 +86,7 @@ void Chunk::draw(ShaderProgram* shader, const glm::vec2& min, const glm::vec2& m
 {
   shader->bind();
 
-  glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(min.x, min.y, 0.0f));
+  glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(min.x, 0.0f, min.y));
   glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(max.x - min.x));
   auto model = translate * scale;
 

@@ -8,6 +8,13 @@
 using namespace gfx;
 using namespace gfx::gl;
 
+class FirstPersonCamera : public Camera
+{
+ public:
+  float pitch = M_PI / 2;
+  float yaw = M_PI / 2;
+};
+
 class Game : public Window
 {
  public:
@@ -16,7 +23,7 @@ class Game : public Window
 
  private:
   bool m_quit{false};
-  Camera m_camera;
+  FirstPersonCamera m_camera;
   TerrainRenderer m_terrain_renderer;
 
   glm::vec2 m_last_click_location{};
