@@ -33,12 +33,18 @@ void QuadTree::insert(std::unique_ptr<Node>& node, const glm::vec2& point)
 
 void QuadTree::split(std::unique_ptr<Node>& node)
 {
+  auto new_lod = node->lod + 1;
   auto min = node->min, max = node->max, midpoint = node->center();
-  node->children[0] = std::make_unique<Node>(min, midpoint);                                               // lower left
-  node->children[1] = std::make_unique<Node>(glm::vec2(min.x, midpoint.y), glm::vec2(midpoint.x, max.y));  // upper left
-  node->children[2] = std::make_unique<Node>(midpoint, max);  // upper right
+  node->children[0] = std::make_unique<Node>(min, midpoint, new_lod);  // lower left
+
+  node->children[1] =
+      std::make_unique<Node>(glm::vec2(min.x, midpoint.y), glm::vec2(midpoint.x, max.y), new_lod);  // upper left
+
+  node->children[2] = std::make_unique<Node>(midpoint, max, new_lod);                               // upper right
+
   node->children[3] =
-      std::make_unique<Node>(glm::vec2{midpoint.x, min.y}, glm::vec2{max.x, midpoint.y});  // lower right
+      std::make_unique<Node>(glm::vec2{midpoint.x, min.y}, glm::vec2{max.x, midpoint.y}, new_lod);  // lower right
+
   node->is_leaf = false;
 }
 

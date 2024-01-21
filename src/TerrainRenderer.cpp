@@ -27,18 +27,24 @@ void main() {
 
 const std::string shader_frag = R"(
 #version 430
-out vec4 FragColor;
+
 in vec2 uv;
-uniform sampler2D u_heightmap;
+
+out vec4 FragColor;
+
+uniform sampler2D u_albedo_texture;
+
 void main() {
-  FragColor = vec4(uv, 0, 1);
+  //FragColor = vec4(uv, 0, 1);
+  FragColor = vec4(texture(u_albedo_texture, uv).rgb, 1);
 }
 )";
 
-TerrainRenderer::TerrainRenderer()
+TerrainRenderer::TerrainRenderer(const glm::vec2& min, const glm::vec2& max)
     : m_shader(std::make_unique<ShaderProgram>(shader_vert, shader_frag)),
       m_debug_chunk(5, 1.0f),
-      m_bounds({glm::vec2(-1.0f), glm::vec2(1.0f)})
+      m_bounds({min, max}),
+      m_tile_cache(min, max)
 {
 }
 
@@ -56,7 +62,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
   auto tiles = quad_tree.get_children();
 
-  std::cout << "Tile Count: " << tiles.size() << std::endl;
+  // std::cout << "Tile Count: " << tiles.size() << std::endl;
 
   if (m_wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -66,6 +72,12 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
 #if 1
   for (auto* tile : tiles) {
+    Texture* albedo = m_tile_cache.get_tile_texture(tile->min, tile->max, tile->lod);
+
+    if (albedo) {
+      albedo->bind(0);
+      m_shader->set_uniform("u_albedo_texture", 0);
+    }
     m_debug_chunk.draw(m_shader.get(), tile->min, tile->max);
   }
 #endif

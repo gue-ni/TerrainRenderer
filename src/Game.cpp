@@ -1,6 +1,6 @@
 #include "Game.h"
 
-Game::Game(size_t width, size_t height) : Window(width, height)
+Game::Game(size_t width, size_t height) : Window(width, height), m_terrain_renderer(glm::vec2(-1.0f), glm::vec2(1.0f))
 {
   glEnable(GL_CULL_FACE);
 
