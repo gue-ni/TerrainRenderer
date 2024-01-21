@@ -17,17 +17,13 @@ void QuadTree::insert(std::unique_ptr<Node>& node, const glm::vec2& point)
 
   if (distance_to_child < node->size().x && node->size().x >= MIN_NODE_SIZE) {
     split_four_ways(node);
-
-    for (std::unique_ptr<Node>& child : node->children) {
-      insert(child, point);
-    }
+    for (auto& child : node->children) insert(child, point);
   }
 }
 
 void QuadTree::split_four_ways(std::unique_ptr<Node>& node)
 {
-  auto min = node->min, max = node->max;
-  auto midpoint = node->center();
+  auto min = node->min, max = node->max, midpoint = node->center();
   node->children[0] = std::make_unique<Node>(min, midpoint);
   node->children[1] = std::make_unique<Node>(min, max);
   node->children[2] = std::make_unique<Node>(midpoint, max);

@@ -17,12 +17,10 @@ struct Bounds {
 
 inline std::ostream& operator<<(std::ostream& os, const Bounds& b) { return os << b.min << ", " << b.max; }
 
-enum Direction : size_t { NORTH = 0, SOUTH = 1, EAST = 2, WEST = 3, NUM = 4 };
-
 struct Node : public Bounds {
   Node(const glm::vec2& min_, const glm::vec2& max_) : Bounds(min_, max_) {}
   bool is_leaf{true};
-  std::array<std::unique_ptr<Node>, 4> children = {nullptr};
+  std::array<std::unique_ptr<Node>, 4> children;
 };
 
 class QuadTree
@@ -34,7 +32,7 @@ class QuadTree
   Node* get_root() const { return m_root.get(); }
 
  private:
-  const float MIN_NODE_SIZE{0.25f};
+  const float MIN_NODE_SIZE{0.5f};
   std::unique_ptr<Node> m_root{nullptr};
   void split_four_ways(std::unique_ptr<Node>& node);
   void insert(std::unique_ptr<Node>& child, const glm::vec2& point);

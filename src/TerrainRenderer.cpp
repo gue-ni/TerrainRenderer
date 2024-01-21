@@ -51,8 +51,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
   QuadTree quad_tree(m_bounds.min, m_bounds.max);
 
-  auto root = quad_tree.get_root();
-  auto tile_bounds = quad_tree.get_children();
+  auto tiles = quad_tree.get_children();
 
   if (m_wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -61,7 +60,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_shader->set_uniform("proj", camera.get_projection_matrix());
 
 #if 1
-  for (auto* tile : tile_bounds) {
+  for (auto* tile : tiles) {
     std::cout << *tile << std::endl;
     m_debug_chunk.draw(m_shader.get(), tile->min, tile->max);
   }
