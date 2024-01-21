@@ -2,8 +2,8 @@
 #include <glm/glm.hpp>
 
 #include "../gfx/gfx.h"
-
 #include "Chunk.h"
+#include "QuadTree.h"
 
 using namespace gfx;
 using namespace gfx::gl;
@@ -19,4 +19,5 @@ class TerrainRenderer
   std::unique_ptr<ShaderProgram> m_shader{nullptr};
 
   Chunk m_debug_chunk;
+  Bounds m_bounds;
 };

@@ -22,6 +22,7 @@ class Chunk
  public:
   Chunk(uint vertex_count, float size = 1.0f);
   void draw(ShaderProgram* shader, const glm::vec2& position) const;
+  void draw(ShaderProgram* shader, const glm::vec2& min, const glm::vec2& max) const;
 
  private:
   GLsizei m_vertex_count{0};

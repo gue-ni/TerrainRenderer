@@ -131,6 +131,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src/QuadTree.cpp" />
     <ClCompile Include="src/Chunk.cpp" />
     <ClCompile Include="src/Game.cpp" />
     <ClCompile Include="src/main.cpp" />
@@ -144,6 +145,7 @@
     <ClCompile Include="gfx/camera.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src/QuadTree.h" />
     <ClInclude Include="src/Chunk.h" />
     <ClInclude Include="src/Game.h" />
     <ClInclude Include="src/Common.h" />
