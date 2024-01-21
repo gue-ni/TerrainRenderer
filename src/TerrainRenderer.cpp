@@ -49,9 +49,14 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   // if changes are necessary, load new tiles
   // render tiles
 
-  QuadTree quad_tree(m_bounds.min, m_bounds.max);
+  const float min_node_size = 0.25f;
+  QuadTree quad_tree(m_bounds.min, m_bounds.max, min_node_size);
+
+  quad_tree.insert(center);
 
   auto tiles = quad_tree.get_children();
+
+  std::cout << "Tile Count: " << tiles.size() << std::endl;
 
   if (m_wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -61,7 +66,6 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
 #if 1
   for (auto* tile : tiles) {
-    std::cout << *tile << std::endl;
     m_debug_chunk.draw(m_shader.get(), tile->min, tile->max);
   }
 #endif

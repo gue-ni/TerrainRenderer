@@ -13,6 +13,10 @@ struct Bounds {
   glm::vec2 size() const { return max - min; }
   glm::vec2 half_size() const { return size() / 2.0f; }
   glm::vec2 center() const { return min + half_size(); }
+  bool contains_point(const glm::vec2& point)
+  {
+    return (min.x <= point.x && point.x <= max.x) && (min.y <= point.y && point.y <= max.y);
+  }
 };
 
 inline std::ostream& operator<<(std::ostream& os, const Bounds& b) { return os << b.min << ", " << b.max; }
@@ -26,15 +30,14 @@ struct Node : public Bounds {
 class QuadTree
 {
  public:
-  QuadTree(const glm::vec2& min, const glm::vec2& max);
+  QuadTree(const glm::vec2& min, const glm::vec2& max, float min_node_size);
   void insert(const glm::vec2& point);
-  std::vector<Node*> get_children() ;
-  Node* get_root() const { return m_root.get(); }
+  std::vector<Node*> get_children();
 
  private:
-  const float MIN_NODE_SIZE{0.5f};
+  const float MIN_NODE_SIZE;
   std::unique_ptr<Node> m_root{nullptr};
-  void split_four_ways(std::unique_ptr<Node>& node);
+  void split(std::unique_ptr<Node>& node);
   void insert(std::unique_ptr<Node>& child, const glm::vec2& point);
   void collect(std::unique_ptr<Node>& node, std::vector<Node*>& children);
 };

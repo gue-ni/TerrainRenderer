@@ -13,6 +13,7 @@ class TerrainRenderer
  public:
   TerrainRenderer();
   void render(const Camera& camera, const glm::vec2& center);
+  void set_wireframe(bool mode) { m_wireframe = mode; }
 
  private:
   bool m_wireframe{true};

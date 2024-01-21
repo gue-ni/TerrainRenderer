@@ -1,8 +1,17 @@
 #include "QuadTree.h"
 
-QuadTree::QuadTree(const glm::vec2& min, const glm::vec2& max) { m_root = std::make_unique<Node>(min, max); }
+QuadTree::QuadTree(const glm::vec2& min, const glm::vec2& max, float min_node_size)
+    : m_root(std::make_unique<Node>(min, max)), MIN_NODE_SIZE(min_node_size)
+{
+  Bounds bounds(min, max);
+  assert(bounds.size().x > min_node_size);
+}
 
-void QuadTree::insert(const glm::vec2& point) { insert(m_root, point); }
+void QuadTree::insert(const glm::vec2& point)
+{
+  assert(m_root->contains_point(point));
+  insert(m_root, point);
+}
 
 std::vector<Node*> QuadTree::get_children()
 {
@@ -13,21 +22,23 @@ std::vector<Node*> QuadTree::get_children()
 
 void QuadTree::insert(std::unique_ptr<Node>& node, const glm::vec2& point)
 {
-  float distance_to_child = glm::distance(node->center(), point);
+  float size = node->size().x;
+  float distance = glm::distance(node->center(), point);
 
-  if (distance_to_child < node->size().x && node->size().x >= MIN_NODE_SIZE) {
-    split_four_ways(node);
+  if (distance < size && size > MIN_NODE_SIZE) {
+    split(node);
     for (auto& child : node->children) insert(child, point);
   }
 }
 
-void QuadTree::split_four_ways(std::unique_ptr<Node>& node)
+void QuadTree::split(std::unique_ptr<Node>& node)
 {
   auto min = node->min, max = node->max, midpoint = node->center();
-  node->children[0] = std::make_unique<Node>(min, midpoint);
-  node->children[1] = std::make_unique<Node>(min, max);
-  node->children[2] = std::make_unique<Node>(midpoint, max);
-  node->children[3] = std::make_unique<Node>(min, max);
+  node->children[0] = std::make_unique<Node>(min, midpoint);                                               // lower left
+  node->children[1] = std::make_unique<Node>(glm::vec2(min.x, midpoint.y), glm::vec2(midpoint.x, max.y));  // upper left
+  node->children[2] = std::make_unique<Node>(midpoint, max);  // upper right
+  node->children[3] =
+      std::make_unique<Node>(glm::vec2{midpoint.x, min.y}, glm::vec2{max.x, midpoint.y});  // lower right
   node->is_leaf = false;
 }
 
