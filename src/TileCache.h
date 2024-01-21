@@ -20,7 +20,6 @@ using namespace gfx::gl;
 
 struct TileName {
   unsigned zoom, x, y;
-
   std::string to_string() const { return std::format("{}/{}/{}", zoom, x, y); }
 };
 
@@ -48,14 +47,11 @@ inline float tiley2lat(int y, int z)
   return 180.0f / PI * atan(0.5f * (exp(n) - exp(-n)));
 }
 
-inline glm::vec2 tile2lat_lon(int x, int y, int z) { return glm::vec2(tilex2lon(x, z), tiley2lat(y, z)); }
-
 };  // namespace wms
 
 class TileCache
 {
  public:
-  TileCache(const glm::vec2& min, const glm::vec2& max);
   TileCache(const glm::vec2& min, const glm::vec2& max, const TileName& root_tile, unsigned max_zoom_level);
 
   Texture* get_debug_texture() { return m_debug_texture.get(); }
@@ -69,6 +65,7 @@ class TileCache
   const unsigned m_max_zoom_level;
 
   LocalTileProvider m_provider;  // TODO: make this generic
+  WebTileProvider m_tile_service;
 
   std::unique_ptr<Texture> m_debug_texture{nullptr};
   std::unordered_map<std::string, std::unique_ptr<Texture>> m_cache;

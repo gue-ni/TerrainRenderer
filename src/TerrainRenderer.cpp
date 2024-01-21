@@ -31,26 +31,39 @@ out vec4 FragColor;
 uniform sampler2D u_albedo_texture;
 
 void main() {
-  //FragColor = vec4(uv, 0, 1);
   FragColor = vec4(texture(u_albedo_texture, uv).rgb, 1);
 }
 )";
 
 constexpr uint MAX_ZOOM_LEVEL = 14;
-constexpr TileName ROOT_TILE = {.zoom = 11, .x = 1072, .y = 712};
+
+constexpr TileName ROOT_TILE_1 = {.zoom = 11, .x = 1072, .y = 712};
+
+constexpr TileName ROOT_TILE_2 = {
+    .zoom = 9,
+    .x = 277,
+    .y = 179,
+};
+
+constexpr TileName ROOT_TILE_3 = {
+    .zoom = 11,
+    .x = 1086,
+    .y = 719,
+};
 
 TerrainRenderer::TerrainRenderer(const glm::vec2& min, const glm::vec2& max)
     : m_shader(std::make_unique<ShaderProgram>(shader_vert, shader_frag)),
-      m_debug_chunk(5, 1.0f),
+      m_root_tile(ROOT_TILE_3),
+      m_chunk(5, 1.0f),
       m_bounds({min, max}),
-      m_tile_cache(min, max, ROOT_TILE, MAX_ZOOM_LEVEL)
+      m_tile_cache(min, max, m_root_tile, MAX_ZOOM_LEVEL)
 {
 }
 
 void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 {
   const float min_node_size = 0.02f;
-  const uint max_depth = 3;
+  const uint max_depth = MAX_ZOOM_LEVEL - m_root_tile.zoom;
 
   QuadTree quad_tree(m_bounds.min, m_bounds.max, min_node_size, max_depth);
 
@@ -64,21 +77,19 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_shader->set_uniform("view", camera.get_view_matrix());
   m_shader->set_uniform("proj", camera.get_projection_matrix());
 
-#if 1
   for (auto* tile : tiles) {
+#if 1
     Texture* albedo = m_tile_cache.get_tile_texture(tile->center(), tile->depth);
+#else
+    Texture* albedo = nullptr;
+#endif
 
     if (albedo) {
       albedo->bind(0);
       m_shader->set_uniform("u_albedo_texture", 0);
     }
-    m_debug_chunk.draw(m_shader.get(), tile->min, tile->max);
+    m_chunk.draw(m_shader.get(), tile->min, tile->max);
   }
-#endif
-
-#if 0
-  m_debug_chunk.draw(m_shader.get(), center);
-#endif
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }

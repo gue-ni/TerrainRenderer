@@ -3,3 +3,5 @@ libraries/
 x64/
 *.filters
 *.user
+*.jpeg
+*.jpg

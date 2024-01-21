@@ -20,8 +20,8 @@ class TerrainRenderer
 
  private:
   std::unique_ptr<ShaderProgram> m_shader{nullptr};
-
-  Chunk m_debug_chunk;
+  TileName m_root_tile{};
+  Chunk m_chunk;
   Bounds m_bounds;
   TileCache m_tile_cache;
 };
