@@ -15,9 +15,18 @@ uniform mat4 proj;
 
 out vec2 uv;
 
+float altitude_from_color(vec4 color) {
+    return (color.r + color.g / 255.0);
+}
+
+uniform sampler2D u_heightmap_texture;
+
 void main() {
   uv = a_tex;
-  gl_Position = proj * view * model * vec4(a_pos, 1.0);
+  vec4 height_sample = texture(u_heightmap_texture, uv);
+  float height = altitude_from_color(height_sample);
+  vec4 world_pos = model * vec4(a_pos, 1.0);
+  gl_Position = proj * view * world_pos;
 }
 )";
 
@@ -29,10 +38,13 @@ in vec2 uv;
 out vec4 FragColor;
 
 uniform sampler2D u_albedo_texture;
-uniform sampler2D u_heightmap_texture;
 
 void main() {
+#if 1
   FragColor = vec4(texture(u_albedo_texture, uv).rgb, 1);
+#else
+  FragColor = vec4(vec3(1,0,0), 1);
+#endif
 }
 )";
 
@@ -54,13 +66,19 @@ constexpr TileName ROOT_TILE_3 = {
 
 constexpr TileName ROOT_TILE_4 = {
     .zoom = 11,
-    .x = 1101,
-    .y = 1327,
+    .x = 1327,
+    .y = 1101,
+};
+
+constexpr TileName ROOT_TILE_5 = {
+    .zoom = 12,
+    .x = 2197,
+    .y = 1434,
 };
 
 TerrainRenderer::TerrainRenderer(const glm::vec2& min, const glm::vec2& max)
     : m_shader(std::make_unique<ShaderProgram>(shader_vert, shader_frag)),
-      m_root_tile(ROOT_TILE_3),
+      m_root_tile(ROOT_TILE_5),
       m_chunk(5, 1.0f),
       m_bounds({min, max}),
       m_tile_cache(min, max, m_root_tile, MAX_ZOOM_LEVEL)
@@ -87,7 +105,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   for (auto* tile : tiles) {
     Texture* albedo = m_tile_cache.get_tile_texture(tile->center(), tile->depth);
 
-    Texture* heightmap = nullptr;
+    Texture* heightmap = albedo;
 
     if (albedo) {
       albedo->bind(0);

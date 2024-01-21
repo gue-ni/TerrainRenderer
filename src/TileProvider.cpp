@@ -2,6 +2,7 @@
 
 #include <filesystem>
 
+
 Image LocalTileProvider::get_tile(unsigned zoom, unsigned x, unsigned y)
 {
   Image image;
@@ -35,6 +36,11 @@ std::string WebTileProvider::download_and_save(unsigned zoom, unsigned x, unsign
   const std::string url = std::format("{}/{}/{}/{}.{}", host, zoom, y, x, filetype);
 #else
   // heightmap
+
+  // convert from y pointing south to y pointing north
+  unsigned num_y_tiles = (1 << zoom);
+  y = num_y_tiles - y - 1;
+
   const std::string filetype = "png";
   const std::string host = "https://alpinemaps.cg.tuwien.ac.at/tiles/alpine_png";
   const std::string url = std::format("{}/{}/{}/{}.{}", host, zoom, x, y, filetype);
@@ -52,6 +58,7 @@ std::string WebTileProvider::download_and_save(unsigned zoom, unsigned x, unsign
 
   if (r.status_code != 200) {
     std::cerr << "Could not get tile from " << std::quoted(url) << std::endl;
+    std::filesystem::remove(filename);
   }
 
   return filename;

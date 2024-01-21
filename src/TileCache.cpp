@@ -56,10 +56,11 @@ std::unique_ptr<Texture> TileCache::load_texture_from_disk(const TileName& tile)
     return nullptr;
   }
 
+  auto filter = GL_LINEAR;
   auto texture = std::make_unique<Texture>();
   texture->bind();
-  texture->set_parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  texture->set_parameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  texture->set_parameter(GL_TEXTURE_MIN_FILTER, filter);
+  texture->set_parameter(GL_TEXTURE_MAG_FILTER, filter);
   texture->set_parameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   texture->set_parameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   texture->set_image(image);
