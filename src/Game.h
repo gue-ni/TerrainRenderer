@@ -19,6 +19,8 @@ class Game : public Window
   Camera m_camera;
   TerrainRenderer m_terrain_renderer;
 
+  glm::vec2 m_last_click_location{};
+
   void read_input();
   void update(float dt);
   void render();
