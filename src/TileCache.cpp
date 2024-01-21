@@ -75,6 +75,8 @@ std::unique_ptr<Texture> TileCache::load_texture_from_disk(const TileName& tile)
 
 Texture* TileCache::load_texture_from_cache(const TileName& tile_name)
 {
+  // TODO: cache cleanup
+
   std::string name = tile_name.to_string();
 
   if (!m_cache.contains(name)) {

@@ -61,7 +61,7 @@ void Game::read_input()
         m_last_click_location = glm::vec2(-1.0f) + click * (glm::vec2(1.0f) - glm::vec2(-1.0f));
         m_last_click_location = -glm::vec2(-m_last_click_location.x, m_last_click_location.y);
 
-        std::cout << click << ", " << m_last_click_location << std::endl;
+        //std::cout << click << ", " << m_last_click_location << std::endl;
       }
     }
   }

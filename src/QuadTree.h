@@ -22,9 +22,9 @@ struct Bounds {
 inline std::ostream& operator<<(std::ostream& os, const Bounds& b) { return os << b.min << ", " << b.max; }
 
 struct Node : public Bounds {
-  Node(const glm::vec2& min_, const glm::vec2& max_, unsigned lod_ = 0) : Bounds(min_, max_), lod(lod_) {}
+  Node(const glm::vec2& min_, const glm::vec2& max_, unsigned depth_ = 0) : Bounds(min_, max_), depth(depth_) {}
   bool is_leaf{true};
-  unsigned lod = 0;
+  unsigned depth = 0;
   std::array<std::unique_ptr<Node>, 4> children;
 };
 

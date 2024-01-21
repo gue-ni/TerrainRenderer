@@ -66,7 +66,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
 #if 1
   for (auto* tile : tiles) {
-    Texture* albedo = m_tile_cache.get_tile_texture(tile->center(), tile->lod);
+    Texture* albedo = m_tile_cache.get_tile_texture(tile->center(), tile->depth);
 
     if (albedo) {
       albedo->bind(0);
