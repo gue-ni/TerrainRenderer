@@ -1,5 +1,28 @@
 #include "Game.h"
 
+struct Plane {
+  glm::vec3 n; // plane normal
+  float d; // d = dot(n, p) for a given point on the plane
+  Plane(const glm::vec3 &normal, const glm::vec3 &point) : n(normal), d(glm::dot(normal, point)) {}
+};
+
+// Real Time Collison Detection - Christer Ericson
+int intersect_segment_plane(glm::vec3 a, glm::vec3 b, Plane p, float &t, glm::vec3 &q)
+{
+  // Compute the t value for the directed line ab intersecting the plane
+  glm::vec3 ab = b - a;
+
+  t = (p.d - glm::dot(p.n, a)) / glm::dot(p.n, ab);
+
+  // If t in [0..1] compute and return intersection point
+  if (t >= 0.0f && t <= 1.0f) {
+    q = a + t * ab;
+    return true;
+  }
+
+  return false;
+}
+
 Game::Game(size_t width, size_t height)
     : Window(width, height), m_terrain_renderer(glm::vec2(-200.0f), glm::vec2(200.0f))
 {
@@ -23,6 +46,24 @@ void Game::render(float dt)
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   auto lod_focus = m_camera.get_local_position();
+
+  auto camera_position = m_camera.get_local_position();
+  auto camera_direction = m_camera.transform_direction(glm::vec3(0.0f, 0.0f, -1.0f));
+  auto camera_target = camera_position + camera_direction * 100.0f;
+
+  //std::cout << camera_direction << std::endl;
+  //std::cout << camera_position.y << std::endl;
+
+  float t;
+  glm::vec3 point;
+  Plane plane(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 20.0f, 0.0f));
+
+  if (intersect_segment_plane(camera_position, camera_target, plane, t, point)){
+    //std::cout << point << std::endl;
+  }
+
+  lod_focus = point;
+
   m_terrain_renderer.render(m_camera, glm::vec2(lod_focus.x, lod_focus.z));
 
   SDL_GL_SwapWindow(m_window);
@@ -94,9 +135,8 @@ void Game::read_input(float dt)
     }
   }
 
-  const Uint8* key_states = SDL_GetKeyboardState(nullptr);
+  const Uint8 *key_states = SDL_GetKeyboardState(nullptr);
 
-#if 1
   auto right = m_camera.get_local_x_axis();
   auto forward = m_camera.get_local_z_axis();
   auto position = m_camera.get_local_position();
@@ -117,7 +157,6 @@ void Game::read_input(float dt)
   }
 
   m_camera.set_local_position(position);
-#endif
 }
 
 void Game::update(float dt)

@@ -13,7 +13,7 @@ class FirstPersonCamera : public Camera
 {
  public:
   float pitch{};
-  float yaw{90.0f};
+  float yaw{-90.0f};
 };
 
 class Game : public Window
