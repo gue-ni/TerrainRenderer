@@ -15,6 +15,7 @@ class TerrainRenderer
  public:
   TerrainRenderer(const glm::vec2& min, const glm::vec2& max);
   void render(const Camera& camera, const glm::vec2& center);
+  Bounds bounds() const { return m_bounds; }
 
   bool wireframe{false};
 

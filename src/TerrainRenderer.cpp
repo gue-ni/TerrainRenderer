@@ -67,13 +67,13 @@ constexpr uint MAX_ZOOM_LEVEL = 15;
 
 const TileName LUDESCH = wms::to_tilename(47.1958f, 9.7793f, 8);
 
-const TileName SCHRUNS = wms::to_tilename(47.0800, 9.9199, 8);
+const TileName SCHRUNS = wms::to_tilename(47.0800f, 9.9199f, 8);
 
-const TileName GROSS_GLOCKNER = wms::to_tilename(47.0742, 12.6947, 10);
+const TileName GROSS_GLOCKNER = wms::to_tilename(47.0742f, 12.6947f, 10);
 
 const TileName SCHNEEBERG = wms::to_tilename(47.7671f, 15.8056f, 10);
 
-const TileName HALLSTATT = wms::to_tilename(47.5622, 13.6493, 10);
+const TileName HALLSTATT = wms::to_tilename(47.5622f, 13.6493f, 10);
 
 TerrainRenderer::TerrainRenderer(const glm::vec2& min, const glm::vec2& max)
     : m_shader(std::make_unique<ShaderProgram>(shader_vert, shader_frag)),

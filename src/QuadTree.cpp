@@ -9,7 +9,7 @@ QuadTree::QuadTree(const glm::vec2& min, const glm::vec2& max, float min_node_si
 
 void QuadTree::insert(const glm::vec2& point)
 {
-  assert(m_root->contains_point(point));
+  assert(m_root->contains(point));
   insert(m_root, point);
 }
 
