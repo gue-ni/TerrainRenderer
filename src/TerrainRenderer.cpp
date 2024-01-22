@@ -96,12 +96,14 @@ TerrainRenderer::TerrainRenderer(const glm::vec2& min, const glm::vec2& max)
 
 void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 {
+
   const float min_node_size = 0.02f;
   const uint max_depth = MAX_ZOOM_LEVEL - m_root_tile.zoom;
+  const auto terrain_center = glm::clamp(center, m_bounds.min, m_bounds.max);
 
   QuadTree quad_tree(m_bounds.min, m_bounds.max, min_node_size, max_depth);
 
-  quad_tree.insert(center);
+  quad_tree.insert(terrain_center);
 
   auto tiles = quad_tree.get_children();
 

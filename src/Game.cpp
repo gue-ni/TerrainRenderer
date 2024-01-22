@@ -3,7 +3,8 @@
 Game::Game(size_t width, size_t height)
     : Window(width, height), m_terrain_renderer(glm::vec2(-100.0f), glm::vec2(100.0f))
 {
-  // glEnable(GL_CULL_FACE);
+
+  glEnable(GL_DEPTH_TEST);  
 
   SDL_ShowCursor(SDL_FALSE);
   SDL_CaptureMouse(SDL_TRUE);
@@ -19,7 +20,8 @@ void Game::render()
 {
   glViewport(0, 0, static_cast<GLsizei>(m_width), static_cast<GLsizei>(m_height));
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  
+
 
   auto camera_position = m_camera.get_local_position();
   m_terrain_renderer.render(m_camera, glm::vec2(camera_position.x, camera_position.z));
