@@ -14,7 +14,7 @@ TileCache::TileCache(const TileName& root_tile, unsigned max_zoom_level)
       m_height_tile_service("https://alpinemaps.cg.tuwien.ac.at/tiles/alpine_png", TileService::UrlPattern::ZXY, ".png")
 
 {
-#if 1
+#if 0
   std::string path = "debug.png";
   //std::string path = "debug2.jpeg";
   //std::string path = "cache/13-4395-2868.jpeg";
@@ -97,20 +97,28 @@ std::unique_ptr<Texture> TileCache::load_texture_from_disk(float lat, float lon,
   texture->bind();
   texture->set_parameter(GL_TEXTURE_MIN_FILTER, filter);
   texture->set_parameter(GL_TEXTURE_MAG_FILTER, filter);
+
+#if 0
+  texture->set_parameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+  texture->set_parameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+  const float border_color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+  glTexParameterfv(texture->target, GL_TEXTURE_BORDER_COLOR, border_color);
+#else
   texture->set_parameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   texture->set_parameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+#endif
+
 #if 0
   texture->set_image(image);
 #else
   GLint internalformat = GL_RGB;
   GLint format = GL_RGB;
 
-          glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
   glTexImage2D(texture->target, 0, internalformat, image.width(), image.height(), 0, format, GL_UNSIGNED_BYTE,
                image.data());
-          glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
 #endif
 

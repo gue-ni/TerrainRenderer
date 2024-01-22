@@ -28,12 +28,39 @@ Chunk::Chunk(uint vertex_count, float size)
   float stride = size / (vertex_count - 1);
   auto dimensions = glm::vec2(stride * (vertex_count - 1));
 
+  // add padding for skirts
+  uint vertex_count_no_padding = vertex_count;
+  vertex_count += 2;
+
+  uint max_vertex = vertex_count - 1; // with padding
+  uint max_clamped_vertex = max_vertex - 1;
+
+  const glm::vec2 INVALID = glm::vec2(-1, -1);
+
   for (uint y = 0; y < vertex_count; ++y) {
     for (uint x = 0; x < vertex_count; ++x) {
-      auto pos = glm::vec3(x * stride, 0.0f, y * stride);
+
+      bool on_border = false;
+      if (x == 0 || y == 0 || x == max_vertex || y == max_vertex) {
+        on_border = true;
+      }
+
+#if 1
+      auto tmp_x = glm::clamp(x, 1U, max_clamped_vertex);
+      tmp_x = map_range(tmp_x, 1u, max_clamped_vertex, 0u, vertex_count_no_padding - 1u);
+
+      auto tmp_y = glm::clamp(y, 1U, max_clamped_vertex);
+      tmp_y = map_range(tmp_y, 1u, max_clamped_vertex, 0u, vertex_count_no_padding - 1u);
+#endif
+
+      auto pos = glm::vec3(tmp_x * stride, 0.0f, tmp_y * stride);
       auto uv = glm::vec2(pos.x, pos.z) / dimensions;
-      ChunkVertex vertex = {pos, uv};
-      vertices.push_back(vertex);
+
+      if (on_border) {
+        uv = INVALID; // TODO: do something smarter
+      }
+
+      vertices.push_back({pos, uv});
     }
   }
 
