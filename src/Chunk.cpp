@@ -27,8 +27,6 @@ Chunk::Chunk(uint vertex_count, float size)
   uint max_vertex = vertex_count - 1;  // with padding
   uint max_clamped_vertex = max_vertex - 1;
 
-  const glm::vec2 INVALID = glm::vec2(-1, -1);
-
   for (uint y = 0; y < vertex_count; ++y) {
     for (uint x = 0; x < vertex_count; ++x) {
       bool on_border = false;
@@ -52,7 +50,7 @@ Chunk::Chunk(uint vertex_count, float size)
       auto uv = glm::vec2(pos.x, pos.z) / dimensions;
 
       if (on_border) {
-        uv = INVALID;  // TODO: do something smarter
+        uv = map_range(uv, glm::vec2(0.0f), glm::vec2(1.0f), glm::vec2(-0.1f), glm::vec2(1.1f));
       }
 
       vertices.push_back({pos, uv});

@@ -33,7 +33,8 @@ void main() {
   float height = altitude_from_color(height_sample);
   world_pos.y = height * u_height_scaling_factor;
 #endif
-#if 1
+
+#if 0
   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
     world_pos.y = -10.0;
   }
@@ -54,46 +55,30 @@ uniform sampler2D u_albedo_texture;
 
 void main() {
 #if 1
-  vec3 color = texture(u_albedo_texture, uv).rgb;
-  FragColor = vec4(color, 1);
+  vec3 albedo = texture(u_albedo_texture, uv).rgb;
+  FragColor = vec4(albedo, 1);
 #else
   FragColor = vec4(vec3(1,0,0), 1);
 #endif
 }
 )";
 
-constexpr uint MAX_ZOOM_LEVEL = 15;
+constexpr uint MAX_ZOOM_LEVEL = 11;
 
-constexpr TileName ROOT_TILE_1 = {.zoom = 11, .x = 1072, .y = 712};
+const TileName LUDESCH = wms::to_tilename(47.1958f, 9.7793f, 8);
 
-constexpr TileName ROOT_TILE_2 = {
-    .zoom = 9,
-    .x = 277,
-    .y = 179,
-};
+const TileName SCHRUNS = wms::to_tilename(47.0800, 9.9199, 8);
 
-constexpr TileName ROOT_TILE_3 = {
-    .zoom = 11,
-    .x = 1086,
-    .y = 719,
-};
+const TileName GROSS_GLOCKNER = wms::to_tilename(47.0742, 12.6947, 8);
 
-constexpr TileName ROOT_TILE_4 = {
-    .zoom = 11,
-    .x = 1327,
-    .y = 1101,
-};
+const TileName SCHNEEBERG = wms::to_tilename(47.7671f, 15.8056f, 10);
 
-constexpr TileName ROOT_TILE_5 = {
-    .zoom = 12,
-    .x = 2197,
-    .y = 1434,
-};
+const TileName HALLSTATT = wms::to_tilename(47.5622, 13.6493, 10);
 
 TerrainRenderer::TerrainRenderer(const glm::vec2& min, const glm::vec2& max)
     : m_shader(std::make_unique<ShaderProgram>(shader_vert, shader_frag)),
-      m_root_tile(ROOT_TILE_3),
-      m_chunk(8, 1.0f),
+      m_root_tile(GROSS_GLOCKNER),
+      m_chunk(32, 1.0f),
       m_bounds({min, max}),
       m_tile_cache(m_root_tile, MAX_ZOOM_LEVEL)
 {
@@ -133,10 +118,6 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
     albedo = m_tile_cache.get_tile_texture(to_uv(tile->center()), tile->depth, TileType::ORTHO);
     heightmap = m_tile_cache.get_tile_texture(to_uv(tile->center()), tile->depth, TileType::HEIGHT);
-
-#if 0
-    albedo = heightmap;
-#endif
 
     if (albedo) {
       albedo->bind(0);

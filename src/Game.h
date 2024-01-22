@@ -28,8 +28,6 @@ class Game : public Window
   TerrainRenderer m_terrain_renderer;
   Clock m_clock;
 
-  glm::vec2 m_last_click_location{};
-
   void read_input(float dt);
   void update(float dt);
   void render(float dt);

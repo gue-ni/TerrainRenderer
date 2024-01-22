@@ -1,10 +1,8 @@
 #include "Game.h"
 
 Game::Game(size_t width, size_t height)
-    : Window(width, height), m_terrain_renderer(glm::vec2(-100.0f), glm::vec2(100.0f))
+    : Window(width, height), m_terrain_renderer(glm::vec2(-200.0f), glm::vec2(200.0f))
 {
-  // GL_CALL(glEnable(GL_DEPTH_TEST));
-
   SDL_ShowCursor(SDL_FALSE);
   SDL_CaptureMouse(SDL_TRUE);
   SDL_SetRelativeMouseMode(SDL_TRUE);
@@ -60,10 +58,12 @@ void Game::read_input(float dt)
         m_camera.pitch -= delta_pitch;
         m_camera.pitch = std::clamp(m_camera.pitch, -89.0f, 89.0f);
 
-        glm::vec3 front(0.0f, 0.0f, 0.0f);
-        front.x = cos(glm::radians(m_camera.yaw)) * cos(glm::radians(m_camera.pitch));
-        front.y = sin(glm::radians(m_camera.pitch));
-        front.z = sin(glm::radians(m_camera.yaw)) * cos(glm::radians(m_camera.pitch));
+        glm::vec3 front = {
+            cos(glm::radians(m_camera.yaw)) * cos(glm::radians(m_camera.pitch)),
+            sin(glm::radians(m_camera.pitch)),
+            sin(glm::radians(m_camera.yaw)) * cos(glm::radians(m_camera.pitch)),
+        };
+
         front = glm::normalize(front);
 
         glm::vec3 world_up = {0.0f, 1.0f, 0.0f};
@@ -101,7 +101,7 @@ void Game::read_input(float dt)
   auto forward = m_camera.get_local_z_axis();
   auto position = m_camera.get_local_position();
 
-  float speed = 0.05f;
+  float speed = 0.15f;
 
   if (key_states[SDL_SCANCODE_W]) {
     position -= forward * speed;
