@@ -18,8 +18,8 @@ Window::Window(size_t width, size_t height, const std::string& name) : m_width(w
 
   GL_CALL(glEnable(GL_DEPTH_TEST));  
 
-  //glEnable(GL_CULL_FACE);  
-  //glCullFace(GL_FRONT);  
+  glEnable(GL_CULL_FACE);  
+  glCullFace(GL_FRONT);  
 }
 
 Window::~Window()

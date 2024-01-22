@@ -56,27 +56,15 @@ void Game::read_input(float dt)
         float delta_yaw = static_cast<float>(sdl_event.motion.xrel) * sensitivity;
         float delta_pitch = static_cast<float>(sdl_event.motion.yrel) * sensitivity;
 
-        m_camera.yaw -= delta_yaw;
+        m_camera.yaw += delta_yaw;
         m_camera.pitch -= delta_pitch;
         m_camera.pitch = std::clamp(m_camera.pitch, -89.0f, 89.0f);
-
-        //printf("%.2f, %.2f\n", m_camera.pitch, m_camera.yaw);
-
-#if 0
-        auto rotation = m_camera.get_local_rotation();
-        glm::quat pitch = glm::quat(glm::radians(glm::vec3(-delta_pitch, 0.0f, 0.0f)));
-        glm::quat yaw = glm::quat(glm::radians(glm::vec3(0.0f, -delta_yaw, 0.0f)));
-        glm::quat new_rotation = rotation * yaw * pitch;
-        m_camera.set_local_rotation(new_rotation);
-#else
 
         glm::vec3 front(0.0f, 0.0f, 0.0f);
         front.x = cos(glm::radians(m_camera.yaw)) * cos(glm::radians(m_camera.pitch));
         front.y = sin(glm::radians(m_camera.pitch));
         front.z = sin(glm::radians(m_camera.yaw)) * cos(glm::radians(m_camera.pitch));
         front = glm::normalize(front);
-
-        std::cout << front << std::endl;
 
         glm::vec3 world_up = {0.0f, 1.0f, 0.0f};
         glm::vec3 right = glm::normalize(glm::cross(front, world_up));
@@ -85,7 +73,6 @@ void Game::read_input(float dt)
 
         auto look_at = glm::lookAt(position, position + front, up);
         m_camera.set_local_transform(glm::inverse(look_at));
-#endif
         break;
       }
       case SDL_MOUSEBUTTONDOWN: {
@@ -109,6 +96,7 @@ void Game::read_input(float dt)
 
   const Uint8* key_states = SDL_GetKeyboardState(nullptr);
 
+#if 1
   auto right = m_camera.get_local_x_axis();
   auto forward = m_camera.get_local_z_axis();
   auto position = m_camera.get_local_position();
@@ -129,6 +117,7 @@ void Game::read_input(float dt)
   }
 
   m_camera.set_local_position(position);
+#endif
 }
 
 void Game::update(float dt)

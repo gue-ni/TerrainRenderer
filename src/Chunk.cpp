@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <iostream>
 
-#define PADDING 0
+#define SKIRTS 1
 
 Chunk::Chunk(uint vertex_count, float size)
     : m_vao(std::make_unique<VertexArrayObject>()),
@@ -20,7 +20,7 @@ Chunk::Chunk(uint vertex_count, float size)
 
   // add padding for skirts
   uint vertex_count_no_padding = vertex_count;
-#if PADDING
+#if SKIRTS
   vertex_count += 2;
 #endif
 
@@ -33,7 +33,7 @@ Chunk::Chunk(uint vertex_count, float size)
     for (uint x = 0; x < vertex_count; ++x) {
       bool on_border = false;
 
-#if PADDING
+#if SKIRTS
       if (x == 0 || y == 0 || x == max_vertex || y == max_vertex) {
         on_border = true;
       }

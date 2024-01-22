@@ -34,8 +34,8 @@ void main() {
   world_pos.y = height * u_height_scaling_factor;
 #endif
 #if 1
-  if (uv.x < 0.0 || uv.x > 1.0) {
-    world_pos.y = -40;
+  if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
+    world_pos.y = -10.0;
   }
 #endif
 
@@ -125,7 +125,6 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
   m_shader->bind();
   m_shader->set_uniform("view", camera.get_view_matrix());
-  //m_shader->set_uniform("view", camera.tmp);
   m_shader->set_uniform("proj", camera.get_projection_matrix());
   m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
 

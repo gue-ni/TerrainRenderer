@@ -14,8 +14,6 @@ class FirstPersonCamera : public Camera
  public:
   float pitch{};
   float yaw{90.0f};
-
-  glm::mat4 tmp;
 };
 
 class Game : public Window
