@@ -34,7 +34,7 @@ void main() {
   world_pos.y = height * u_height_scaling_factor;
 #endif
 
-#if 0
+#if 1
   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
     world_pos.y = -10.0;
   }
@@ -63,13 +63,13 @@ void main() {
 }
 )";
 
-constexpr uint MAX_ZOOM_LEVEL = 11;
+constexpr uint MAX_ZOOM_LEVEL = 15;
 
 const TileName LUDESCH = wms::to_tilename(47.1958f, 9.7793f, 8);
 
 const TileName SCHRUNS = wms::to_tilename(47.0800, 9.9199, 8);
 
-const TileName GROSS_GLOCKNER = wms::to_tilename(47.0742, 12.6947, 8);
+const TileName GROSS_GLOCKNER = wms::to_tilename(47.0742, 12.6947, 10);
 
 const TileName SCHNEEBERG = wms::to_tilename(47.7671f, 15.8056f, 10);
 
