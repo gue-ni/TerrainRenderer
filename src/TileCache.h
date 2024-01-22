@@ -54,7 +54,7 @@ inline float tiley2lat(int y, int z)
 class TileCache
 {
  public:
-  TileCache(const glm::vec2& min, const glm::vec2& max, const TileName& root_tile, unsigned max_zoom_level);
+  TileCache(const TileName& root_tile, unsigned max_zoom_level);
 
   Texture* get_debug_texture() { return m_debug_texture.get(); }
 
@@ -62,7 +62,7 @@ class TileCache
   Texture* get_tile_texture(const glm::vec2& point, unsigned lod = 0);
 
  private:
-  const glm::vec2 m_min, m_max;
+  //const glm::vec2 m_min, m_max;
   const TileName m_root_tile;
   const unsigned m_max_zoom_level;
 

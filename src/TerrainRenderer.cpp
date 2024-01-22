@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "../gfx/gfx.h"
+#include "Common.h"
 
 const std::string shader_vert = R"(
 #version 430
@@ -81,7 +82,7 @@ TerrainRenderer::TerrainRenderer(const glm::vec2& min, const glm::vec2& max)
       m_root_tile(ROOT_TILE_5),
       m_chunk(5, 1.0f),
       m_bounds({min, max}),
-      m_tile_cache(min, max, m_root_tile, MAX_ZOOM_LEVEL)
+      m_tile_cache(m_root_tile, MAX_ZOOM_LEVEL)
 {
 }
 
@@ -103,7 +104,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_shader->set_uniform("proj", camera.get_projection_matrix());
 
   for (auto* tile : tiles) {
-    Texture* albedo = m_tile_cache.get_tile_texture(tile->center(), tile->depth);
+    Texture* albedo = m_tile_cache.get_tile_texture(to_uv(tile->center()), tile->depth);
 
     Texture* heightmap = albedo;
 
@@ -121,4 +122,9 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   }
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
+glm::vec2 TerrainRenderer::to_uv(const glm::vec2& point)
+{
+  return map_range(point, m_bounds.min, m_bounds.max, glm::vec2(0.0f), glm::vec2(1.0f));
 }

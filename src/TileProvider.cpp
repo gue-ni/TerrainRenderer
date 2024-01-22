@@ -28,7 +28,7 @@ WebTileProvider::WebTileProvider()
 
 std::string WebTileProvider::download_and_save(unsigned zoom, unsigned x, unsigned y)
 {
-#if 0
+#if 1
   // albedo
   const std::string filetype = "jpeg";
   const std::string host = "https://gataki.cg.tuwien.ac.at/raw/basemap/tiles";
@@ -62,3 +62,10 @@ std::string WebTileProvider::download_and_save(unsigned zoom, unsigned x, unsign
 
   return filename;
 }
+
+TileService::TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& file_extension)
+    : m_url(url), m_url_pattern(url_pattern), m_file_extension(file_extension)
+{
+}
+
+std::string TileService::load_tile(float lat, float lon, unsigned zoom) { return std::string(); }
