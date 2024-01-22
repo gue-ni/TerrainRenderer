@@ -1,4 +1,5 @@
 #include "Window.h"
+#include "../gfx/gl.h"
 
 Window::Window(size_t width, size_t height, const std::string& name) : m_width(width), m_height(height)
 {
@@ -15,8 +16,7 @@ Window::Window(size_t width, size_t height, const std::string& name) : m_width(w
   glewExperimental = GL_TRUE;
   glewInit();
 
-  glEnable(GL_DEPTH_TEST);  
-  glDepthFunc(GL_LESS);
+  GL_CALL(glEnable(GL_DEPTH_TEST));  
 
   //glEnable(GL_CULL_FACE);  
   //glCullFace(GL_FRONT);  

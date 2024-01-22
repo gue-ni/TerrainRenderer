@@ -33,6 +33,11 @@ void main() {
   float height = altitude_from_color(height_sample);
   world_pos.y = height * u_height_scaling_factor;
 #endif
+#if 1
+  if (uv.x < 0.0 || uv.x > 1.0) {
+    world_pos.y = -40;
+  }
+#endif
 
   gl_Position = proj * view * world_pos;
 }
@@ -88,13 +93,11 @@ constexpr TileName ROOT_TILE_5 = {
 TerrainRenderer::TerrainRenderer(const glm::vec2& min, const glm::vec2& max)
     : m_shader(std::make_unique<ShaderProgram>(shader_vert, shader_frag)),
       m_root_tile(ROOT_TILE_3),
-      m_chunk(16, 1.0f),
+      m_chunk(8, 1.0f),
       m_bounds({min, max}),
       m_tile_cache(m_root_tile, MAX_ZOOM_LEVEL)
 {
   float tile_width = wms::tile_width(wms::tiley2lat(m_root_tile.y, m_root_tile.zoom), m_root_tile.zoom);
-  std::cout << "width " << tile_width << std::endl;
-
 
   const float min_elevation = 0.0f;
   const float max_elevation = 8191.0f;
@@ -122,6 +125,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
   m_shader->bind();
   m_shader->set_uniform("view", camera.get_view_matrix());
+  //m_shader->set_uniform("view", camera.tmp);
   m_shader->set_uniform("proj", camera.get_projection_matrix());
   m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
 

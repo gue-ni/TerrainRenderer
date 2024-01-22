@@ -3,25 +3,15 @@
 #include <algorithm>
 #include <iostream>
 
+#define PADDING 0
+
 Chunk::Chunk(uint vertex_count, float size)
     : m_vao(std::make_unique<VertexArrayObject>()),
       m_vbo(std::make_unique<VertexBuffer>()),
       m_ebo(std::make_unique<ElementBuffer>())
 {
   assert(vertex_count >= 2);
-#if 0
-  const std::vector<ChunkVertex> vertices = {
-      {{0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},  // bottom left
-      {{0.5f, 0.0f, 0.0f}, {1.0f, 0.0f}},  // bottom right
-      {{0.0f, 0.5f, 0.0f}, {0.0f, 1.0f}},  // top left
-      {{0.5f, 0.5f, 0.0f}, {1.0f, 1.0f}},  // top right
-  };
 
-  const std::vector<unsigned> indices = {
-    0, 1, 3, 
-    3, 2, 0
-  };
-#else
   std::vector<ChunkVertex> vertices;
   std::vector<uint> indices;
 
@@ -30,34 +20,39 @@ Chunk::Chunk(uint vertex_count, float size)
 
   // add padding for skirts
   uint vertex_count_no_padding = vertex_count;
+#if PADDING
   vertex_count += 2;
+#endif
 
-  uint max_vertex = vertex_count - 1; // with padding
+  uint max_vertex = vertex_count - 1;  // with padding
   uint max_clamped_vertex = max_vertex - 1;
 
   const glm::vec2 INVALID = glm::vec2(-1, -1);
 
   for (uint y = 0; y < vertex_count; ++y) {
     for (uint x = 0; x < vertex_count; ++x) {
-
       bool on_border = false;
+
+#if PADDING
       if (x == 0 || y == 0 || x == max_vertex || y == max_vertex) {
         on_border = true;
       }
 
-#if 1
       auto tmp_x = glm::clamp(x, 1U, max_clamped_vertex);
       tmp_x = map_range(tmp_x, 1u, max_clamped_vertex, 0u, vertex_count_no_padding - 1u);
 
       auto tmp_y = glm::clamp(y, 1U, max_clamped_vertex);
       tmp_y = map_range(tmp_y, 1u, max_clamped_vertex, 0u, vertex_count_no_padding - 1u);
+#else
+      auto tmp_x = x;
+      auto tmp_y = y;
 #endif
 
       auto pos = glm::vec3(tmp_x * stride, 0.0f, tmp_y * stride);
       auto uv = glm::vec2(pos.x, pos.z) / dimensions;
 
       if (on_border) {
-        uv = INVALID; // TODO: do something smarter
+        uv = INVALID;  // TODO: do something smarter
       }
 
       vertices.push_back({pos, uv});
@@ -77,8 +72,6 @@ Chunk::Chunk(uint vertex_count, float size)
                                     });
     }
   }
-
-#endif
 
   m_vertex_count = static_cast<GLsizei>(indices.size());
 
