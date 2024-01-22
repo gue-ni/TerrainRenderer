@@ -19,22 +19,26 @@ std::string TileService::download_and_save(float lat, float lon, unsigned zoom)
   unsigned x = wms::lon2tilex(lon, zoom);
   unsigned y = wms::lat2tiley(lat, zoom);
   std::string url;
+  const unsigned num_y_tiles = (1 << zoom);
 
   switch (m_url_pattern) {
     case ZXY: {
-      unsigned num_y_tiles = (1 << zoom);
-      url = std::format("{}/{}/{}/{}.{}", m_url, zoom, x, (num_y_tiles - y - 1), m_filetype);
+      url = std::format("{}/{}/{}/{}{}", m_url, zoom, x, (num_y_tiles - y - 1), m_filetype);
+      break;
+    }
+    case ZYX: {
+      url = std::format("{}/{}/{}/{}{}", m_url, zoom, (num_y_tiles - y - 1), x, m_filetype);
       break;
     }
     case ZYX_Y_SOUTH: {
-      url = std::format("{}/{}/{}/{}.{}", m_url, zoom, y, x, m_filetype);
+      url = std::format("{}/{}/{}/{}{}", m_url, zoom, y, x, m_filetype);
       break;
     }
     default:
       assert(false);
   }
 
-  std::string filename = std::format("{}/{}-{}-{}.{}", m_cache_location, zoom, x, y, m_filetype);
+  std::string filename = std::format("{}/{}-{}-{}{}", m_cache_location, zoom, x, y, m_filetype);
 
   if (std::filesystem::exists(filename)) {
     std::cout << "Already downloaded " << std::quoted(filename) << std::endl;
@@ -51,3 +55,4 @@ std::string TileService::download_and_save(float lat, float lon, unsigned zoom)
 
   return filename;
 }
+

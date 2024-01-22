@@ -10,11 +10,38 @@ TileCache::TileCache(const TileName& root_tile, unsigned max_zoom_level)
     : m_root_tile(root_tile),
       m_max_zoom_level(max_zoom_level),
       m_ortho_tile_service("https://gataki.cg.tuwien.ac.at/raw/basemap/tiles", TileService::UrlPattern::ZYX_Y_SOUTH,
-                           "jpeg"),
-      m_height_tile_service("https://alpinemaps.cg.tuwien.ac.at/tiles/alpine_png", TileService::UrlPattern::ZXY, "png")
+                           ".jpeg"),
+      m_height_tile_service("https://alpinemaps.cg.tuwien.ac.at/tiles/alpine_png", TileService::UrlPattern::ZXY, ".png")
 
 {
-  // m_debug_texture = load_texture_from_disk(m_root_tile);
+#if 1
+  std::string path = "debug.png";
+  //std::string path = "debug2.jpeg";
+  //std::string path = "cache/13-4395-2868.jpeg";
+  Image image;
+  image.read(path);
+  assert(image.loaded());
+
+  auto filter = GL_LINEAR;
+  m_debug_texture = std::make_unique<Texture>();
+  m_debug_texture->bind();
+  m_debug_texture->set_parameter(GL_TEXTURE_MIN_FILTER, filter);
+  m_debug_texture->set_parameter(GL_TEXTURE_MAG_FILTER, filter);
+  m_debug_texture->set_parameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  m_debug_texture->set_parameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  GLint internalformat = GL_RGB;
+  GLint format = GL_RGB;
+          glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
+
+  glTexImage2D(m_debug_texture->target, 0, internalformat, image.width(), image.height(), 0, format, GL_UNSIGNED_BYTE,
+               image.data());
+          glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
+
+  m_debug_texture->generate_mipmap();
+  m_debug_texture->unbind();
+#endif
 }
 
 Texture* TileCache::get_tile_texture(const glm::vec2& point, unsigned lod, const TileType& tile_type)
@@ -72,17 +99,23 @@ std::unique_ptr<Texture> TileCache::load_texture_from_disk(float lat, float lon,
   texture->set_parameter(GL_TEXTURE_MAG_FILTER, filter);
   texture->set_parameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   texture->set_parameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-#if 1
+#if 0
   texture->set_image(image);
 #else
   GLint internalformat = GL_RGB;
   GLint format = GL_RGB;
 
+          glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
+
   glTexImage2D(texture->target, 0, internalformat, image.width(), image.height(), 0, format, GL_UNSIGNED_BYTE,
                image.data());
+          glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
+
 #endif
 
   texture->generate_mipmap();
+  texture->unbind();
 
   return texture;
 }

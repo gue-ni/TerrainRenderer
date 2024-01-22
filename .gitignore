@@ -6,3 +6,4 @@ x64/
 *.jpeg
 *.jpg
 *.png
+cache/*

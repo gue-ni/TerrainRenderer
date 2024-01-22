@@ -5,12 +5,14 @@ Game::Game(size_t width, size_t height)
 {
   // glEnable(GL_CULL_FACE);
 
+  SDL_ShowCursor(SDL_FALSE);
   SDL_CaptureMouse(SDL_TRUE);
+  SDL_SetRelativeMouseMode(SDL_TRUE);
 
   float fov = 45.0f;
   auto projection = glm::perspective(glm::radians(fov), float(width) / float(height), 0.01f, 10000.0f);
   m_camera.set_projection_matrix(projection);
-  m_camera.set_local_position(glm::vec3(0.0f, 10.f, 0.0f));
+  m_camera.set_local_position(glm::vec3(0.0f, 100.f, 0.0f));
 }
 
 void Game::render()
@@ -94,7 +96,7 @@ void Game::read_input()
   auto forward = m_camera.get_local_z_axis();
   auto position = m_camera.get_local_position();
 
-  float speed = 0.01f;
+  float speed = 0.05f;
 
   if (key_states[SDL_SCANCODE_W]) {
     position -= forward * speed;

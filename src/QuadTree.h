@@ -9,7 +9,7 @@
 
 struct Bounds {
   glm::vec2 min{}, max{};
-  Bounds(const glm::vec2& min_, const glm::vec2& max_) : min(min_), max(max_) {}
+  Bounds(const glm::vec2& min_, const glm::vec2& max_) : min{min_}, max{max_} {}
   glm::vec2 size() const { return max - min; }
   glm::vec2 half_size() const { return size() / 2.0f; }
   glm::vec2 center() const { return min + half_size(); }

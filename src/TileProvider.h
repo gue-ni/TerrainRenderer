@@ -13,6 +13,7 @@ class TileService
  public:
   enum UrlPattern {
     ZXY,
+    ZYX,
     ZYX_Y_SOUTH,
   };
 
