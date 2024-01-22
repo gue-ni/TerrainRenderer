@@ -53,6 +53,13 @@ inline TileName to_tilename(float lat, float lon, unsigned zoom) {
   return {.zoom = zoom, .x = x, .y = y};
 }
 
+// width of tile in meters
+inline float tile_width(float lat, unsigned zoom)
+{
+  const float C = 40075016.686f; 
+  return std::abs(C * std::cos(lat) / (1 << zoom));
+}
+
 };  // namespace wms
 
 enum TileType {

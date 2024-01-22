@@ -92,11 +92,22 @@ TerrainRenderer::TerrainRenderer(const glm::vec2& min, const glm::vec2& max)
       m_bounds({min, max}),
       m_tile_cache(m_root_tile, MAX_ZOOM_LEVEL)
 {
+  float tile_width = wms::tile_width(wms::tiley2lat(m_root_tile.y, m_root_tile.zoom), m_root_tile.zoom);
+  std::cout << "width " << tile_width << std::endl;
+
+
+  const float min_elevation = 0.0f;
+  const float max_elevation = 8191.0f;
+
+  float width = m_bounds.size().x;
+
+  float scaling_ratio = width / tile_width;
+
+  m_height_scaling_factor = (max_elevation - min_elevation) * scaling_ratio;
 }
 
 void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 {
-
   const float min_node_size = 0.02f;
   const uint max_depth = MAX_ZOOM_LEVEL - m_root_tile.zoom;
   const auto terrain_center = glm::clamp(center, m_bounds.min, m_bounds.max);
@@ -112,8 +123,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_shader->bind();
   m_shader->set_uniform("view", camera.get_view_matrix());
   m_shader->set_uniform("proj", camera.get_projection_matrix());
-  m_shader->set_uniform("u_height_scaling_factor", 100.0f);
-
+  m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
 
   for (auto* tile : tiles) {
     Texture *heightmap = nullptr, *albedo = nullptr;

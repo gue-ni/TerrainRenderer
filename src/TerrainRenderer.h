@@ -24,6 +24,7 @@ class TerrainRenderer
   Chunk m_chunk;
   Bounds m_bounds;
   TileCache m_tile_cache;
+  float m_height_scaling_factor;
 
   // convert from world coordinate in range m_bounds to [0, 1]
   glm::vec2 to_uv(const glm::vec2& point);
