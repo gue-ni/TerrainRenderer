@@ -3,8 +3,5 @@ libraries/
 x64/
 *.filters
 *.user
-*.jpeg
-*.jpg
-*.png
 *.mp4
 cache/*
