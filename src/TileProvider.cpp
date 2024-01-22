@@ -17,7 +17,6 @@ Image LocalTileProvider::get_tile(unsigned zoom, unsigned x, unsigned y)
   return image;
 }
 
-#if 1
 #include <cpr/cpr.h>
 
 WebTileProvider::WebTileProvider()
@@ -29,7 +28,7 @@ WebTileProvider::WebTileProvider()
 
 std::string WebTileProvider::download_and_save(unsigned zoom, unsigned x, unsigned y)
 {
-#if 1
+#if 0
   // albedo
   const std::string filetype = "jpeg";
   const std::string host = "https://gataki.cg.tuwien.ac.at/raw/basemap/tiles";
@@ -63,4 +62,3 @@ std::string WebTileProvider::download_and_save(unsigned zoom, unsigned x, unsign
 
   return filename;
 }
-#endif
