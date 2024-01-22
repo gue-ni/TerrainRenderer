@@ -24,9 +24,14 @@ uniform sampler2D u_heightmap_texture;
 
 void main() {
   uv = a_tex;
+  vec4 world_pos = model * vec4(a_pos, 1.0);
+
+#if 0
   vec4 height_sample = texture(u_heightmap_texture, uv);
   float height = altitude_from_color(height_sample);
-  vec4 world_pos = model * vec4(a_pos, 1.0);
+  world_pos.y = height * 10;
+#endif
+
   gl_Position = proj * view * world_pos;
 }
 )";
@@ -104,9 +109,12 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_shader->set_uniform("proj", camera.get_projection_matrix());
 
   for (auto* tile : tiles) {
-    Texture* albedo = m_tile_cache.get_tile_texture(to_uv(tile->center()), tile->depth);
+    Texture *heightmap = nullptr, *albedo = nullptr;
 
-    Texture* heightmap = albedo;
+    albedo = m_tile_cache.get_tile_texture(to_uv(tile->center()), tile->depth, TileType::ORTHO);
+    heightmap = m_tile_cache.get_tile_texture(to_uv(tile->center()), tile->depth, TileType::HEIGHT);
+
+    // albedo = heightmap;
 
     if (albedo) {
       albedo->bind(0);

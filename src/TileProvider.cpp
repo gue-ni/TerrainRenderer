@@ -1,7 +1,7 @@
 #include "TileProvider.h"
+#include "TileCache.h"
 
 #include <filesystem>
-
 
 Image LocalTileProvider::get_tile(unsigned zoom, unsigned x, unsigned y)
 {
@@ -68,4 +68,40 @@ TileService::TileService(const std::string& url, const UrlPattern& url_pattern, 
 {
 }
 
-std::string TileService::load_tile(float lat, float lon, unsigned zoom) { return std::string(); }
+std::string TileService::download_and_save(float lat, float lon, unsigned zoom)
+{
+  unsigned x = wms::lon2tilex(lon, zoom);
+  unsigned y = wms::lat2tiley(lat, zoom);
+  std::string url;
+
+  switch (m_url_pattern) {
+    case ZXY: {
+      unsigned num_y_tiles = (1 << zoom);
+      url = std::format("{}/{}/{}/{}.{}", m_url, zoom, x, (num_y_tiles - y - 1), m_file_extension);
+      break;
+    }
+    case ZYX_Y_SOUTH: {
+      url = std::format("{}/{}/{}/{}.{}", m_url, zoom, y, x, m_file_extension);
+      break;
+    }
+    default:
+      assert(false);
+  }
+
+  std::string filename = std::format("{}/{}-{}-{}.{}", m_cache_location, zoom, x, y, m_file_extension);
+
+  if (std::filesystem::exists(filename)) {
+    std::cout << "Already downloaded " << std::quoted(filename) << std::endl;
+    return filename;
+  }
+
+  std::ofstream of(filename, std::ios::binary);
+  cpr::Response r = cpr::Download(of, cpr::Url{url});
+
+  if (r.status_code != 200) {
+    std::cerr << "Could not get tile from " << std::quoted(url) << std::endl;
+    std::filesystem::remove(filename);
+  }
+
+  return filename;
+}

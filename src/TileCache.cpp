@@ -7,12 +7,17 @@
 #include "Common.h"
 
 TileCache::TileCache(const TileName& root_tile, unsigned max_zoom_level)
-    : m_root_tile(root_tile), m_max_zoom_level(max_zoom_level)
+    : m_root_tile(root_tile),
+      m_max_zoom_level(max_zoom_level),
+      m_ortho_tile_service("https://gataki.cg.tuwien.ac.at/raw/basemap/tiles", TileService::UrlPattern::ZYX_Y_SOUTH,
+                           "jpeg"),
+      m_height_tile_service("https://alpinemaps.cg.tuwien.ac.at/tiles/alpine_png", TileService::UrlPattern::ZXY, "png")
+
 {
-  m_debug_texture = load_texture_from_disk(m_root_tile);
+  // m_debug_texture = load_texture_from_disk(m_root_tile);
 }
 
-Texture* TileCache::get_tile_texture(const glm::vec2& point, unsigned lod)
+Texture* TileCache::get_tile_texture(const glm::vec2& point, unsigned lod, const TileType& tile_type)
 {
   unsigned zoom = m_root_tile.zoom + lod;
   assert(zoom <= m_max_zoom_level);
@@ -36,14 +41,21 @@ Texture* TileCache::get_tile_texture(const glm::vec2& point, unsigned lod)
   tile_name.x = wms::lon2tilex(lon, tile_name.zoom);
   tile_name.y = wms::lat2tiley(lat, tile_name.zoom);
 
-  return load_texture_from_cache(tile_name);
+  return load_texture_from_cache(lat, lon, zoom, tile_type);
 }
 
-std::unique_ptr<Texture> TileCache::load_texture_from_disk(const TileName& tile)
+std::unique_ptr<Texture> TileCache::load_texture_from_disk(float lat, float lon, unsigned zoom,
+                                                           const TileType& tile_type)
 {
-  auto tile_path = m_tile_service.download_and_save(tile.zoom, tile.x, tile.y);
+  std::string tile_path;
 
-  // Image image = m_provider.get_tile(tile.zoom, tile.x, tile.y);
+  if (tile_type == TileType::ORTHO) {
+    tile_path = m_ortho_tile_service.download_and_save(lat, lon, zoom);
+  } else if (tile_type == TileType::HEIGHT) {
+    tile_path = m_height_tile_service.download_and_save(lat, lon, zoom);
+  } else {
+    assert(false);
+  }
 
   Image image;
   image.read(tile_path);
@@ -60,34 +72,38 @@ std::unique_ptr<Texture> TileCache::load_texture_from_disk(const TileName& tile)
   texture->set_parameter(GL_TEXTURE_MAG_FILTER, filter);
   texture->set_parameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   texture->set_parameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  // texture->set_image(image);
-
+#if 1
+  texture->set_image(image);
+#else
   GLint internalformat = GL_RGB;
   GLint format = GL_RGB;
 
   glTexImage2D(texture->target, 0, internalformat, image.width(), image.height(), 0, format, GL_UNSIGNED_BYTE,
                image.data());
+#endif
 
   texture->generate_mipmap();
 
   return texture;
 }
 
-Texture* TileCache::load_texture_from_cache(const TileName& tile_name)
+// Texture* TileCache::load_texture_from_cache(const TileName& tile_name)
+Texture* TileCache::load_texture_from_cache(float lat, float lon, unsigned zoom, const TileType& tile_type)
 {
-  const size_t max_cache_size = 50;
+#if 0
+  const size_t max_cache_size = 100;
   if (m_cache.size() > max_cache_size) {
     // TODO: only cleanup the ones not accessed recently
     m_cache.clear();
   }
+#endif
 
-  std::string name = tile_name.to_string();
+  TileName tile_name = wms::to_tilename(lat, lon, zoom);
+  std::string name = tile_name.to_string() + "+" + std::to_string(tile_type);
 
-  if (!m_cache.contains(name)) {
-    m_cache[name] = load_texture_from_disk(tile_name);
-    std::cout << "Cache size: " << m_cache.size() << std::endl;
+  if (!m_gpu_cache.contains(name)) {
+    m_gpu_cache[name] = load_texture_from_disk(lat, lon, zoom, tile_type);
   }
 
-  return m_cache[name].get();
+  return m_gpu_cache[name].get();
 }
