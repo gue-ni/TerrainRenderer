@@ -47,29 +47,46 @@ inline float tiley2lat(int y, int z)
   return 180.0f / PI * atan(0.5f * (exp(n) - exp(-n)));
 }
 
+inline TileName to_tilename(float lat, float lon, unsigned zoom) {
+  unsigned x = wms::lon2tilex(lon, zoom);
+  unsigned y = wms::lat2tiley(lat, zoom);
+  return {.zoom = zoom, .x = x, .y = y};
+}
+
+// width of tile in meters
+inline float tile_width(float lat, unsigned zoom)
+{
+  const float C = 40075016.686f; 
+  return std::abs(C * std::cos(lat) / (1 << zoom));
+}
+
 };  // namespace wms
+
+enum TileType {
+  ORTHO, HEIGHT
+};
 
 class TileCache
 {
  public:
-  TileCache(const glm::vec2& min, const glm::vec2& max, const TileName& root_tile, unsigned max_zoom_level);
+  TileCache(const TileName& root_tile, unsigned max_zoom_level);
 
   Texture* get_debug_texture() { return m_debug_texture.get(); }
 
   // get the tile that contains point at a specific level of detail
-  Texture* get_tile_texture(const glm::vec2& point, unsigned lod = 0);
+  Texture* get_tile_texture(const glm::vec2& point, unsigned lod = 0, const TileType& tile_type = TileType::ORTHO);
 
  private:
-  const glm::vec2 m_min, m_max;
+  //const glm::vec2 m_min, m_max;
   const TileName m_root_tile;
   const unsigned m_max_zoom_level;
 
-  LocalTileProvider m_provider;  // TODO: make this generic
-  WebTileProvider m_tile_service;
+  TileService m_ortho_tile_service;
+  TileService m_height_tile_service;
 
   std::unique_ptr<Texture> m_debug_texture{nullptr};
-  std::unordered_map<std::string, std::unique_ptr<Texture>> m_cache;
+  std::unordered_map<std::string, std::unique_ptr<Texture>> m_gpu_cache;
 
-  std::unique_ptr<Texture> load_texture_from_disk(const TileName&);
-  Texture* load_texture_from_cache(const TileName&);
+  std::unique_ptr<Texture> load_texture_from_disk(float lat, float lon, unsigned zoom, const TileType& tile_type);
+  Texture* load_texture_from_cache(float lat, float lon, unsigned zoom, const TileType& tile_type);
 };

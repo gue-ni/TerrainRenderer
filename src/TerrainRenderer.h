@@ -15,6 +15,7 @@ class TerrainRenderer
  public:
   TerrainRenderer(const glm::vec2& min, const glm::vec2& max);
   void render(const Camera& camera, const glm::vec2& center);
+  Bounds bounds() const { return m_bounds; }
 
   bool wireframe{false};
 
@@ -24,4 +25,8 @@ class TerrainRenderer
   Chunk m_chunk;
   Bounds m_bounds;
   TileCache m_tile_cache;
+  float m_height_scaling_factor;
+
+  // convert from world coordinate in range m_bounds to [0, 1]
+  glm::vec2 to_uv(const glm::vec2& point);
 };
