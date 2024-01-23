@@ -83,6 +83,7 @@ class TileCache
   Texture* get_debug_texture() { return m_debug_texture.get(); }
 
   // get the tile that contains point at a specific level of detail
+  // point is in range [0, 1] relative to the root tile
   Texture* get_tile_texture(const glm::vec2& point, unsigned lod = 0, const TileType& tile_type = TileType::ORTHO);
 
   void invalidate_gpu_cache();
@@ -97,8 +98,6 @@ class TileCache
   std::unique_ptr<Texture> m_debug_texture{nullptr};
 
   std::unordered_map<std::string, std::tuple<CacheInfo, std::unique_ptr<Texture>>> m_gpu_cache;
-
-  std::unordered_map<std::string, std::tuple<CacheInfo, std::unique_ptr<Image>>> m_ram_cache;  // TODO
 
   std::unique_ptr<Texture> load_texture_from_disk(float lat, float lon, unsigned zoom, const TileType& tile_type);
   Texture* load_texture_from_cache(float lat, float lon, unsigned zoom, const TileType& tile_type);

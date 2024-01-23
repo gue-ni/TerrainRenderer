@@ -41,6 +41,7 @@ TileCache::TileCache(const TileName& root_tile, unsigned max_zoom_level)
 
   m_debug_texture->generate_mipmap();
   m_debug_texture->unbind();
+#else
 #endif
 }
 

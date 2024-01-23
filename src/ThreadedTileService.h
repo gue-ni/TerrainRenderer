@@ -5,10 +5,10 @@
 #include <mutex>
 #include <queue>
 #include <thread>
+#include <tuple>
+#include <unordered_map>
 
 #include "TileService.h"
-
-
 
 class ThreadedTileService : public TileService
 {
@@ -18,8 +18,9 @@ class ThreadedTileService : public TileService
   void start_worker_thread();
 
  private:
-      std::thread m_thread;
-    std::queue<std::string> m_tasks; // queue of urls to download
-    std::mutex m_mutex;
-    std::condition_variable m_condition;
+  std::thread m_thread;
+  std::queue<std::string> m_tasks;  // queue of urls to download
+  std::mutex m_mutex;
+  std::condition_variable m_condition;
+  std::unordered_map<std::string, std::unique_ptr<Image>> m_ram_cache;  // TODO
 };

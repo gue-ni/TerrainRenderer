@@ -101,10 +101,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   const auto terrain_center = glm::clamp(center, m_bounds.min, m_bounds.max);
 
   QuadTree quad_tree(m_bounds.min, m_bounds.max, min_node_size, max_depth);
-
   quad_tree.insert(terrain_center);
-
-  auto tiles = quad_tree.get_children();
 
   if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -113,13 +110,12 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_shader->set_uniform("proj", camera.get_projection_matrix());
   m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
 
-  auto start = std::chrono::system_clock::now();
+  // auto start = std::chrono::system_clock::now();
 
-  for (auto* tile : tiles) {
-    Texture *heightmap = nullptr, *albedo = nullptr;
-
-    albedo = m_tile_cache.get_tile_texture(to_uv(tile->center()), tile->depth, TileType::ORTHO);
-    heightmap = m_tile_cache.get_tile_texture(to_uv(tile->center()), tile->depth, TileType::HEIGHT);
+#if 0
+  for (auto* tile : quad_tree.get_children()) {
+    Texture* albedo = m_tile_cache.get_tile_texture(map_to_0_1(tile->center()), tile->depth, TileType::ORTHO);
+    Texture* heightmap = m_tile_cache.get_tile_texture(map_to_0_1(tile->center()), tile->depth, TileType::HEIGHT);
 
     if (albedo) {
       albedo->bind(0);
@@ -133,23 +129,48 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
     m_chunk.draw(m_shader.get(), tile->min, tile->max);
   }
+#else
+  quad_tree.traverse([this](const Node* tile) -> bool {
+    if (tile->is_leaf) {
+      // check if tile exists in gpu cache
+      // if yes, render it
+      // if no, request it and backtrack to parent. the root node has to be requested
 
-  auto end = std::chrono::system_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+      auto uv = map_to_0_1(tile->center());
+      Texture* albedo = m_tile_cache.get_tile_texture(uv, tile->depth, TileType::ORTHO);
+      Texture* heightmap = m_tile_cache.get_tile_texture(uv, tile->depth, TileType::HEIGHT);
 
-  std::cout << duration.count() << std::endl;
+      if (albedo) {
+        albedo->bind(0);
+        m_shader->set_uniform("u_albedo_texture", 0);
+      }
 
-  if (duration.count() > 5) {
-    int x = 0;
-  }
+      if (heightmap) {
+        heightmap->bind(1);
+        m_shader->set_uniform("u_heightmap_texture", 1);
+      }
 
+      m_chunk.draw(m_shader.get(), tile->min, tile->max);
+    }
+
+    return true;
+  });
+#endif
+
+  // auto end = std::chrono::system_clock::now();
+  // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  // std::cout << duration.count() << std::endl;
+
+  // if (duration.count() > 5) {
+  // int x = 0;
+  // }
 
   m_tile_cache.invalidate_gpu_cache();
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-glm::vec2 TerrainRenderer::to_uv(const glm::vec2& point)
+glm::vec2 TerrainRenderer::map_to_0_1(const glm::vec2& point)
 {
   return map_range(point, m_bounds.min, m_bounds.max, glm::vec2(0.0f), glm::vec2(1.0f));
 }

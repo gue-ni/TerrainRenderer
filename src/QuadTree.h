@@ -35,6 +35,12 @@ class QuadTree
   void insert(const glm::vec2& point);
   std::vector<Node*> get_children();
 
+  template <typename Func>
+  void traverse(Func func) const
+  {
+    traverse(m_root, func);
+  }
+
  private:
   const float MIN_NODE_SIZE;
   const unsigned MAX_DEPTH;
@@ -42,4 +48,14 @@ class QuadTree
   void split(std::unique_ptr<Node>& node);
   void insert(std::unique_ptr<Node>& child, const glm::vec2& point);
   void collect(std::unique_ptr<Node>& node, std::vector<Node*>& children);
+
+  template <typename Func>
+  void traverse(const std::unique_ptr<Node>& node, Func func) const
+  {
+    if (node && func(node.get()) && !node->is_leaf) {
+      for (const auto& child : node->children) {
+        traverse(child, func);
+      }
+    }
+  }
 };
