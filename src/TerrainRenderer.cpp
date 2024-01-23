@@ -112,24 +112,6 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
   // auto start = std::chrono::system_clock::now();
 
-#if 0
-  for (auto* tile : quad_tree.get_children()) {
-    Texture* albedo = m_tile_cache.get_tile_texture(map_to_0_1(tile->center()), tile->depth, TileType::ORTHO);
-    Texture* heightmap = m_tile_cache.get_tile_texture(map_to_0_1(tile->center()), tile->depth, TileType::HEIGHT);
-
-    if (albedo) {
-      albedo->bind(0);
-      m_shader->set_uniform("u_albedo_texture", 0);
-    }
-
-    if (heightmap) {
-      heightmap->bind(1);
-      m_shader->set_uniform("u_heightmap_texture", 1);
-    }
-
-    m_chunk.draw(m_shader.get(), tile->min, tile->max);
-  }
-#else
   quad_tree.traverse([this](const Node* tile) -> bool {
     if (tile->is_leaf) {
       // check if tile exists in gpu cache
@@ -155,7 +137,6 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
     return true;
   });
-#endif
 
   // auto end = std::chrono::system_clock::now();
   // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
