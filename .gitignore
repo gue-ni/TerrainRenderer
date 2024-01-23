@@ -1,7 +1,6 @@
 .vs/
 libraries/
 x64/
-*.filters
 *.user
 *.mp4
 cache/*

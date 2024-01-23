@@ -104,14 +104,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\jakob\Documents\Projects\TerrainRenderer\libraries\cpr\build\_deps\curl-src\include;C:\Users\jakob\Documents\Projects\TerrainRenderer\libraries\cpr\include;C:\Users\jakob\Documents\Projects\TerrainRenderer\gfx;$(ProjectDir)\libraries\glew-2.1.0\include;$(ProjectDir)\libraries\SDL2\include;$(ProjectDir)\libraries\glm-0.9.9.8\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)\libraries\cpr\build\_deps\curl-src\include;$(ProjectDir)\libraries\cpr\include;$(ProjectDir)\gfx;$(ProjectDir)\libraries\glew-2.1.0\include;$(ProjectDir)\libraries\SDL2\include;$(ProjectDir)\libraries\glm-0.9.9.8\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\jakob\Documents\Projects\TerrainRenderer\libraries\cpr\build\bin\Debug;C:\Users\jakob\Documents\Projects\TerrainRenderer\libraries\cpr\build\lib\Debug;C:\Users\jakob\Documents\Projects\TerrainRenderer\libraries\glew-2.1.0\lib\Release\x64;C:\Users\jakob\Documents\Projects\TerrainRenderer\libraries\SDL2\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32.lib;opengl32.lib;cpr.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)\libraries\cpr\build\lib\Debug;$(ProjectDir)\libraries\glew-2.1.0\lib\Release\x64;$(ProjectDir)\libraries\SDL2\lib\x64;%(AdditionalDependencies)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32.lib;opengl32.lib;cpr.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -122,12 +122,16 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)\libraries\cpr\build\_deps\curl-src\include;$(ProjectDir)\libraries\cpr\include;$(ProjectDir)\gfx;$(ProjectDir)\libraries\glew-2.1.0\include;$(ProjectDir)\libraries\SDL2\include;$(ProjectDir)\libraries\glm-0.9.9.8\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir)\libraries\cpr\build\lib\Debug;$(ProjectDir)\libraries\glew-2.1.0\lib\Release\x64;$(ProjectDir)\libraries\SDL2\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32.lib;opengl32.lib;cpr.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

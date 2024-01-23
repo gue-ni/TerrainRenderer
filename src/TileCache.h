@@ -5,10 +5,12 @@
 */
 #pragma once
 
+#include <chrono>
 #include <format>
 #include <memory>
 #include <numbers>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 
 #include "../gfx/gfx.h"
@@ -47,7 +49,8 @@ inline float tiley2lat(int y, int z)
   return 180.0f / PI * atan(0.5f * (exp(n) - exp(-n)));
 }
 
-inline TileName to_tilename(float lat, float lon, unsigned zoom) {
+inline TileName to_tilename(float lat, float lon, unsigned zoom)
+{
   unsigned x = wms::lon2tilex(lon, zoom);
   unsigned y = wms::lat2tiley(lat, zoom);
   return {.zoom = zoom, .x = x, .y = y};
@@ -56,14 +59,19 @@ inline TileName to_tilename(float lat, float lon, unsigned zoom) {
 // width of tile in meters
 inline float tile_width(float lat, unsigned zoom)
 {
-  const float C = 40075016.686f; 
+  const float C = 40075016.686f;
   return std::abs(C * std::cos(lat) / (1 << zoom));
 }
 
 };  // namespace wms
 
-enum TileType {
-  ORTHO, HEIGHT
+enum TileType { ORTHO, HEIGHT };
+
+using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
+
+struct CacheInfo {
+  TimePoint last_accessed;
+  void accessed() { last_accessed = std::chrono::system_clock::now(); }
 };
 
 class TileCache
@@ -76,8 +84,9 @@ class TileCache
   // get the tile that contains point at a specific level of detail
   Texture* get_tile_texture(const glm::vec2& point, unsigned lod = 0, const TileType& tile_type = TileType::ORTHO);
 
+  void invalidate_gpu_cache();
+
  private:
-  //const glm::vec2 m_min, m_max;
   const TileName m_root_tile;
   const unsigned m_max_zoom_level;
 
@@ -85,7 +94,10 @@ class TileCache
   TileService m_height_tile_service;
 
   std::unique_ptr<Texture> m_debug_texture{nullptr};
-  std::unordered_map<std::string, std::unique_ptr<Texture>> m_gpu_cache;
+
+  std::unordered_map<std::string, std::tuple<CacheInfo, std::unique_ptr<Texture>>> m_gpu_cache;
+
+  std::unordered_map<std::string, std::tuple<CacheInfo, std::unique_ptr<Image>>> m_ram_cache;  // TODO
 
   std::unique_ptr<Texture> load_texture_from_disk(float lat, float lon, unsigned zoom, const TileType& tile_type);
   Texture* load_texture_from_cache(float lat, float lon, unsigned zoom, const TileType& tile_type);
