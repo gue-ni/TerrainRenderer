@@ -113,6 +113,8 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_shader->set_uniform("proj", camera.get_projection_matrix());
   m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
 
+  auto start = std::chrono::system_clock::now();
+
   for (auto* tile : tiles) {
     Texture *heightmap = nullptr, *albedo = nullptr;
 
@@ -131,6 +133,16 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
     m_chunk.draw(m_shader.get(), tile->min, tile->max);
   }
+
+  auto end = std::chrono::system_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+  std::cout << duration.count() << std::endl;
+
+  if (duration.count() > 5) {
+    int x = 0;
+  }
+
 
   m_tile_cache.invalidate_gpu_cache();
 

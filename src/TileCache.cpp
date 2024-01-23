@@ -91,7 +91,7 @@ void TileCache::invalidate_gpu_cache()
   }
 
   if (removed > 0) {
-    std::cout << "gpu cache size " << m_gpu_cache.size() << std::endl;
+    //std::cout << "gpu cache size " << m_gpu_cache.size() << std::endl;
   }
 }
 
@@ -149,10 +149,13 @@ Texture* TileCache::load_texture_from_cache(float lat, float lon, unsigned zoom,
   std::string name = tile_name.to_string() + "+" + std::to_string(tile_type);
 
   if (!m_gpu_cache.contains(name)) {
+    std::cout << "New in cache " << name << std::endl;
     CacheInfo info;
     info.accessed();
     auto texture = load_texture_from_disk(lat, lon, zoom, tile_type);
     m_gpu_cache[name] = std::make_tuple(info, std::move(texture));
+  } else {
+    //std::cout << "From gpu cache " << name << std::endl;
   }
 
   auto& [info, texture] = m_gpu_cache[name];

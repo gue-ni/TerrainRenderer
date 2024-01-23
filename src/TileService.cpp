@@ -41,7 +41,7 @@ std::string TileService::download_and_save(float lat, float lon, unsigned zoom)
   std::string filename = std::format("{}/{}-{}-{}{}", m_cache_location, zoom, x, y, m_filetype);
 
   if (std::filesystem::exists(filename)) {
-    // std::cout << "Already downloaded " << std::quoted(filename) << std::endl;
+    std::cout << "From disk " << std::quoted(filename) << std::endl;
     return filename;
   }
 
@@ -51,6 +51,8 @@ std::string TileService::download_and_save(float lat, float lon, unsigned zoom)
   if (r.status_code != 200) {
     std::cerr << "Could not get tile from " << std::quoted(url) << std::endl;
     std::filesystem::remove(filename);
+  } else {
+    std::cout << "From web " << std::quoted(url) << std::endl;
   }
 
   return filename;
