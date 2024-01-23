@@ -31,7 +31,8 @@ out vec4 FragColor;
 in vec2 uv;
 uniform sampler2D u_heightmap;
 void main() {
-  FragColor = vec4(uv, 0, 1);
+  //FragColor = vec4(uv, 0, 1);
+  FragColor = vec4(1,0,0,1);
 }
 )";
 
@@ -49,14 +50,14 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   // if changes are necessary, load new tiles
   // render tiles
 
-  const float min_node_size = 0.25f;
+  const float min_node_size = 0.05f;
   QuadTree quad_tree(m_bounds.min, m_bounds.max, min_node_size);
 
   quad_tree.insert(center);
 
   auto tiles = quad_tree.get_children();
 
-  std::cout << "Tile Count: " << tiles.size() << std::endl;
+  //std::cout << "Tile Count: " << tiles.size() << std::endl;
 
   if (m_wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 

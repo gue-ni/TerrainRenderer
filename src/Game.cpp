@@ -18,7 +18,7 @@ void Game::render()
 
   auto terrain_center = glm::vec2(0.5f, 0.0f);
 
-  m_terrain_renderer.set_wireframe(false);
+  m_terrain_renderer.set_wireframe(true);
   m_terrain_renderer.render(m_camera, m_last_click_location);
 
   SDL_GL_SwapWindow(m_window);
@@ -41,6 +41,22 @@ void Game::read_input()
     if (sdl_event.type == SDL_QUIT) {
       m_quit = true;
       break;
+    }
+
+    if (sdl_event.type == SDL_MOUSEMOTION) {
+
+      glm::vec2 click;
+      click.x = (float)sdl_event.motion.x / (float)m_width;
+      click.y = (float)sdl_event.motion.y / (float)m_height;
+      m_last_click_location = glm::vec2(-1.0f) + click * (glm::vec2(1.0f) - glm::vec2(-1.0f));
+        m_last_click_location = -glm::vec2(-m_last_click_location.x, m_last_click_location.y);
+
+
+
+
+    
+      //float delta_yaw = static_cast<float>(sdl_event.motion.xrel) * sensitivity;
+        //float delta_pitch = static_cast<float>(sdl_event.motion.yrel) * sensitivity;
     }
 
     if (sdl_event.type == SDL_MOUSEBUTTONDOWN) {
