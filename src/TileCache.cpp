@@ -71,7 +71,7 @@ Texture* TileCache::get_tile_texture(const glm::vec2& point, unsigned lod, const
   return load_texture_from_cache(lat, lon, zoom, tile_type);
 }
 
-void TileCache::invalidate_cache()
+void TileCache::invalidate_gpu_cache()
 {
   auto now = std::chrono::system_clock::now();
   const std::chrono::milliseconds max_duration(2000);  // TODO: find sensible value

@@ -84,7 +84,7 @@ class TileCache
   // get the tile that contains point at a specific level of detail
   Texture* get_tile_texture(const glm::vec2& point, unsigned lod = 0, const TileType& tile_type = TileType::ORTHO);
 
-  void invalidate_cache();
+  void invalidate_gpu_cache();
 
  private:
   const TileName m_root_tile;
