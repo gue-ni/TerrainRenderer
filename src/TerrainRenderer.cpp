@@ -116,7 +116,12 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
     if (tile->is_leaf) {
       // check if tile exists in gpu cache
       // if yes, render it
-      // if no, request it and backtrack to parent. the root node has to be requested
+      // if no, request it and backtrack to parent. try to render parent.  
+
+      // different approach:
+      // if tile is not in cache, request it and check if parent is in cache
+      // if parent is in cache, use it's texture but render only the correct
+      // cutout
 
       auto uv = map_to_0_1(tile->center());
       Texture* albedo = m_tile_cache.get_tile_texture(uv, tile->depth, TileType::ORTHO);
