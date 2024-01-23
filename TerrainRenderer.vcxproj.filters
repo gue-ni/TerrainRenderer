@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="src/Chunk.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="gfx/camera.cpp">
       <Filter>gfx</Filter>
     </ClCompile>
@@ -25,26 +22,26 @@
     <ClCompile Include="src/main.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src/QuadTree.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src/TerrainRenderer.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src/TileCache.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src/TileProvider.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src/Window.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src/Chunk.cpp">
+      <Filter>src\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="src/QuadTree.cpp">
+      <Filter>src\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="src/TerrainRenderer.cpp">
+      <Filter>src\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="src/TileCache.cpp">
+      <Filter>src\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="src/TileProvider.cpp">
+      <Filter>src\terrain</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src/Chunk.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="gfx/camera.h">
       <Filter>gfx</Filter>
     </ClInclude>
@@ -75,20 +72,23 @@
     <ClInclude Include="gfx/util.h">
       <Filter>gfx</Filter>
     </ClInclude>
-    <ClInclude Include="src/QuadTree.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src/TerrainRenderer.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src/TileCache.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src/TileProvider.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src/Window.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src/Chunk.h">
+      <Filter>src\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src/QuadTree.h">
+      <Filter>src\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src/TerrainRenderer.h">
+      <Filter>src\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src/TileCache.h">
+      <Filter>src\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src/TileProvider.h">
+      <Filter>src\terrain</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -97,6 +97,9 @@
     </Filter>
     <Filter Include="gfx">
       <UniqueIdentifier>{1e5f3463-bd47-4ecf-99f3-d379e5847c6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\terrain">
+      <UniqueIdentifier>{877a9738-a321-48e9-bdbb-aa7070c687b8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
