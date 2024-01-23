@@ -37,7 +37,10 @@
     <ClCompile Include="src/TileCache.cpp">
       <Filter>src\terrain</Filter>
     </ClCompile>
-    <ClCompile Include="src/TileProvider.cpp">
+    <ClCompile Include="src/TileService.cpp">
+      <Filter>src\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ThreadedTileService.cpp">
       <Filter>src\terrain</Filter>
     </ClCompile>
   </ItemGroup>
@@ -87,7 +90,10 @@
     <ClInclude Include="src/TileCache.h">
       <Filter>src\terrain</Filter>
     </ClInclude>
-    <ClInclude Include="src/TileProvider.h">
+    <ClInclude Include="src/TileService.h">
+      <Filter>src\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ThreadedTileService.h">
       <Filter>src\terrain</Filter>
     </ClInclude>
   </ItemGroup>

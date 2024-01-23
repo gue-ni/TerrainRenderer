@@ -1,4 +1,4 @@
-#include "TileProvider.h"
+#include "TileService.h"
 
 #include <cpr/cpr.h>
 
@@ -41,7 +41,7 @@ std::string TileService::download_and_save(float lat, float lon, unsigned zoom)
   std::string filename = std::format("{}/{}-{}-{}{}", m_cache_location, zoom, x, y, m_filetype);
 
   if (std::filesystem::exists(filename)) {
-    //std::cout << "Already downloaded " << std::quoted(filename) << std::endl;
+    // std::cout << "Already downloaded " << std::quoted(filename) << std::endl;
     return filename;
   }
 
@@ -55,6 +55,3 @@ std::string TileService::download_and_save(float lat, float lon, unsigned zoom)
 
   return filename;
 }
-
-void TileService::request_tile(float lat, float lon, unsigned zoom) {}
-
