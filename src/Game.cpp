@@ -32,7 +32,7 @@ Game::Game(size_t width, size_t height)
 
   float fov = 45.0f;
   float aspect_ratio = float(width) / float(height);
-  float near = 1.01f;
+  float near = 1.0f;
   float far = 1000.0f;
   auto projection = glm::perspective(glm::radians(fov), aspect_ratio, near, far);
   m_camera.set_projection_matrix(projection);
@@ -49,20 +49,15 @@ void Game::render(float dt)
 
   auto camera_position = m_camera.get_local_position();
   auto camera_direction = m_camera.transform_direction(glm::vec3(0.0f, 0.0f, -1.0f));
-  auto camera_target = camera_position + camera_direction * 100.0f;
-
-  //std::cout << camera_direction << std::endl;
-  //std::cout << camera_position.y << std::endl;
+  auto camera_target = camera_position + camera_direction * 1000.0f;
 
   float t;
   glm::vec3 point;
   Plane plane(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 20.0f, 0.0f));
 
   if (intersect_segment_plane(camera_position, camera_target, plane, t, point)){
-    //std::cout << point << std::endl;
+    lod_focus = point;
   }
-
-  lod_focus = point;
 
   m_terrain_renderer.render(m_camera, glm::vec2(lod_focus.x, lod_focus.z));
 
