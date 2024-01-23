@@ -71,6 +71,30 @@ Texture* TileCache::get_tile_texture(const glm::vec2& point, unsigned lod, const
   return load_texture_from_cache(lat, lon, zoom, tile_type);
 }
 
+void TileCache::invalidate_cache()
+{
+  auto now = std::chrono::system_clock::now();
+  const std::chrono::milliseconds max_duration(2000);  // TODO: find sensible value
+
+  uint removed = 0;
+
+  for (auto it = m_gpu_cache.begin(); it != m_gpu_cache.end();) {
+    auto& [cache_info, texture] = it->second;
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - cache_info.last_accessed);
+
+    if (duration > max_duration) {
+      it = m_gpu_cache.erase(it);  // does this really delete the unique_ptr?
+      removed++;
+    } else {
+      ++it;
+    }
+  }
+
+  if (removed > 0) {
+    std::cout << "gpu cache size " << m_gpu_cache.size() << std::endl;
+  }
+}
+
 std::unique_ptr<Texture> TileCache::load_texture_from_disk(float lat, float lon, unsigned zoom,
                                                            const TileType& tile_type)
 {
@@ -121,20 +145,17 @@ std::unique_ptr<Texture> TileCache::load_texture_from_disk(float lat, float lon,
 // Texture* TileCache::load_texture_from_cache(const TileName& tile_name)
 Texture* TileCache::load_texture_from_cache(float lat, float lon, unsigned zoom, const TileType& tile_type)
 {
-#if 0
-  const size_t max_cache_size = 100;
-  if (m_cache.size() > max_cache_size) {
-    // TODO: only cleanup the ones not accessed recently
-    m_cache.clear();
-  }
-#endif
-
   TileName tile_name = wms::to_tilename(lat, lon, zoom);
   std::string name = tile_name.to_string() + "+" + std::to_string(tile_type);
 
   if (!m_gpu_cache.contains(name)) {
-    m_gpu_cache[name] = load_texture_from_disk(lat, lon, zoom, tile_type);
+    CacheInfo info;
+    info.accessed();
+    auto texture = load_texture_from_disk(lat, lon, zoom, tile_type);
+    m_gpu_cache[name] = std::make_tuple(info, std::move(texture));
   }
 
-  return m_gpu_cache[name].get();
+  auto& [info, texture] = m_gpu_cache[name];
+  info.accessed();  // does this create a copy or reference?
+  return texture.get();
 }

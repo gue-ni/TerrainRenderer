@@ -132,6 +132,8 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
     m_chunk.draw(m_shader.get(), tile->min, tile->max);
   }
 
+  m_tile_cache.invalidate_cache();
+
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
