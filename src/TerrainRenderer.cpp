@@ -112,7 +112,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
   // auto start = std::chrono::system_clock::now();
 
-  quad_tree.traverse([this](const Node* tile) -> bool {
+  auto render_tile = [this](const Node* tile) -> bool {
     if (tile->is_leaf) {
       // check if tile exists in gpu cache
       // if yes, render it
@@ -136,7 +136,9 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
     }
 
     return true;
-  });
+  };
+
+  quad_tree.traverse(render_tile);
 
   // auto end = std::chrono::system_clock::now();
   // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);

@@ -34,11 +34,20 @@ class QuadTree
   QuadTree(const glm::vec2& min, const glm::vec2& max, float min_node_size, unsigned max_depth);
   void insert(const glm::vec2& point);
   std::vector<Node*> get_children();
+  Node* root() const { return m_root.get(); }
 
   template <typename Func>
   void traverse(Func func) const
   {
+    assert(m_root != nullptr);
     traverse(m_root, func);
+  }
+
+  template <typename Func, typename Cond>
+  void traverse_with_backtrack(Func func, Cond cond) const
+  {
+    assert(m_root != nullptr);
+    (void)traverse_with_backtrack(m_root, func);
   }
 
  private:
@@ -55,6 +64,36 @@ class QuadTree
     if (node && func(node.get()) && !node->is_leaf) {
       for (const auto& child : node->children) {
         traverse(child, func);
+      }
+    }
+  }
+
+  template <typename Func, typename Cond>
+  bool traverse_with_backtrack(const std::unique_ptr<Node>& node, Func func, Cond cond) const
+  {
+    if (node->is_leaf) {
+      if (cond(node.get())) {
+        func(node.get());
+        return true;
+      } else {
+        // TODO: maybe do something in this case? Request the tile?
+        return false;
+      }
+    } else {
+      bool success = true;
+
+      for (const auto& child : node->children) {
+        success = success && traverse_with_backtrack(child, func, cond);
+      }
+
+      if (!success) {
+        Node* node_ptr = node.get();
+        if (cond(node_ptr)) {
+          func(node_ptr);
+          return true;
+        } else {
+          return false;
+        }
       }
     }
   }
