@@ -56,3 +56,5 @@ std::string TileService::download_and_save(float lat, float lon, unsigned zoom)
   return filename;
 }
 
+void TileService::request_tile(float lat, float lon, unsigned zoom) {}
+
