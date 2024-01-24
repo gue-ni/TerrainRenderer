@@ -1,8 +1,7 @@
 #pragma once
 
-
-#include <numbers>
 #include <format>
+#include <numbers>
 #include <string>
 
 struct TileId {
