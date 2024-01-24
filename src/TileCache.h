@@ -44,6 +44,10 @@ class TileCache
   // point is in range [0, 1] relative to the root tile
   Texture* get_tile_texture(const glm::vec2& point, unsigned lod = 0, const TileType& tile_type = TileType::ORTHO);
 
+  Texture* get_cached_texture(const glm::vec2& point, unsigned lod = 0, const TileType& tile_type = TileType::ORTHO);
+
+  bool is_cached(const glm::vec2& point, unsigned lod = 0, const TileType& tile_type = TileType::ORTHO);
+
   void invalidate_gpu_cache();
 
  private:
@@ -67,4 +71,6 @@ class TileCache
   std::unique_ptr<Texture> create_texture(const Image& image);
 
   Image* request_image(float lat, float lon, unsigned zoom, const TileType& tile_type);
+
+  Coordinate lat_lon(const glm::vec2& point, unsigned lod);
 };

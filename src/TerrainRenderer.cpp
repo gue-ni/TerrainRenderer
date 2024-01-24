@@ -110,9 +110,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_shader->set_uniform("proj", camera.get_projection_matrix());
   m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
 
-  // auto start = std::chrono::system_clock::now();
-
-  auto render_tile = [this](const Node* tile) -> bool {
+  auto render_tile = [this](Node* tile) -> bool {
     if (tile->is_leaf) {
       // check if tile exists in gpu cache
       // if yes, render it
@@ -121,18 +119,35 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
       // different approach:
       // if tile is not in cache, request it and check if parent is in cache
       // if parent is in cache, use it's texture but render only the correct
-      // cutout. 
+      // cutout.
 
       auto uv = map_to_0_1(tile->center());
       Texture* albedo = m_tile_cache.get_tile_texture(uv, tile->depth, TileType::ORTHO);
       Texture* heightmap = m_tile_cache.get_tile_texture(uv, tile->depth, TileType::HEIGHT);
 
+#if 0
+      if (!albedo) {
+        // go up in tree until we find a node that is cached
+        // calculate a factor for scaling the uv coords so we render it correctly
+        int diff = 0;
+
+       auto [cached_texture, cached_ancestor] = find_cached_parent_texture(tile, TileType::ORTHO, diff);
+
+        if (cached_texture) {
+          std::cout << "found cached parent\n";
+          // albedo = cached_texture;
+        }
+      }
+#endif
+
       if (albedo && heightmap) {
         albedo->bind(0);
         m_shader->set_uniform("u_albedo_texture", 0);
+        m_shader->set_uniform("u_albedo_factor", glm::vec2());
 
         heightmap->bind(1);
         m_shader->set_uniform("u_heightmap_texture", 1);
+        m_shader->set_uniform("u_heightmap_factor", glm::vec2());
 
         m_chunk.draw(m_shader.get(), tile->min, tile->max);
       }
@@ -143,14 +158,6 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
   quad_tree.traverse(render_tile);
 
-  // auto end = std::chrono::system_clock::now();
-  // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-  // std::cout << duration.count() << std::endl;
-
-  // if (duration.count() > 5) {
-  // int x = 0;
-  // }
-
   // m_tile_cache.invalidate_gpu_cache();
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -159,4 +166,22 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 glm::vec2 TerrainRenderer::map_to_0_1(const glm::vec2& point)
 {
   return map_range(point, m_bounds.min, m_bounds.max, glm::vec2(0.0f), glm::vec2(1.0f));
+}
+
+std::pair<Texture*, Node*> TerrainRenderer::find_cached_parent_texture(Node* node, const TileType& tt, int& diff)
+{
+  diff = 0;
+  while (node->parent != nullptr) {
+    diff++;
+    node = node->parent;
+
+    auto uv = map_to_0_1(node->center());
+
+    Texture* texture = m_tile_cache.get_cached_texture(uv, node->depth, tt);
+    if (texture) {
+      return {texture, node};
+    }
+  }
+
+  return {nullptr, nullptr};
 }

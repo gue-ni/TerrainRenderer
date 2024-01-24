@@ -2,7 +2,7 @@
 
 #include <cpr/cpr.h>
 
-bool contains() { return false; }
+#define LOG 0
 
 void ThreadedTileService::request_download(float lat, float lon, unsigned zoom)
 {
@@ -16,9 +16,7 @@ void ThreadedTileService::request_download(float lat, float lon, unsigned zoom)
   m_already_requested.insert(id.to_string());
 }
 
-ThreadedTileService::~ThreadedTileService() { 
-  m_thread.join(); 
-}
+ThreadedTileService::~ThreadedTileService() { m_thread.join(); }
 
 void ThreadedTileService::start_worker_thread()
 {
@@ -26,7 +24,11 @@ void ThreadedTileService::start_worker_thread()
     while (true) {
       std::unique_lock<std::mutex> lock(m_mutex);
       m_condition.wait(lock, [this] { return !m_tiles_to_download.empty(); });
-      auto tile_id = m_tiles_to_download.top();
+#if 1
+      auto& tile_id = m_tiles_to_download.top();
+#else
+      auto& tile_id = m_tiles_to_download.front();
+#endif
       m_tiles_to_download.pop();
       lock.unlock();
 
@@ -42,7 +44,9 @@ void ThreadedTileService::start_worker_thread()
           std::cerr << "Could not download " << std::quoted(url) << std::endl;
           std::filesystem::remove(filename);
         } else {
+#if LOG
           std::cout << "Download " << std::quoted(url) << std::endl;
+#endif
         }
 
         assert(r.status_code == 200);
@@ -50,13 +54,14 @@ void ThreadedTileService::start_worker_thread()
 
       auto image = std::make_unique<Image>();
       image->read(filename);
-      if (!image->loaded()) {
+
+      if (image->loaded()) {
+        m_ram_cache[filename] = std::move(image);
+      } else {
         std::cerr << "Could not read " << std::quoted(filename) << std::endl;
       }
 
-      // assert(image->loaded());
-
-      m_ram_cache[filename] = std::move(image);
+      std::cout << "Load " << std::quoted(tile_id.to_string()) << std::endl;
     }
   });
 }
@@ -71,8 +76,18 @@ Image* ThreadedTileService::get_tile(float lat, float lon, unsigned zoom)
     return m_ram_cache[tile_id_str].get();
   } else {
     if (!m_already_requested.contains(tile_id.to_string())) {
+      std::cout << "Request " << std::quoted(tile_id.to_string()) << std::endl;
       request_download(lat, lon, zoom);
     }
     return nullptr;
   }
+}
+
+void ThreadedTileService::reset_queue()
+{
+#if 0
+  std::unique_lock<std::mutex> lock(m_mutex);
+  m_tiles_to_download = {};
+  lock.unlock();
+#endif
 }

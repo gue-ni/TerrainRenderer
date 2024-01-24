@@ -25,25 +25,38 @@ Texture* TileCache::get_tile_texture(const glm::vec2& point, unsigned lod, const
   unsigned zoom = m_root_tile.zoom + lod;
   assert(zoom <= m_max_zoom_level);
 
-  // point is in range [0, 1]
-  assert(glm::all(glm::lessThanEqual(glm::vec2(0.0f), point)) && glm::all(glm::lessThanEqual(point, glm::vec2(1.0f))));
+  Coordinate coords = lat_lon(point, zoom);
 
-  Coordinate min_coord;
-  min_coord.lat = wms::tiley2lat(m_root_tile.y, m_root_tile.zoom);
-  min_coord.lon = wms::tilex2lon(m_root_tile.x, m_root_tile.zoom);
+  return load_texture(coords.lat, coords.lon, zoom, tile_type);
+}
 
-  Coordinate max_coord;
-  max_coord.lat = wms::tiley2lat(m_root_tile.y + 1, m_root_tile.zoom);
-  max_coord.lon = wms::tilex2lon(m_root_tile.x + 1, m_root_tile.zoom);
+Texture* TileCache::get_cached_texture(const glm::vec2& point, unsigned lod, const TileType& tile_type)
+{
+  return nullptr;
+  unsigned zoom = m_root_tile.zoom + lod;
+  Coordinate coords = lat_lon(point, zoom);
+  TileId tile_id = wms::tile_id(coords.lat, coords.lon, zoom);
+  std::string name = tile_id.to_string() + "+" + std::to_string(tile_type);
 
-  float lat = glm::mix(min_coord.lat, max_coord.lat, point.y);
-  float lon = glm::mix(min_coord.lon, max_coord.lon, point.x);
+  if (m_gpu_cache.contains(name)) {
+    auto& [info, texture] = m_gpu_cache[name];
+    info.accessed();
+    return texture.get();
+  }
+}
 
-  return load_texture(lat, lon, zoom, tile_type);
+bool TileCache::is_cached(const glm::vec2& point, unsigned lod, const TileType& tile_type)
+{
+  unsigned zoom = m_root_tile.zoom + lod;
+  Coordinate coords = lat_lon(point, zoom);
+  TileId tile_id = wms::tile_id(coords.lat, coords.lon, zoom);
+  std::string name = tile_id.to_string() + "+" + std::to_string(tile_type);
+  return m_gpu_cache.contains(name);
 }
 
 void TileCache::invalidate_gpu_cache()
 {
+#if 0
   auto now = std::chrono::system_clock::now();
   const std::chrono::milliseconds max_duration(2000);  // TODO: find sensible value
 
@@ -64,6 +77,11 @@ void TileCache::invalidate_gpu_cache()
   if (removed > 0) {
     // std::cout << "gpu cache size " << m_gpu_cache.size() << std::endl;
   }
+#else
+  // m_ortho_tile_service.reset_queue();
+  // m_height_tile_service.reset_queue();
+
+#endif
 }
 
 Texture* TileCache::load_texture(float lat, float lon, unsigned zoom, const TileType& tile_type)
@@ -123,4 +141,25 @@ Image* TileCache::request_image(float lat, float lon, unsigned zoom, const TileT
       assert(false);
       return nullptr;
   }
+}
+
+Coordinate TileCache::lat_lon(const glm::vec2& point, unsigned zoom)
+{
+  assert(zoom <= m_max_zoom_level);
+
+  // point is in range [0, 1]
+  assert(glm::all(glm::lessThanEqual(glm::vec2(0.0f), point)) && glm::all(glm::lessThanEqual(point, glm::vec2(1.0f))));
+
+  Coordinate min_coord;
+  min_coord.lat = wms::tiley2lat(m_root_tile.y, m_root_tile.zoom);
+  min_coord.lon = wms::tilex2lon(m_root_tile.x, m_root_tile.zoom);
+
+  Coordinate max_coord;
+  max_coord.lat = wms::tiley2lat(m_root_tile.y + 1, m_root_tile.zoom);
+  max_coord.lon = wms::tilex2lon(m_root_tile.x + 1, m_root_tile.zoom);
+
+  float lat = glm::mix(min_coord.lat, max_coord.lat, point.y);
+  float lon = glm::mix(min_coord.lon, max_coord.lon, point.x);
+
+  return {.lat = lat, .lon = lon};
 }
