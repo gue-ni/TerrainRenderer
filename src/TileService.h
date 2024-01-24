@@ -22,6 +22,8 @@ class TileService
 
   std::string download_and_save(float lat, float lon, unsigned zoom);
 
+  virtual Image* get_tile(float lat, float lon, unsigned zoom);
+
  private:
   const UrlPattern m_url_pattern;
   const std::string m_url, m_filetype;

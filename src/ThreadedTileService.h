@@ -20,7 +20,7 @@ class ThreadedTileService : public TileService
   void start_worker_thread();
 
   // if tile in cache, return tile. If not request, it for download and return nullptr
-  Image* get_tile(float lat, float lon, unsigned zoom);
+  Image* get_tile(float lat, float lon, unsigned zoom) override;
 
  private:
   std::thread m_thread;

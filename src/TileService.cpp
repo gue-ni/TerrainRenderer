@@ -69,3 +69,35 @@ std::string TileService::download_and_save(float lat, float lon, unsigned zoom)
 
   return filename;
 }
+
+Image* TileService::get_tile(float lat, float lon, unsigned zoom)
+{
+  unsigned x = wms::lon2tilex(lon, zoom);
+  unsigned y = wms::lat2tiley(lat, zoom);
+
+  std::string url = tile_url(x, y, zoom);
+
+  std::string filename = tile_filename(x, y, zoom);
+
+  if (!std::filesystem::exists(filename)) {
+
+    std::ofstream of(filename, std::ios::binary);
+    cpr::Response r = cpr::Download(of, cpr::Url{url});
+
+    if (r.status_code != 200) {
+      std::cerr << "Could not get tile from " << std::quoted(url) << std::endl;
+      std::filesystem::remove(filename);
+      return nullptr;
+    }
+  }
+
+  auto image = new Image();
+  image->read(filename);
+  if (!image->loaded()) {
+    std::cerr << "Could not read " << std::quoted(filename) << std::endl;
+  }
+
+  assert(image->loaded());
+
+  return image;
+}
