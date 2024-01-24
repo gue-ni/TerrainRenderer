@@ -110,4 +110,6 @@ class TileCache
 
   std::unique_ptr<Texture> load_texture_from_disk(float lat, float lon, unsigned zoom, const TileType& tile_type);
   Texture* load_texture_from_cache(float lat, float lon, unsigned zoom, const TileType& tile_type);
+
+  Texture* load_texture(float lat, float lon, unsigned zoom, const TileType& tile_type);
 };

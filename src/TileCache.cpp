@@ -163,3 +163,28 @@ Texture* TileCache::load_texture_from_cache(float lat, float lon, unsigned zoom,
   info.accessed();  // does this create a copy or reference?
   return texture.get();
 }
+
+Texture* TileCache::load_texture(float lat, float lon, unsigned zoom, const TileType& tile_type)
+{
+  TileName tile_name = wms::to_tilename(lat, lon, zoom);
+  std::string name = tile_name.to_string() + "+" + std::to_string(tile_type);
+
+  if (m_gpu_cache.contains(name)) {
+    auto& [info, texture] = m_gpu_cache[name];
+    info.accessed();
+    return texture.get();
+  } else {
+
+    Image* image = nullptr;
+    //Image* image = request_image(lat, lon, zoom, tile_type);
+
+    if (image) {
+      // create texture
+      // set texture in cache
+      // return texture ptr
+      return nullptr;
+    } else {
+      return nullptr;
+    }
+  }
+}
