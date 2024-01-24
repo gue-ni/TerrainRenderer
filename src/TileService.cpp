@@ -15,8 +15,7 @@ TileService::TileService(const std::string& url, const UrlPattern& url_pattern, 
 
 std::string TileService::tile_filename(unsigned x, unsigned y, unsigned zoom) const
 {
-  std::string filename = std::format("{}/{}-{}-{}{}", m_cache_location, zoom, x, y, m_filetype);
-  return filename;
+  return std::format("{}/{}-{}-{}{}", m_cache_location, zoom, x, y, m_filetype);
 }
 
 std::string TileService::tile_url(unsigned x, unsigned y, unsigned zoom) const
@@ -98,6 +97,5 @@ Image* TileService::get_tile(float lat, float lon, unsigned zoom)
   }
 
   assert(image->loaded());
-
   return image;
 }

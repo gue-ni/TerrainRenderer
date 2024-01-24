@@ -15,13 +15,12 @@ void ThreadedTileService::request_download(float lat, float lon, unsigned zoom)
   m_condition.notify_one();
 }
 
-ThreadedTileService::~ThreadedTileService() {}
+ThreadedTileService::~ThreadedTileService() { m_thread.join(); }
 
 void ThreadedTileService::start_worker_thread()
 {
   m_thread = std::thread([this]() {
     while (true) {
-
       std::unique_lock<std::mutex> lock(m_mutex);
       m_condition.wait(lock, [this] { return !m_tasks.empty(); });
       auto tile_id = m_tasks.front();
@@ -32,7 +31,7 @@ void ThreadedTileService::start_worker_thread()
 
       if (!std::filesystem::exists(filename)) {
         auto url = tile_url(tile_id.x, tile_id.y, tile_id.zoom);
-      
+
         std::ofstream of(filename, std::ios::binary);
         cpr::Response r = cpr::Download(of, cpr::Url{url});
 
@@ -59,7 +58,7 @@ void ThreadedTileService::start_worker_thread()
 
 Image* ThreadedTileService::get_tile(float lat, float lon, unsigned zoom)
 {
-  TileId tile_id = wms::to_tilename(lat, lon, zoom);
+  TileId tile_id = wms::tile_id(lat, lon, zoom);
 
   std::string tile_id_str = tile_filename(tile_id.x, tile_id.y, tile_id.zoom);
 
@@ -70,5 +69,3 @@ Image* ThreadedTileService::get_tile(float lat, float lon, unsigned zoom)
     return nullptr;
   }
 }
-
-

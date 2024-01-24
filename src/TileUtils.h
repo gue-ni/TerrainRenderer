@@ -35,7 +35,7 @@ inline float tiley2lat(int y, int z)
   return 180.0f / PI * atan(0.5f * (exp(n) - exp(-n)));
 }
 
-inline TileId to_tilename(float lat, float lon, unsigned zoom)
+inline TileId tile_id(float lat, float lon, unsigned zoom)
 {
   unsigned x = wms::lon2tilex(lon, zoom);
   unsigned y = wms::lat2tiley(lat, zoom);

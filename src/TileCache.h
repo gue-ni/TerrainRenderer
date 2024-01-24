@@ -55,9 +55,6 @@ class TileCache
 
   std::unordered_map<std::string, std::tuple<CacheInfo, std::unique_ptr<Texture>>> m_gpu_cache;
 
-  std::unique_ptr<Texture> load_texture_from_disk(float lat, float lon, unsigned zoom, const TileType& tile_type);
-  Texture* load_texture_from_cache(float lat, float lon, unsigned zoom, const TileType& tile_type);
-
   Texture* load_texture(float lat, float lon, unsigned zoom, const TileType& tile_type);
 
   std::unique_ptr<Texture> create_texture(const Image& image);

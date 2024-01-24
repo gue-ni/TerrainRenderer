@@ -14,35 +14,6 @@ TileCache::TileCache(const TileId& root_tile, unsigned max_zoom_level)
       m_height_tile_service("https://alpinemaps.cg.tuwien.ac.at/tiles/alpine_png", TileService::UrlPattern::ZXY, ".png")
 
 {
-#if 0
-  std::string path = "debug.png";
-  //std::string path = "debug2.jpeg";
-  //std::string path = "cache/13-4395-2868.jpeg";
-  Image image;
-  image.read(path);
-  assert(image.loaded());
-
-  auto filter = GL_LINEAR;
-  m_debug_texture = std::make_unique<Texture>();
-  m_debug_texture->bind();
-  m_debug_texture->set_parameter(GL_TEXTURE_MIN_FILTER, filter);
-  m_debug_texture->set_parameter(GL_TEXTURE_MAG_FILTER, filter);
-  m_debug_texture->set_parameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  m_debug_texture->set_parameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  GLint internalformat = GL_RGB;
-  GLint format = GL_RGB;
-          glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
-
-  glTexImage2D(m_debug_texture->target, 0, internalformat, image.width(), image.height(), 0, format, GL_UNSIGNED_BYTE,
-               image.data());
-          glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-
-
-  m_debug_texture->generate_mipmap();
-  m_debug_texture->unbind();
-#else
-#endif
 }
 
 Texture* TileCache::get_tile_texture(const glm::vec2& point, unsigned lod, const TileType& tile_type)
@@ -64,12 +35,7 @@ Texture* TileCache::get_tile_texture(const glm::vec2& point, unsigned lod, const
   float lat = glm::mix(min_coord.lat, max_coord.lat, point.y);
   float lon = glm::mix(min_coord.lon, max_coord.lon, point.x);
 
-  // TileId tile_name;
-  // tile_name.zoom = zoom;
-  // tile_name.x = wms::lon2tilex(lon, tile_name.zoom);
-  // tile_name.y = wms::lat2tiley(lat, tile_name.zoom);
-
-  return load_texture_from_cache(lat, lon, zoom, tile_type);
+  return load_texture(lat, lon, zoom, tile_type);
 }
 
 void TileCache::invalidate_gpu_cache()
@@ -96,54 +62,9 @@ void TileCache::invalidate_gpu_cache()
   }
 }
 
-std::unique_ptr<Texture> TileCache::load_texture_from_disk(float lat, float lon, unsigned zoom,
-                                                           const TileType& tile_type)
-{
-  std::string tile_path;
-
-  if (tile_type == TileType::ORTHO) {
-    tile_path = m_ortho_tile_service.download_and_save(lat, lon, zoom);
-  } else if (tile_type == TileType::HEIGHT) {
-    tile_path = m_height_tile_service.download_and_save(lat, lon, zoom);
-  } else {
-    assert(false);
-  }
-
-  Image image;
-  image.read(tile_path);
-  assert(image.loaded());
-
-  if (!image.loaded()) {
-    return nullptr;
-  }
-
-  return create_texture(image);
-}
-
-// Texture* TileCache::load_texture_from_cache(const TileId& tile_name)
-Texture* TileCache::load_texture_from_cache(float lat, float lon, unsigned zoom, const TileType& tile_type)
-{
-  TileId tile_name = wms::to_tilename(lat, lon, zoom);
-  std::string name = tile_name.to_string() + "+" + std::to_string(tile_type);
-
-  if (!m_gpu_cache.contains(name)) {
-    std::cout << "New in cache " << name << std::endl;
-    CacheInfo info;
-    info.accessed();
-    auto texture = load_texture_from_disk(lat, lon, zoom, tile_type);
-    m_gpu_cache[name] = std::make_tuple(info, std::move(texture));
-  } else {
-    // std::cout << "From gpu cache " << name << std::endl;
-  }
-
-  auto& [info, texture] = m_gpu_cache[name];
-  info.accessed();  // does this create a copy or reference?
-  return texture.get();
-}
-
 Texture* TileCache::load_texture(float lat, float lon, unsigned zoom, const TileType& tile_type)
 {
-  TileId tile_name = wms::to_tilename(lat, lon, zoom);
+  TileId tile_name = wms::tile_id(lat, lon, zoom);
   std::string name = tile_name.to_string() + "+" + std::to_string(tile_type);
 
   if (m_gpu_cache.contains(name)) {
