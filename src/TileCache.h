@@ -22,6 +22,8 @@
 using namespace gfx;
 using namespace gfx::gl;
 
+#define MULTITHREADING 1
+
 enum TileType { ORTHO, HEIGHT };
 
 using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
@@ -48,8 +50,13 @@ class TileCache
   const TileId m_root_tile;
   const unsigned m_max_zoom_level;
 
+#if MULTITHREADING
+  ThreadedTileService m_ortho_tile_service;
+  ThreadedTileService m_height_tile_service;
+#else
   TileService m_ortho_tile_service;
   TileService m_height_tile_service;
+#endif
 
   std::unique_ptr<Texture> m_debug_texture{nullptr};
 

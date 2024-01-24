@@ -121,23 +121,21 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
       // different approach:
       // if tile is not in cache, request it and check if parent is in cache
       // if parent is in cache, use it's texture but render only the correct
-      // cutout
+      // cutout. 
 
       auto uv = map_to_0_1(tile->center());
       Texture* albedo = m_tile_cache.get_tile_texture(uv, tile->depth, TileType::ORTHO);
       Texture* heightmap = m_tile_cache.get_tile_texture(uv, tile->depth, TileType::HEIGHT);
 
-      if (albedo) {
+      if (albedo && heightmap) {
         albedo->bind(0);
         m_shader->set_uniform("u_albedo_texture", 0);
-      }
 
-      if (heightmap) {
         heightmap->bind(1);
         m_shader->set_uniform("u_heightmap_texture", 1);
-      }
 
-      m_chunk.draw(m_shader.get(), tile->min, tile->max);
+        m_chunk.draw(m_shader.get(), tile->min, tile->max);
+      }
     }
 
     return true;

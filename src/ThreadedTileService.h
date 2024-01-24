@@ -4,6 +4,8 @@
 #include <iostream>
 #include <mutex>
 #include <queue>
+#include <set>
+#include <stack>
 #include <thread>
 #include <tuple>
 #include <unordered_map>
@@ -14,6 +16,7 @@
 class ThreadedTileService : public TileService
 {
  public:
+  using TileService::TileService;
   ~ThreadedTileService();
 
   // start seperate worker thread
@@ -24,10 +27,11 @@ class ThreadedTileService : public TileService
 
  private:
   std::thread m_thread;
-  std::queue<TileId> m_tasks;  // queue of tiles to download/cache
+  std::stack<TileId> m_tiles_to_download;  // use stack instead of queue because first requested tiles might no longer be relevant
   std::mutex m_mutex;
   std::condition_variable m_condition;
   std::unordered_map<std::string, std::unique_ptr<Image>> m_ram_cache;
+  std::set<std::string> m_already_requested;
 
   void request_download(float lat, float lon, unsigned zoom);
 };
