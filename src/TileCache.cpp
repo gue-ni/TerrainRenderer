@@ -117,30 +117,7 @@ std::unique_ptr<Texture> TileCache::load_texture_from_disk(float lat, float lon,
     return nullptr;
   }
 
-  auto filter = GL_LINEAR;
-  auto texture = std::make_unique<Texture>();
-  texture->bind();
-  texture->set_parameter(GL_TEXTURE_MIN_FILTER, filter);
-  texture->set_parameter(GL_TEXTURE_MAG_FILTER, filter);
-
-#if 0
-  texture->set_parameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-  texture->set_parameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-  const float border_color[] = {0.24f, 0.24f, 0.18f, 1.0f};
-  glTexParameterfv(texture->target, GL_TEXTURE_BORDER_COLOR, border_color);
-#else
-  texture->set_parameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  texture->set_parameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-#endif
-
-  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  texture->set_image(image);
-  glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-
-  texture->generate_mipmap();
-  texture->unbind();
-
-  return texture;
+  return create_texture(image);
 }
 
 // Texture* TileCache::load_texture_from_cache(const TileId& tile_name)
@@ -174,16 +151,51 @@ Texture* TileCache::load_texture(float lat, float lon, unsigned zoom, const Tile
     info.accessed();
     return texture.get();
   } else {
-    Image* image = nullptr;
-    // Image* image = request_image(lat, lon, zoom, tile_type);
+    Image* image = request_image(lat, lon, zoom, tile_type);
 
     if (image) {
-      // create texture
-      // set texture in cache
-      // return texture ptr
-      return nullptr;
+      CacheInfo info;
+      info.accessed();
+      auto texture = create_texture(*image);
+      auto texture_ptr = texture.get();
+      m_gpu_cache[name] = {info, std::move(texture)};
+      return texture_ptr;
     } else {
       return nullptr;
     }
+  }
+}
+
+std::unique_ptr<Texture> TileCache::create_texture(const Image& image)
+{
+  auto texture = std::make_unique<Texture>();
+  texture->bind();
+  texture->set_parameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  texture->set_parameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  texture->set_parameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  texture->set_parameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  texture->set_image(image);
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
+  texture->generate_mipmap();
+  texture->unbind();
+  return texture;
+}
+
+Image* TileCache::request_image(float lat, float lon, unsigned zoom, const TileType& tile_type)
+{
+  switch (tile_type) {
+    case TileType::ORTHO:
+      return m_ortho_tile_service.get_tile(lat, lon, zoom);
+
+    case TileType::HEIGHT:
+      return m_height_tile_service.get_tile(lat, lon, zoom);
+
+    default:
+      assert(false);
+      return nullptr;
   }
 }

@@ -59,4 +59,8 @@ class TileCache
   Texture* load_texture_from_cache(float lat, float lon, unsigned zoom, const TileType& tile_type);
 
   Texture* load_texture(float lat, float lon, unsigned zoom, const TileType& tile_type);
+
+  std::unique_ptr<Texture> create_texture(const Image& image);
+
+  Image* request_image(float lat, float lon, unsigned zoom, const TileType& tile_type);
 };
