@@ -26,6 +26,7 @@ struct Node : public Bounds {
   bool is_leaf{true};
   unsigned depth{0};
   std::array<std::unique_ptr<Node>, 4> children;
+  Node* parent{nullptr};
 };
 
 class QuadTree
