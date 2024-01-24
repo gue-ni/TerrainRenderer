@@ -25,9 +25,8 @@ class ThreadedTileService : public TileService
   // if tile in cache, return tile. If not request, it for download and return nullptr
   Image* get_tile(float lat, float lon, unsigned zoom) override;
 
-  void reset_queue();
-
  private:
+  bool m_stop_thread{false};
   std::thread m_thread;
   std::stack<TileId> m_tiles_to_download;
   std::mutex m_mutex;

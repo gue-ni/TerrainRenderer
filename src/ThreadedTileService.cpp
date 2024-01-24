@@ -16,12 +16,16 @@ void ThreadedTileService::request_download(float lat, float lon, unsigned zoom)
   m_already_requested.insert(id.to_string());
 }
 
-ThreadedTileService::~ThreadedTileService() { m_thread.join(); }
+ThreadedTileService::~ThreadedTileService()
+{
+  m_stop_thread = true;
+  m_thread.join();
+}
 
 void ThreadedTileService::start_worker_thread()
 {
   m_thread = std::thread([this]() {
-    while (true) {
+    while (!m_stop_thread) {
       std::unique_lock<std::mutex> lock(m_mutex);
       m_condition.wait(lock, [this] { return !m_tiles_to_download.empty(); });
 #if 1
@@ -61,7 +65,7 @@ void ThreadedTileService::start_worker_thread()
         std::cerr << "Could not read " << std::quoted(filename) << std::endl;
       }
 
-      std::cout << "Load " << std::quoted(tile_id.to_string()) << std::endl;
+      // std::cout << "Load " << std::quoted(tile_id.to_string()) << std::endl;
     }
   });
 }
@@ -83,11 +87,4 @@ Image* ThreadedTileService::get_tile(float lat, float lon, unsigned zoom)
   }
 }
 
-void ThreadedTileService::reset_queue()
-{
-#if 0
-  std::unique_lock<std::mutex> lock(m_mutex);
-  m_tiles_to_download = {};
-  lock.unlock();
-#endif
-}
+

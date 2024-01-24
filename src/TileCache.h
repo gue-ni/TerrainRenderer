@@ -46,7 +46,6 @@ class TileCache
 
   Texture* get_cached_texture(const glm::vec2& point, unsigned lod = 0, const TileType& tile_type = TileType::ORTHO);
 
-  bool is_cached(const glm::vec2& point, unsigned lod = 0, const TileType& tile_type = TileType::ORTHO);
 
   void invalidate_gpu_cache();
 
@@ -64,7 +63,7 @@ class TileCache
 
   std::unique_ptr<Texture> m_debug_texture{nullptr};
 
-  std::unordered_map<std::string, std::tuple<CacheInfo, std::unique_ptr<Texture>>> m_gpu_cache;
+  std::unordered_map<std::string, std::unique_ptr<Texture>> m_gpu_cache;
 
   Texture* load_texture(float lat, float lon, unsigned zoom, const TileType& tile_type);
 

@@ -38,21 +38,10 @@ Texture* TileCache::get_cached_texture(const glm::vec2& point, unsigned lod, con
   TileId tile_id = wms::tile_id(coords.lat, coords.lon, zoom);
   std::string name = tile_id.to_string() + "+" + std::to_string(tile_type);
 
-  if (m_gpu_cache.contains(name)) {
-    auto& [info, texture] = m_gpu_cache[name];
-    info.accessed();
-    return texture.get();
-  }
+  return m_gpu_cache[name].get();
 }
 
-bool TileCache::is_cached(const glm::vec2& point, unsigned lod, const TileType& tile_type)
-{
-  unsigned zoom = m_root_tile.zoom + lod;
-  Coordinate coords = lat_lon(point, zoom);
-  TileId tile_id = wms::tile_id(coords.lat, coords.lon, zoom);
-  std::string name = tile_id.to_string() + "+" + std::to_string(tile_type);
-  return m_gpu_cache.contains(name);
-}
+
 
 void TileCache::invalidate_gpu_cache()
 {
@@ -90,9 +79,7 @@ Texture* TileCache::load_texture(float lat, float lon, unsigned zoom, const Tile
   std::string name = tile_name.to_string() + "+" + std::to_string(tile_type);
 
   if (m_gpu_cache.contains(name)) {
-    auto& [info, texture] = m_gpu_cache[name];
-    info.accessed();
-    return texture.get();
+    return m_gpu_cache[name].get();
   } else {
     Image* image = request_image(lat, lon, zoom, tile_type);
 
@@ -101,8 +88,8 @@ Texture* TileCache::load_texture(float lat, float lon, unsigned zoom, const Tile
       info.accessed();
       auto texture = create_texture(*image);
       auto texture_ptr = texture.get();
-      m_gpu_cache[name] = {info, std::move(texture)};
-      return texture_ptr;
+      m_gpu_cache[name] = std::move(texture);
+      return m_gpu_cache[name].get();
     } else {
       return nullptr;
     }
