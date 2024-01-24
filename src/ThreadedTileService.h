@@ -14,8 +14,12 @@ class ThreadedTileService : public TileService
 {
  public:
   ~ThreadedTileService();
-  void request_tile(float lat, float lon, unsigned zoom);
+  
+  // start seperate worker thread
   void start_worker_thread();
+
+  // if tile in cache, return tile. If not request, it for download and return nullptr
+  Image* get_tile(float lat, float lon, unsigned zoom);
 
  private:
   std::thread m_thread;
@@ -23,4 +27,8 @@ class ThreadedTileService : public TileService
   std::mutex m_mutex;
   std::condition_variable m_condition;
   std::unordered_map<std::string, std::unique_ptr<Image>> m_ram_cache;  // TODO
+
+  void request_download(float lat, float lon, unsigned zoom);
+
+  void download_and_cache(float lat, float lon, unsigned zoom);
 };

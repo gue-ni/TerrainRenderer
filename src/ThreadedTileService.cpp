@@ -2,7 +2,7 @@
 
 #include <cpr/cpr.h>
 
-void ThreadedTileService::request_tile(float lat, float lon, unsigned zoom)
+void ThreadedTileService::request_download(float lat, float lon, unsigned zoom)
 {
   std::string url;  // TOOD
 
@@ -31,4 +31,17 @@ void ThreadedTileService::start_worker_thread()
       }
 
     });
+}
+
+Image* ThreadedTileService::get_tile(float lat, float lon, unsigned zoom)
+{
+  TileName tile_id = wms::to_tilename(lat, lon, zoom);
+  std::string tile_id_str = tile_id.to_string();
+
+  if (m_ram_cache.contains(tile_id_str)) {
+    return m_ram_cache[tile_id_str].get();
+  } else {
+    request_download(lat, lon, zoom);
+    return nullptr;
+  }
 }

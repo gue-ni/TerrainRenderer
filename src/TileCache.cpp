@@ -64,10 +64,10 @@ Texture* TileCache::get_tile_texture(const glm::vec2& point, unsigned lod, const
   float lat = glm::mix(min_coord.lat, max_coord.lat, point.y);
   float lon = glm::mix(min_coord.lon, max_coord.lon, point.x);
 
-  TileName tile_name;
-  tile_name.zoom = zoom;
-  tile_name.x = wms::lon2tilex(lon, tile_name.zoom);
-  tile_name.y = wms::lat2tiley(lat, tile_name.zoom);
+  // TileName tile_name;
+  // tile_name.zoom = zoom;
+  // tile_name.x = wms::lon2tilex(lon, tile_name.zoom);
+  // tile_name.y = wms::lat2tiley(lat, tile_name.zoom);
 
   return load_texture_from_cache(lat, lon, zoom, tile_type);
 }
