@@ -5,8 +5,6 @@
 #include <filesystem>
 #include <format>
 
-#include "TileCache.h"
-
 TileService::TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype)
     : m_url(url), m_url_pattern(url_pattern), m_filetype(filetype)
 {

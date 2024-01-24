@@ -8,7 +8,6 @@
 #include <tuple>
 #include <unordered_map>
 
-#include "TileCache.h"
 #include "TileService.h"
 #include "TileUtils.h"
 

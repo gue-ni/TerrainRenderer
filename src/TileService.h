@@ -5,6 +5,7 @@
 #include <string>
 
 #include "../gfx/gfx.h"
+#include "TileUtils.h"
 
 using namespace gfx;
 

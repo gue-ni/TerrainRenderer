@@ -6,7 +6,7 @@
 
 #include "Common.h"
 
-TileCache::TileCache(const TileName& root_tile, unsigned max_zoom_level)
+TileCache::TileCache(const TileId& root_tile, unsigned max_zoom_level)
     : m_root_tile(root_tile),
       m_max_zoom_level(max_zoom_level),
       m_ortho_tile_service("https://gataki.cg.tuwien.ac.at/raw/basemap/tiles", TileService::UrlPattern::ZYX_Y_SOUTH,
@@ -64,7 +64,7 @@ Texture* TileCache::get_tile_texture(const glm::vec2& point, unsigned lod, const
   float lat = glm::mix(min_coord.lat, max_coord.lat, point.y);
   float lon = glm::mix(min_coord.lon, max_coord.lon, point.x);
 
-  // TileName tile_name;
+  // TileId tile_name;
   // tile_name.zoom = zoom;
   // tile_name.x = wms::lon2tilex(lon, tile_name.zoom);
   // tile_name.y = wms::lat2tiley(lat, tile_name.zoom);
@@ -143,10 +143,10 @@ std::unique_ptr<Texture> TileCache::load_texture_from_disk(float lat, float lon,
   return texture;
 }
 
-// Texture* TileCache::load_texture_from_cache(const TileName& tile_name)
+// Texture* TileCache::load_texture_from_cache(const TileId& tile_name)
 Texture* TileCache::load_texture_from_cache(float lat, float lon, unsigned zoom, const TileType& tile_type)
 {
-  TileName tile_name = wms::to_tilename(lat, lon, zoom);
+  TileId tile_name = wms::to_tilename(lat, lon, zoom);
   std::string name = tile_name.to_string() + "+" + std::to_string(tile_type);
 
   if (!m_gpu_cache.contains(name)) {
@@ -166,7 +166,7 @@ Texture* TileCache::load_texture_from_cache(float lat, float lon, unsigned zoom,
 
 Texture* TileCache::load_texture(float lat, float lon, unsigned zoom, const TileType& tile_type)
 {
-  TileName tile_name = wms::to_tilename(lat, lon, zoom);
+  TileId tile_name = wms::to_tilename(lat, lon, zoom);
   std::string name = tile_name.to_string() + "+" + std::to_string(tile_type);
 
   if (m_gpu_cache.contains(name)) {

@@ -21,7 +21,7 @@ class TerrainRenderer
 
  private:
   std::unique_ptr<ShaderProgram> m_shader{nullptr};
-  const TileName m_root_tile;
+  const TileId m_root_tile;
   const Chunk m_chunk;
   const Bounds m_bounds;
   TileCache m_tile_cache;

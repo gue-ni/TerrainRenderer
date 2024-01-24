@@ -15,6 +15,8 @@ void ThreadedTileService::request_download(float lat, float lon, unsigned zoom)
   m_condition.notify_one();
 }
 
+ThreadedTileService::~ThreadedTileService() {}
+
 void ThreadedTileService::start_worker_thread()
 {
   m_thread = std::thread([this]() {
@@ -57,7 +59,7 @@ void ThreadedTileService::start_worker_thread()
 
 Image* ThreadedTileService::get_tile(float lat, float lon, unsigned zoom)
 {
-  TileName tile_id = wms::to_tilename(lat, lon, zoom);
+  TileId tile_id = wms::to_tilename(lat, lon, zoom);
 
   std::string tile_id_str = tile_filename(tile_id.x, tile_id.y, tile_id.zoom);
 
