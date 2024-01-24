@@ -8,6 +8,7 @@
 #include <tuple>
 #include <unordered_map>
 
+#include "TileCache.h"
 #include "TileService.h"
 #include "TileUtils.h"
 
@@ -15,7 +16,7 @@ class ThreadedTileService : public TileService
 {
  public:
   ~ThreadedTileService();
-  
+
   // start seperate worker thread
   void start_worker_thread();
 
@@ -27,7 +28,7 @@ class ThreadedTileService : public TileService
   std::queue<TileId> m_tasks;  // queue of tiles to download/cache
   std::mutex m_mutex;
   std::condition_variable m_condition;
-  std::unordered_map<std::string, std::unique_ptr<Image>> m_ram_cache; 
+  std::unordered_map<std::string, std::unique_ptr<Image>> m_ram_cache;
 
   void request_download(float lat, float lon, unsigned zoom);
 };

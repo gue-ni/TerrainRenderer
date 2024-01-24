@@ -116,7 +116,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
     if (tile->is_leaf) {
       // check if tile exists in gpu cache
       // if yes, render it
-      // if no, request it and backtrack to parent. try to render parent.  
+      // if no, request it and backtrack to parent. try to render parent.
 
       // different approach:
       // if tile is not in cache, request it and check if parent is in cache

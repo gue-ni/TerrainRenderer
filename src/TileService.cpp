@@ -3,6 +3,7 @@
 #include <cpr/cpr.h>
 
 #include <filesystem>
+#include <format>
 
 #include "TileCache.h"
 
@@ -14,12 +15,14 @@ TileService::TileService(const std::string& url, const UrlPattern& url_pattern, 
   }
 }
 
-std::string TileService::tile_filename(unsigned x, unsigned y, unsigned zoom) const {
+std::string TileService::tile_filename(unsigned x, unsigned y, unsigned zoom) const
+{
   std::string filename = std::format("{}/{}-{}-{}{}", m_cache_location, zoom, x, y, m_filetype);
   return filename;
 }
 
-std::string TileService::tile_url(unsigned x, unsigned y, unsigned zoom) const {
+std::string TileService::tile_url(unsigned x, unsigned y, unsigned zoom) const
+{
   std::string url;
   const unsigned num_y_tiles = (1 << zoom);
 
@@ -80,7 +83,6 @@ Image* TileService::get_tile(float lat, float lon, unsigned zoom)
   std::string filename = tile_filename(x, y, zoom);
 
   if (!std::filesystem::exists(filename)) {
-
     std::ofstream of(filename, std::ios::binary);
     cpr::Response r = cpr::Download(of, cpr::Url{url});
 

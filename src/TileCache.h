@@ -68,8 +68,8 @@ inline float tile_width(float lat, unsigned zoom)
 
 inline std::pair<Coordinate, Coordinate> tile_bounds(unsigned x, unsigned y, unsigned zoom)
 {
-  Coordinate min = { .lat = tiley2lat(y, zoom), .lon = tilex2lon(x, zoom) };
-  Coordinate max = { .lat = tiley2lat(y + 1, zoom), .lon = tilex2lon(x + 1, zoom) };
+  Coordinate min = {.lat = tiley2lat(y, zoom), .lon = tilex2lon(x, zoom)};
+  Coordinate max = {.lat = tiley2lat(y + 1, zoom), .lon = tilex2lon(x + 1, zoom)};
   return {min, max};
 }
 

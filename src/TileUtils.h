@@ -1,5 +1,5 @@
 #pragma once
 
 struct TileId {
-    unsigned zoom, x, y;
+  unsigned zoom, x, y;
 };

@@ -92,7 +92,7 @@ void TileCache::invalidate_gpu_cache()
   }
 
   if (removed > 0) {
-    //std::cout << "gpu cache size " << m_gpu_cache.size() << std::endl;
+    // std::cout << "gpu cache size " << m_gpu_cache.size() << std::endl;
   }
 }
 
@@ -156,7 +156,7 @@ Texture* TileCache::load_texture_from_cache(float lat, float lon, unsigned zoom,
     auto texture = load_texture_from_disk(lat, lon, zoom, tile_type);
     m_gpu_cache[name] = std::make_tuple(info, std::move(texture));
   } else {
-    //std::cout << "From gpu cache " << name << std::endl;
+    // std::cout << "From gpu cache " << name << std::endl;
   }
 
   auto& [info, texture] = m_gpu_cache[name];
@@ -174,9 +174,8 @@ Texture* TileCache::load_texture(float lat, float lon, unsigned zoom, const Tile
     info.accessed();
     return texture.get();
   } else {
-
     Image* image = nullptr;
-    //Image* image = request_image(lat, lon, zoom, tile_type);
+    // Image* image = request_image(lat, lon, zoom, tile_type);
 
     if (image) {
       // create texture
