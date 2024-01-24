@@ -161,6 +161,7 @@
     <ClInclude Include="src/Window.h" />
     <ClInclude Include="src/TileService.h" />
     <ClInclude Include="src/ThreadedTileService.h" />
+    <ClInclude Include="src/TileUtils.h" />
     <ClInclude Include="gfx/gfx.h" />
     <ClInclude Include="gfx/gl.h" />
     <ClInclude Include="gfx/image.h" />
