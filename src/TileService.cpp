@@ -14,10 +14,12 @@ TileService::TileService(const std::string& url, const UrlPattern& url_pattern, 
   }
 }
 
-std::string TileService::download_and_save(float lat, float lon, unsigned zoom)
-{
-  unsigned x = wms::lon2tilex(lon, zoom);
-  unsigned y = wms::lat2tiley(lat, zoom);
+std::string TileService::tile_filename(unsigned x, unsigned y, unsigned zoom) const {
+  std::string filename = std::format("{}/{}-{}-{}{}", m_cache_location, zoom, x, y, m_filetype);
+  return filename;
+}
+
+std::string TileService::tile_url(unsigned x, unsigned y, unsigned zoom) const {
   std::string url;
   const unsigned num_y_tiles = (1 << zoom);
 
@@ -38,7 +40,17 @@ std::string TileService::download_and_save(float lat, float lon, unsigned zoom)
       assert(false);
   }
 
-  std::string filename = std::format("{}/{}-{}-{}{}", m_cache_location, zoom, x, y, m_filetype);
+  return url;
+}
+
+std::string TileService::download_and_save(float lat, float lon, unsigned zoom)
+{
+  unsigned x = wms::lon2tilex(lon, zoom);
+  unsigned y = wms::lat2tiley(lat, zoom);
+
+  std::string url = tile_url(x, y, zoom);
+
+  std::string filename = tile_filename(x, y, zoom);
 
   if (std::filesystem::exists(filename)) {
     std::cout << "From disk " << std::quoted(filename) << std::endl;

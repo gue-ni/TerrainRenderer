@@ -9,6 +9,7 @@
 #include <unordered_map>
 
 #include "TileService.h"
+#include "TileUtils.h"
 
 class ThreadedTileService : public TileService
 {
@@ -23,12 +24,10 @@ class ThreadedTileService : public TileService
 
  private:
   std::thread m_thread;
-  std::queue<std::string> m_tasks;  // queue of urls to download
+  std::queue<TileId> m_tasks;  // queue of tiles to download/cache
   std::mutex m_mutex;
   std::condition_variable m_condition;
-  std::unordered_map<std::string, std::unique_ptr<Image>> m_ram_cache;  // TODO
+  std::unordered_map<std::string, std::unique_ptr<Image>> m_ram_cache; 
 
   void request_download(float lat, float lon, unsigned zoom);
-
-  void download_and_cache(float lat, float lon, unsigned zoom);
 };
