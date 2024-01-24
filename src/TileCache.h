@@ -34,6 +34,8 @@ namespace wms
 {
 constexpr float PI = std::numbers::pi_v<float>;
 
+inline unsigned num_tiles(unsigned zoom) { return (1 << zoom); }
+
 inline int lon2tilex(float lon, int z) { return (int)(floor((lon + 180.0f) / 360.0f * (1 << z))); }
 
 inline int lat2tiley(float lat, int z)
@@ -62,6 +64,13 @@ inline float tile_width(float lat, unsigned zoom)
 {
   const float C = 40075016.686f;
   return std::abs(C * std::cos(lat) / (1 << zoom));
+}
+
+inline std::pair<Coordinate, Coordinate> tile_bounds(unsigned x, unsigned y, unsigned zoom)
+{
+  Coordinate min = { .lat = tiley2lat(y, zoom), .lon = tilex2lon(x, zoom) };
+  Coordinate max = { .lat = tiley2lat(y + 1, zoom), .lon = tilex2lon(x + 1, zoom) };
+  return {min, max};
 }
 
 };  // namespace wms
