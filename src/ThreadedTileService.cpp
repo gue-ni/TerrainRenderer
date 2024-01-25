@@ -19,6 +19,7 @@ void ThreadedTileService::request_download(float lat, float lon, unsigned zoom)
 ThreadedTileService::~ThreadedTileService()
 {
   m_stop_thread = true;
+  request_download(0.0f, 0.0f, 0);
   m_thread.join();
 }
 
