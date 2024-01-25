@@ -14,7 +14,7 @@ void ThreadedTileService::request_download(const TileId& tile_id)
   m_condition.notify_one();
   // m_condition.notify_all();
 
-  m_already_requested.insert(tile_id.to_string());
+  m_already_requested.insert(tile_id);
 }
 
 ThreadedTileService::~ThreadedTileService()
@@ -77,7 +77,7 @@ Image* ThreadedTileService::get_tile(const TileId& tile_id)
   if (m_ram_cache.contains(tile_id_str)) {
     return m_ram_cache[tile_id_str].get();
   } else {
-    if (!m_already_requested.contains(tile_id.to_string())) {
+    if (!m_already_requested.contains(tile_id)) {
       // std::cout << "Request " << std::quoted(tile_id.to_string()) << std::endl;
       request_download(tile_id);
     }
