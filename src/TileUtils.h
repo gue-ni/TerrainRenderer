@@ -10,6 +10,16 @@ struct TileId {
   std::string to_string() const { return std::format("{}/{}/{}", zoom, x, y); }
 };
 
+template<> 
+struct std::hash<TileId> {
+    std::size_t operator()(TileId const& s) const noexcept {
+        std::size_t h1 = std::hash<unsigned>{}(s.x);
+        std::size_t h2 = std::hash<unsigned>{}(s.y);
+        std::size_t h3 = std::hash<unsigned>{}(s.zoom);
+        return h1 ^ h2 ^ h3; // TODO: Is this a good idea?
+    }
+};
+
 struct Coordinate {
   float lat, lon;
 };
