@@ -143,7 +143,8 @@
     <ClCompile Include="src/TerrainRenderer.cpp" />
     <ClCompile Include="src/TileCache.cpp" />
     <ClCompile Include="src/Window.cpp" />
-    <ClCompile Include="src/TileProvider.cpp" />
+    <ClCompile Include="src/TileService.cpp" />
+    <ClCompile Include="src/ThreadedTileService.cpp" />
     <ClCompile Include="gfx/gl.cpp" />
     <ClCompile Include="gfx/image.cpp" />
     <ClCompile Include="gfx/transform.cpp" />
@@ -158,7 +159,9 @@
     <ClInclude Include="src/TerrainRenderer.h" />
     <ClInclude Include="src/TileCache.h" />
     <ClInclude Include="src/Window.h" />
-    <ClInclude Include="src/TileProvider.h" />
+    <ClInclude Include="src/TileService.h" />
+    <ClInclude Include="src/ThreadedTileService.h" />
+    <ClInclude Include="src/TileUtils.h" />
     <ClInclude Include="gfx/gfx.h" />
     <ClInclude Include="gfx/gl.h" />
     <ClInclude Include="gfx/image.h" />

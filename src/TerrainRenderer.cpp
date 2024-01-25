@@ -65,15 +65,15 @@ void main() {
 
 constexpr uint MAX_ZOOM_LEVEL = 15;
 
-const TileName LUDESCH = wms::to_tilename(47.1958f, 9.7793f, 8);
+const TileId LUDESCH = wms::tile_id(47.1958f, 9.7793f, 8);
 
-const TileName SCHRUNS = wms::to_tilename(47.0800f, 9.9199f, 8);
+const TileId SCHRUNS = wms::tile_id(47.0800f, 9.9199f, 8);
 
-const TileName GROSS_GLOCKNER = wms::to_tilename(47.0742f, 12.6947f, 10);
+const TileId GROSS_GLOCKNER = wms::tile_id(47.0742f, 12.6947f, 10);
 
-const TileName SCHNEEBERG = wms::to_tilename(47.7671f, 15.8056f, 10);
+const TileId SCHNEEBERG = wms::tile_id(47.7671f, 15.8056f, 10);
 
-const TileName HALLSTATT = wms::to_tilename(47.5622f, 13.6493f, 10);
+const TileId HALLSTATT = wms::tile_id(47.5622f, 13.6493f, 10);
 
 TerrainRenderer::TerrainRenderer(const glm::vec2& min, const glm::vec2& max)
     : m_shader(std::make_unique<ShaderProgram>(shader_vert, shader_frag)),
@@ -101,10 +101,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   const auto terrain_center = glm::clamp(center, m_bounds.min, m_bounds.max);
 
   QuadTree quad_tree(m_bounds.min, m_bounds.max, min_node_size, max_depth);
-
   quad_tree.insert(terrain_center);
-
-  auto tiles = quad_tree.get_children();
 
   if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -113,31 +110,78 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_shader->set_uniform("proj", camera.get_projection_matrix());
   m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
 
-  for (auto* tile : tiles) {
-    Texture *heightmap = nullptr, *albedo = nullptr;
+  auto render_tile = [this](Node* tile) -> bool {
+    if (tile->is_leaf) {
+      // check if tile exists in gpu cache
+      // if yes, render it
+      // if no, request it and backtrack to parent. try to render parent.
 
-    albedo = m_tile_cache.get_tile_texture(to_uv(tile->center()), tile->depth, TileType::ORTHO);
-    heightmap = m_tile_cache.get_tile_texture(to_uv(tile->center()), tile->depth, TileType::HEIGHT);
+      // different approach:
+      // if tile is not in cache, request it and check if parent is in cache
+      // if parent is in cache, use it's texture but render only the correct
+      // cutout.
 
-    if (albedo) {
-      albedo->bind(0);
-      m_shader->set_uniform("u_albedo_texture", 0);
+      auto uv = map_to_0_1(tile->center());
+      Texture* albedo = m_tile_cache.get_tile_texture(uv, tile->depth, TileType::ORTHO);
+      Texture* heightmap = m_tile_cache.get_tile_texture(uv, tile->depth, TileType::HEIGHT);
+
+#if 0
+      if (!albedo) {
+        // go up in tree until we find a node that is cached
+        // calculate a factor for scaling the uv coords so we render it correctly
+        int diff = 0;
+
+       auto [cached_texture, cached_ancestor] = find_cached_parent_texture(tile, TileType::ORTHO, diff);
+
+        if (cached_texture) {
+          std::cout << "found cached parent\n";
+          // albedo = cached_texture;
+        }
+      }
+#endif
+
+      if (albedo && heightmap) {
+        albedo->bind(0);
+        m_shader->set_uniform("u_albedo_texture", 0);
+        m_shader->set_uniform("u_albedo_factor", glm::vec2());
+
+        heightmap->bind(1);
+        m_shader->set_uniform("u_heightmap_texture", 1);
+        m_shader->set_uniform("u_heightmap_factor", glm::vec2());
+
+        m_chunk.draw(m_shader.get(), tile->min, tile->max);
+      }
     }
 
-    if (heightmap) {
-      heightmap->bind(1);
-      m_shader->set_uniform("u_heightmap_texture", 1);
-    }
+    return true;
+  };
 
-    m_chunk.draw(m_shader.get(), tile->min, tile->max);
-  }
+  quad_tree.traverse(render_tile);
 
-  m_tile_cache.invalidate_gpu_cache();
+  // m_tile_cache.invalidate_gpu_cache();
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-glm::vec2 TerrainRenderer::to_uv(const glm::vec2& point)
+glm::vec2 TerrainRenderer::map_to_0_1(const glm::vec2& point)
 {
   return map_range(point, m_bounds.min, m_bounds.max, glm::vec2(0.0f), glm::vec2(1.0f));
+}
+
+std::pair<Texture*, Node*> TerrainRenderer::find_cached_parent_texture(Node* node, const TileType& tt, int& diff)
+{
+  diff = 0;
+  while (node->parent != nullptr) {
+    diff++;
+    node = node->parent;
+
+    auto uv = map_to_0_1(node->center());
+
+    Texture* texture = m_tile_cache.get_cached_texture(uv, node->depth, tt);
+    if (texture) {
+      return {texture, node};
+    }
+  }
+
+  return {nullptr, nullptr};
 }

@@ -15,55 +15,14 @@
 
 #include "../gfx/gfx.h"
 #include "QuadTree.h"
-#include "TileProvider.h"
+#include "ThreadedTileService.h"
+#include "TileService.h"
+#include "TileUtils.h"
 
 using namespace gfx;
 using namespace gfx::gl;
 
-struct TileName {
-  unsigned zoom, x, y;
-  std::string to_string() const { return std::format("{}/{}/{}", zoom, x, y); }
-};
-
-struct Coordinate {
-  float lat, lon;
-};
-
-namespace wms
-{
-constexpr float PI = std::numbers::pi_v<float>;
-
-inline int lon2tilex(float lon, int z) { return (int)(floor((lon + 180.0f) / 360.0f * (1 << z))); }
-
-inline int lat2tiley(float lat, int z)
-{
-  float latrad = lat * PI / 180.0f;
-  return (int)(floor((1.0f - asinh(tan(latrad)) / PI) / 2.0f * (1 << z)));
-}
-
-inline float tilex2lon(int x, int z) { return x / (float)(1 << z) * 360.0f - 180.0f; }
-
-inline float tiley2lat(int y, int z)
-{
-  float n = PI - 2.0f * PI * y / (float)(1 << z);
-  return 180.0f / PI * atan(0.5f * (exp(n) - exp(-n)));
-}
-
-inline TileName to_tilename(float lat, float lon, unsigned zoom)
-{
-  unsigned x = wms::lon2tilex(lon, zoom);
-  unsigned y = wms::lat2tiley(lat, zoom);
-  return {.zoom = zoom, .x = x, .y = y};
-}
-
-// width of tile in meters
-inline float tile_width(float lat, unsigned zoom)
-{
-  const float C = 40075016.686f;
-  return std::abs(C * std::cos(lat) / (1 << zoom));
-}
-
-};  // namespace wms
+#define MULTITHREADING 1
 
 enum TileType { ORTHO, HEIGHT };
 
@@ -77,28 +36,40 @@ struct CacheInfo {
 class TileCache
 {
  public:
-  TileCache(const TileName& root_tile, unsigned max_zoom_level);
+  TileCache(const TileId& root_tile, unsigned max_zoom_level);
 
   Texture* get_debug_texture() { return m_debug_texture.get(); }
 
   // get the tile that contains point at a specific level of detail
+  // point is in range [0, 1] relative to the root tile
   Texture* get_tile_texture(const glm::vec2& point, unsigned lod = 0, const TileType& tile_type = TileType::ORTHO);
+
+  Texture* get_cached_texture(const glm::vec2& point, unsigned lod = 0, const TileType& tile_type = TileType::ORTHO);
+
 
   void invalidate_gpu_cache();
 
  private:
-  const TileName m_root_tile;
+  const TileId m_root_tile;
   const unsigned m_max_zoom_level;
 
+#if MULTITHREADING
+  ThreadedTileService m_ortho_tile_service;
+  ThreadedTileService m_height_tile_service;
+#else
   TileService m_ortho_tile_service;
   TileService m_height_tile_service;
+#endif
 
   std::unique_ptr<Texture> m_debug_texture{nullptr};
 
-  std::unordered_map<std::string, std::tuple<CacheInfo, std::unique_ptr<Texture>>> m_gpu_cache;
+  std::unordered_map<std::string, std::unique_ptr<Texture>> m_gpu_cache;
 
-  std::unordered_map<std::string, std::tuple<CacheInfo, std::unique_ptr<Image>>> m_ram_cache;  // TODO
+  Texture* load_texture(float lat, float lon, unsigned zoom, const TileType& tile_type);
 
-  std::unique_ptr<Texture> load_texture_from_disk(float lat, float lon, unsigned zoom, const TileType& tile_type);
-  Texture* load_texture_from_cache(float lat, float lon, unsigned zoom, const TileType& tile_type);
+  std::unique_ptr<Texture> create_texture(const Image& image);
+
+  Image* request_image(float lat, float lon, unsigned zoom, const TileType& tile_type);
+
+  Coordinate lat_lon(const glm::vec2& point, unsigned lod);
 };

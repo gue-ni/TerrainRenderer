@@ -5,7 +5,7 @@
 #include "Chunk.h"
 #include "QuadTree.h"
 #include "TileCache.h"
-#include "TileProvider.h"
+#include "TileService.h"
 
 using namespace gfx;
 using namespace gfx::gl;
@@ -21,12 +21,13 @@ class TerrainRenderer
 
  private:
   std::unique_ptr<ShaderProgram> m_shader{nullptr};
-  TileName m_root_tile{};
-  Chunk m_chunk;
-  Bounds m_bounds;
+  const TileId m_root_tile;
+  const Chunk m_chunk;
+  const Bounds m_bounds;
   TileCache m_tile_cache;
   float m_height_scaling_factor;
 
   // convert from world coordinate in range m_bounds to [0, 1]
-  glm::vec2 to_uv(const glm::vec2& point);
+  glm::vec2 map_to_0_1(const glm::vec2& point);
+  std::pair<Texture*, Node*> find_cached_parent_texture(Node* node, const TileType& tt, int& diff);
 };

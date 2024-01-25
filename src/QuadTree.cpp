@@ -25,7 +25,7 @@ void QuadTree::insert(std::unique_ptr<Node>& node, const glm::vec2& point)
   float size = node->size().x;
   float distance = glm::distance(node->center(), point);
 
-  if (distance < size && size > MIN_NODE_SIZE && node->depth < MAX_DEPTH) {
+  if (distance < size && node->depth < MAX_DEPTH) {
     split(node);
     for (auto& child : node->children) insert(child, point);
   }
@@ -35,17 +35,20 @@ void QuadTree::split(std::unique_ptr<Node>& node)
 {
   auto new_depth = node->depth + 1;
   auto min = node->min, max = node->max, midpoint = node->center();
-  node->children[0] = std::make_unique<Node>(min, midpoint, new_depth);  // lower left
+  node->children[0] = 
+      std::make_unique<Node>(min, midpoint, new_depth);  // lower left
 
   node->children[1] =
       std::make_unique<Node>(glm::vec2(min.x, midpoint.y), glm::vec2(midpoint.x, max.y), new_depth);  // upper left
 
-  node->children[2] = std::make_unique<Node>(midpoint, max, new_depth);                               // upper right
+  node->children[2] = 
+      std::make_unique<Node>(midpoint, max, new_depth);  // upper right
 
   node->children[3] =
       std::make_unique<Node>(glm::vec2{midpoint.x, min.y}, glm::vec2{max.x, midpoint.y}, new_depth);  // lower right
 
   node->is_leaf = false;
+  for (auto& child : node->children) child->parent = node.get();
 }
 
 void QuadTree::collect(std::unique_ptr<Node>& node, std::vector<Node*>& children)
