@@ -60,11 +60,29 @@ inline float tile_width(float lat, unsigned zoom)
   return std::abs(C * std::cos(lat) / (1 << zoom));
 }
 
+// get min and max latitude/longitude of a tile
 inline std::pair<Coordinate, Coordinate> tile_bounds(unsigned x, unsigned y, unsigned zoom)
 {
   Coordinate min = {.lat = tiley2lat(y, zoom), .lon = tilex2lon(x, zoom)};
   Coordinate max = {.lat = tiley2lat(y + 1, zoom), .lon = tilex2lon(x + 1, zoom)};
   return {min, max};
+}
+
+inline TileId parent_tile(const TileId& tile) 
+{
+  return {.zoom = tile.zoom - 1, .x = tile.x / 2, .y = tile.y / 2 ;
+}
+
+// https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Subtiles
+inline std::array<TileId, 4> child_tiles(const TileId& tile) 
+{
+  auto zoom = tile.zoom + 1;
+  return {
+    {},
+    {},
+    {},
+    {}
+  };
 }
 
 };  // namespace wms
