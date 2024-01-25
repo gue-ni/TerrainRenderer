@@ -5,7 +5,7 @@
 #include <string>
 
 struct TileId {
-  unsigned zoom, x, y;
+  unsigned zoom{}, x{}, y{};
   auto operator<=>(const TileId&) const = default;
   std::string to_string() const { return std::format("{}/{}/{}", zoom, x, y); }
 };

@@ -43,41 +43,11 @@ std::string TileService::tile_url(unsigned x, unsigned y, unsigned zoom) const
   return url;
 }
 
-std::string TileService::download_and_save(float lat, float lon, unsigned zoom)
+Image* TileService::get_tile(const TileId& tile)
 {
-  unsigned x = wms::lon2tilex(lon, zoom);
-  unsigned y = wms::lat2tiley(lat, zoom);
+  std::string url = tile_url(tile.x, tile.y, tile.zoom);
 
-  std::string url = tile_url(x, y, zoom);
-
-  std::string filename = tile_filename(x, y, zoom);
-
-  if (std::filesystem::exists(filename)) {
-    std::cout << "From disk " << std::quoted(filename) << std::endl;
-    return filename;
-  }
-
-  std::ofstream of(filename, std::ios::binary);
-  cpr::Response r = cpr::Download(of, cpr::Url{url});
-
-  if (r.status_code != 200) {
-    std::cerr << "Could not get tile from " << std::quoted(url) << std::endl;
-    std::filesystem::remove(filename);
-  } else {
-    std::cout << "From web " << std::quoted(url) << std::endl;
-  }
-
-  return filename;
-}
-
-Image* TileService::get_tile(float lat, float lon, unsigned zoom)
-{
-  unsigned x = wms::lon2tilex(lon, zoom);
-  unsigned y = wms::lat2tiley(lat, zoom);
-
-  std::string url = tile_url(x, y, zoom);
-
-  std::string filename = tile_filename(x, y, zoom);
+  std::string filename = tile_filename(tile.x, tile.y, tile.zoom);
 
   if (!std::filesystem::exists(filename)) {
     std::ofstream of(filename, std::ios::binary);
