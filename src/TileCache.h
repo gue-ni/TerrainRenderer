@@ -24,7 +24,7 @@ using namespace gfx::gl;
 
 #define MULTITHREADING 1
 
-enum TileType { ORTHO, HEIGHT };
+enum TileType : size_t { ORTHO = 0, HEIGHT = 1 };
 
 using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
 
@@ -54,6 +54,8 @@ class TileCache
   const TileId m_root_tile;
   const unsigned m_max_zoom_level;
   Coordinate m_min_coord, m_max_coord;
+  std::unique_ptr<Texture> m_debug_texture{nullptr};
+  std::unordered_map<std::string, std::unique_ptr<Texture>> m_gpu_cache;
 
 #if MULTITHREADING
   ThreadedTileService m_ortho_tile_service;
@@ -62,11 +64,7 @@ class TileCache
   TileService m_ortho_tile_service;
   TileService m_height_tile_service;
 #endif
-
-  std::unique_ptr<Texture> m_debug_texture{nullptr};
-
-  std::unordered_map<std::string, std::unique_ptr<Texture>> m_gpu_cache;
-
+  
   std::unique_ptr<Texture> create_texture(const Image& image);
 
   Image* request_image(const TileId&, const TileType&);

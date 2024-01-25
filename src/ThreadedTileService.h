@@ -19,10 +19,10 @@ class ThreadedTileService : public TileService
   using TileService::TileService;
   ~ThreadedTileService();
 
-  // start seperate worker thread
+  // Start seperate worker thread
   void start_worker_thread();
 
-  // if tile in cache, return tile. If not request, it for download and return nullptr
+  // If tile in cache, return tile. If not, request it for download and return nullptr
   Image* get_tile(float lat, float lon, unsigned zoom) override;
 
   Image* get_tile(const TileId& tile_id);

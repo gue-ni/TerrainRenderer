@@ -29,5 +29,4 @@ class TerrainRenderer
 
   // convert from world coordinate in range m_bounds to [0, 1]
   glm::vec2 map_to_0_1(const glm::vec2& point);
-  std::pair<Texture*, Node*> find_cached_parent_texture(Node* node, const TileType& tt, int& diff);
 };
