@@ -2,38 +2,36 @@
 
 #include <cpr/cpr.h>
 
-#define LOG 0
+#define LOG 1
 
-void ThreadedTileService::request_download(float lat, float lon, unsigned zoom)
+void ThreadedTileService::request_download(const TileId& tile_id)
 {
   std::unique_lock<std::mutex> lock(m_mutex);
 
-  TileId id = wms::tile_id(lat, lon, zoom);
-  m_tiles_to_download.push(id);
-  lock.unlock();
-  m_condition.notify_one();
+  m_tiles_to_download.push(tile_id);
+  // lock.unlock();
 
-  m_already_requested.insert(id.to_string());
+  m_condition.notify_one();
+  // m_condition.notify_all();
+
+  m_already_requested.insert(tile_id.to_string());
 }
 
 ThreadedTileService::~ThreadedTileService()
 {
   m_stop_thread = true;
-  request_download(0.0f, 0.0f, 0);
+  TileId null;
+  request_download(null);
   m_thread.join();
 }
 
 void ThreadedTileService::start_worker_thread()
 {
-  m_thread = std::thread([this]() {
+  auto worker = [this]() {
     while (!m_stop_thread) {
       std::unique_lock<std::mutex> lock(m_mutex);
       m_condition.wait(lock, [this] { return !m_tiles_to_download.empty(); });
-#if 1
       auto& tile_id = m_tiles_to_download.top();
-#else
-      auto& tile_id = m_tiles_to_download.front();
-#endif
       m_tiles_to_download.pop();
       lock.unlock();
 
@@ -47,14 +45,13 @@ void ThreadedTileService::start_worker_thread()
 
         if (r.status_code != 200) {
           std::cerr << "Could not download " << std::quoted(url) << std::endl;
-          std::filesystem::remove(filename);
+          std::error_code err;
+          std::filesystem::remove(filename, err);
         } else {
 #if LOG
           std::cout << "Download " << std::quoted(url) << std::endl;
 #endif
         }
-
-        assert(r.status_code == 200);
       }
 
       auto image = std::make_unique<Image>();
@@ -68,7 +65,24 @@ void ThreadedTileService::start_worker_thread()
 
       // std::cout << "Load " << std::quoted(tile_id.to_string()) << std::endl;
     }
-  });
+  };
+
+  m_thread = std::thread(worker);
+}
+
+Image* ThreadedTileService::get_tile(const TileId& tile_id)
+{
+  std::string tile_id_str = tile_filename(tile_id.x, tile_id.y, tile_id.zoom);
+
+  if (m_ram_cache.contains(tile_id_str)) {
+    return m_ram_cache[tile_id_str].get();
+  } else {
+    if (!m_already_requested.contains(tile_id.to_string())) {
+      // std::cout << "Request " << std::quoted(tile_id.to_string()) << std::endl;
+      request_download(tile_id);
+    }
+    return nullptr;
+  }
 }
 
 Image* ThreadedTileService::get_tile(float lat, float lon, unsigned zoom)
@@ -81,11 +95,9 @@ Image* ThreadedTileService::get_tile(float lat, float lon, unsigned zoom)
     return m_ram_cache[tile_id_str].get();
   } else {
     if (!m_already_requested.contains(tile_id.to_string())) {
-      std::cout << "Request " << std::quoted(tile_id.to_string()) << std::endl;
-      request_download(lat, lon, zoom);
+      // std::cout << "Request " << std::quoted(tile_id.to_string()) << std::endl;
+      request_download(tile_id);
     }
     return nullptr;
   }
 }
-
-

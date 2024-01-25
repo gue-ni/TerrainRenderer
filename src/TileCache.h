@@ -44,14 +44,20 @@ class TileCache
   // point is in range [0, 1] relative to the root tile
   Texture* get_tile_texture(const glm::vec2& point, unsigned lod = 0, const TileType& tile_type = TileType::ORTHO);
 
+  Texture* get_tile_texture(const TileId& tile, const TileType& tile_type);
+
   Texture* get_cached_texture(const glm::vec2& point, unsigned lod = 0, const TileType& tile_type = TileType::ORTHO);
 
-
   void invalidate_gpu_cache();
+
+  Coordinate lat_lon(const glm::vec2& point, unsigned lod);
+
+  TileId tile_id(Coordinate& coord, unsigned zoom);
 
  private:
   const TileId m_root_tile;
   const unsigned m_max_zoom_level;
+  Coordinate m_min_coord, m_max_coord;
 
 #if MULTITHREADING
   ThreadedTileService m_ortho_tile_service;
@@ -65,11 +71,11 @@ class TileCache
 
   std::unordered_map<std::string, std::unique_ptr<Texture>> m_gpu_cache;
 
-  Texture* load_texture(float lat, float lon, unsigned zoom, const TileType& tile_type);
+  // Texture* load_texture(float lat, float lon, unsigned zoom, const TileType& tile_type);
+
+  Texture* load_texture(const TileId& tile_id, const TileType& tile_type);
 
   std::unique_ptr<Texture> create_texture(const Image& image);
 
-  Image* request_image(float lat, float lon, unsigned zoom, const TileType& tile_type);
-
-  Coordinate lat_lon(const glm::vec2& point, unsigned lod);
+  Image* request_image(const TileId&, const TileType&);
 };

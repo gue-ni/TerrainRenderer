@@ -14,23 +14,37 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 proj;
 
+uniform sampler2D u_heightmap_texture;
+uniform float u_height_scaling_factor;
+
+uniform vec2 u_albedo_uv_min;
+uniform vec2 u_albedo_uv_max;
+
 out vec2 uv;
 
+
+
 float altitude_from_color(vec4 color) {
-    return (color.r + color.g / 255.0);
+  return (color.r + color.g / 255.0);
 }
 
-uniform sampler2D u_heightmap_texture;
-
-uniform float u_height_scaling_factor;
+vec2 map_range(vec2 s, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max)
+{
+  return out_min + (s - in_min) * (out_max - out_min) / (in_max - in_min);
+}
 
 void main() {
   uv = a_tex;
   vec4 world_pos = model * vec4(a_pos, 1.0);
 
 #if 1
+
+  vec2 tmp_uv = map_range(uv, vec2(0), vec2(1), u_albedo_uv_min, u_albedo_uv_max);
+
   vec4 height_sample = texture(u_heightmap_texture, uv);
+
   float height = altitude_from_color(height_sample);
+
   world_pos.y = height * u_height_scaling_factor;
 #endif
 
@@ -122,20 +136,43 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
       // cutout.
 
       auto uv = map_to_0_1(tile->center());
-      Texture* albedo = m_tile_cache.get_tile_texture(uv, tile->depth, TileType::ORTHO);
-      Texture* heightmap = m_tile_cache.get_tile_texture(uv, tile->depth, TileType::HEIGHT);
+      auto tmp_coord = m_tile_cache.lat_lon(uv, tile->depth);
+      auto tile_id = m_tile_cache.tile_id(tmp_coord, tile->depth);
+
+
+      //Texture* albedo = m_tile_cache.get_tile_texture(uv, tile->depth, TileType::ORTHO);
+      //Texture* heightmap = m_tile_cache.get_tile_texture(uv, tile->depth, TileType::HEIGHT);
+
+      Texture* albedo = m_tile_cache.get_tile_texture(tile_id, TileType::ORTHO);
+      Texture* heightmap = m_tile_cache.get_tile_texture(tile_id, TileType::HEIGHT);
+
+
+
+    
 
 #if 0
       if (!albedo) {
         // go up in tree until we find a node that is cached
         // calculate a factor for scaling the uv coords so we render it correctly
-        int diff = 0;
 
-       auto [cached_texture, cached_ancestor] = find_cached_parent_texture(tile, TileType::ORTHO, diff);
+        Node* parent = tile->parent;
+        if (parent) {
+          auto uv = map_to_0_1(tile->center());
+          Texture* tmp = m_tile_cache.get_tile_texture(uv, parent->depth, TileType::ORTHO);
 
-        if (cached_texture) {
-          std::cout << "found cached parent\n";
-          // albedo = cached_texture;
+          if (tmp) {
+            std::cout << "Found parent\n";
+
+            auto coord = m_tile_cache.lat_lon(uv, parent->depth);
+            TileId parent_tile_id = m_tile_cache.tile_id(coord, parent->depth);
+
+
+            auto children = wms::child_tiles(parent_tile_id);
+            for (auto& child : children) {
+              if (child == )
+            
+            }
+          }
         }
       }
 #endif
@@ -143,7 +180,8 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
       if (albedo && heightmap) {
         albedo->bind(0);
         m_shader->set_uniform("u_albedo_texture", 0);
-        m_shader->set_uniform("u_albedo_factor", glm::vec2());
+        m_shader->set_uniform("u_albedo_uv_min", glm::vec2(0.0f));
+        m_shader->set_uniform("u_albedo_uv_max", glm::vec2(1.0f));
 
         heightmap->bind(1);
         m_shader->set_uniform("u_heightmap_texture", 1);

@@ -25,6 +25,8 @@ class ThreadedTileService : public TileService
   // if tile in cache, return tile. If not request, it for download and return nullptr
   Image* get_tile(float lat, float lon, unsigned zoom) override;
 
+  Image* get_tile(const TileId& tile_id);
+
  private:
   bool m_stop_thread{false};
   std::thread m_thread;
@@ -34,5 +36,5 @@ class ThreadedTileService : public TileService
   std::unordered_map<std::string, std::unique_ptr<Image>> m_ram_cache;
   std::set<std::string> m_already_requested;
 
-  void request_download(float lat, float lon, unsigned zoom);
+  void request_download(const TileId&);
 };

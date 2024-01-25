@@ -14,6 +14,12 @@ TileCache::TileCache(const TileId& root_tile, unsigned max_zoom_level)
       m_height_tile_service("https://alpinemaps.cg.tuwien.ac.at/tiles/alpine_png", TileService::UrlPattern::ZXY, ".png")
 
 {
+  m_min_coord.lat = wms::tiley2lat(m_root_tile.y, m_root_tile.zoom);
+  m_min_coord.lon = wms::tilex2lon(m_root_tile.x, m_root_tile.zoom);
+
+  m_max_coord.lat = wms::tiley2lat(m_root_tile.y + 1, m_root_tile.zoom);
+  m_max_coord.lon = wms::tilex2lon(m_root_tile.x + 1, m_root_tile.zoom);
+
 #if MULTITHREADING
   m_ortho_tile_service.start_worker_thread();
   m_height_tile_service.start_worker_thread();
@@ -26,8 +32,13 @@ Texture* TileCache::get_tile_texture(const glm::vec2& point, unsigned lod, const
   assert(zoom <= m_max_zoom_level);
 
   Coordinate coords = lat_lon(point, zoom);
+  TileId tile = tile_id(coords, zoom);
+  return load_texture(tile, tile_type);
+}
 
-  return load_texture(coords.lat, coords.lon, zoom, tile_type);
+Texture* TileCache::get_tile_texture(const TileId& tile, const TileType& tile_type)
+{
+  return load_texture(tile, tile_type);
 }
 
 Texture* TileCache::get_cached_texture(const glm::vec2& point, unsigned lod, const TileType& tile_type)
@@ -40,8 +51,6 @@ Texture* TileCache::get_cached_texture(const glm::vec2& point, unsigned lod, con
 
   return m_gpu_cache[name].get();
 }
-
-
 
 void TileCache::invalidate_gpu_cache()
 {
@@ -73,15 +82,15 @@ void TileCache::invalidate_gpu_cache()
 #endif
 }
 
-Texture* TileCache::load_texture(float lat, float lon, unsigned zoom, const TileType& tile_type)
+Texture* TileCache::load_texture(const TileId& tile_id, const TileType& tile_type)
 {
-  TileId tile_name = wms::tile_id(lat, lon, zoom);
-  std::string name = tile_name.to_string() + "+" + std::to_string(tile_type);
+  // TileId tile_id = wms::tile_id(lat, lon, zoom);
+  std::string name = tile_id.to_string() + "+" + std::to_string(tile_type);
 
   if (m_gpu_cache.contains(name)) {
     return m_gpu_cache[name].get();
   } else {
-    Image* image = request_image(lat, lon, zoom, tile_type);
+    Image* image = request_image(tile_id, tile_type);
 
     if (image) {
       CacheInfo info;
@@ -115,14 +124,14 @@ std::unique_ptr<Texture> TileCache::create_texture(const Image& image)
   return texture;
 }
 
-Image* TileCache::request_image(float lat, float lon, unsigned zoom, const TileType& tile_type)
+Image* TileCache::request_image(const TileId& tile, const TileType& tile_type)
 {
   switch (tile_type) {
     case TileType::ORTHO:
-      return m_ortho_tile_service.get_tile(lat, lon, zoom);
+      return m_ortho_tile_service.get_tile(tile);
 
     case TileType::HEIGHT:
-      return m_height_tile_service.get_tile(lat, lon, zoom);
+      return m_height_tile_service.get_tile(tile);
 
     default:
       assert(false);
@@ -137,16 +146,13 @@ Coordinate TileCache::lat_lon(const glm::vec2& point, unsigned zoom)
   // point is in range [0, 1]
   assert(glm::all(glm::lessThanEqual(glm::vec2(0.0f), point)) && glm::all(glm::lessThanEqual(point, glm::vec2(1.0f))));
 
-  Coordinate min_coord;
-  min_coord.lat = wms::tiley2lat(m_root_tile.y, m_root_tile.zoom);
-  min_coord.lon = wms::tilex2lon(m_root_tile.x, m_root_tile.zoom);
-
-  Coordinate max_coord;
-  max_coord.lat = wms::tiley2lat(m_root_tile.y + 1, m_root_tile.zoom);
-  max_coord.lon = wms::tilex2lon(m_root_tile.x + 1, m_root_tile.zoom);
-
-  float lat = glm::mix(min_coord.lat, max_coord.lat, point.y);
-  float lon = glm::mix(min_coord.lon, max_coord.lon, point.x);
+  float lat = glm::mix(m_min_coord.lat, m_max_coord.lat, point.y);
+  float lon = glm::mix(m_min_coord.lon, m_max_coord.lon, point.x);
 
   return {.lat = lat, .lon = lon};
+}
+
+TileId TileCache::tile_id(Coordinate& coord, unsigned zoom)
+{
+  return wms::tile_id(coord.lat, coord.lon, m_root_tile.zoom + zoom);
 }
