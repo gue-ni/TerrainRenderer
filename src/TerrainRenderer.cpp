@@ -136,19 +136,13 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
       // cutout.
 
       auto uv = map_to_0_1(tile->center());
-      auto tmp_coord = m_tile_cache.lat_lon(uv, tile->depth);
-      auto tile_id = m_tile_cache.tile_id(tmp_coord, tile->depth);
+      Coordinate coord = m_tile_cache.lat_lon(uv);
+      TileId tile_id = m_tile_cache.tile_id(coord, tile->depth);
 
+      Texture* albedo = m_tile_cache.tile_texture(tile_id, TileType::ORTHO);
+      Texture* heightmap = m_tile_cache.tile_texture(tile_id, TileType::HEIGHT);
 
-      //Texture* albedo = m_tile_cache.get_tile_texture(uv, tile->depth, TileType::ORTHO);
-      //Texture* heightmap = m_tile_cache.get_tile_texture(uv, tile->depth, TileType::HEIGHT);
-
-      Texture* albedo = m_tile_cache.get_tile_texture(tile_id, TileType::ORTHO);
-      Texture* heightmap = m_tile_cache.get_tile_texture(tile_id, TileType::HEIGHT);
-
-
-
-    
+      glm::vec2 albedo_uv_min(0.0f), albedo_uv_max(1.0f);
 
 #if 0
       if (!albedo) {
@@ -157,21 +151,44 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
         Node* parent = tile->parent;
         if (parent) {
-          auto uv = map_to_0_1(tile->center());
-          Texture* tmp = m_tile_cache.get_tile_texture(uv, parent->depth, TileType::ORTHO);
+          TileId parent_tile_id = wms::parent_tile(tile_id);
 
-          if (tmp) {
+          Texture* parent_texture = m_tile_cache.cached_tile_texture(parent_tile_id, TileType::ORTHO);
+
+          if (parent_texture) {
             std::cout << "Found parent\n";
 
-            auto coord = m_tile_cache.lat_lon(uv, parent->depth);
-            TileId parent_tile_id = m_tile_cache.tile_id(coord, parent->depth);
+#if 1
+            auto x = tile_id.x - (2 * parent_tile_id.x);
+            auto y = tile_id.y - (2 * parent_tile_id.y);
 
+            albedo_uv_min = glm::vec2(x * 0.5f, y * 0.5f);
+            albedo_uv_max = glm::vec2((x + 1) * 0.5f, (y + 1) * 0.5f);
 
+            albedo = parent_texture;
+#else
             auto children = wms::child_tiles(parent_tile_id);
-            for (auto& child : children) {
-              if (child == )
-            
+
+            if (tile_id == children[0]) {
+              albedo_uv_min = {0.0f, 0.0f};
+              albedo_uv_max = {0.5f, 0.5f};
+
+            } else if (tile_id == children[1]) {
+              albedo_uv_min = {0.5f, 0.0f};
+              albedo_uv_max = {1.0f, 0.5f};
+
+            } else if (tile_id == children[2]) {
+              albedo_uv_min = {0.0f, 0.5f};
+              albedo_uv_max = {0.5f, 1.0f};
+
+            } else if (tile_id == children[3]) {
+              albedo_uv_min = {0.5f, 0.5f};
+              albedo_uv_max = {1.0f, 1.0f};
+
+            } else {
+              assert(false);
             }
+#endif
           }
         }
       }
@@ -180,12 +197,13 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
       if (albedo && heightmap) {
         albedo->bind(0);
         m_shader->set_uniform("u_albedo_texture", 0);
-        m_shader->set_uniform("u_albedo_uv_min", glm::vec2(0.0f));
-        m_shader->set_uniform("u_albedo_uv_max", glm::vec2(1.0f));
+        m_shader->set_uniform("u_albedo_uv_min", albedo_uv_min);
+        m_shader->set_uniform("u_albedo_uv_max", albedo_uv_max);
 
         heightmap->bind(1);
         m_shader->set_uniform("u_heightmap_texture", 1);
-        m_shader->set_uniform("u_heightmap_factor", glm::vec2());
+        m_shader->set_uniform("u_heightmap_uv_min", glm::vec2(0.0f));
+        m_shader->set_uniform("u_heightmap_uv_max", glm::vec2(1.0f));
 
         m_chunk.draw(m_shader.get(), tile->min, tile->max);
       }
@@ -206,20 +224,4 @@ glm::vec2 TerrainRenderer::map_to_0_1(const glm::vec2& point)
   return map_range(point, m_bounds.min, m_bounds.max, glm::vec2(0.0f), glm::vec2(1.0f));
 }
 
-std::pair<Texture*, Node*> TerrainRenderer::find_cached_parent_texture(Node* node, const TileType& tt, int& diff)
-{
-  diff = 0;
-  while (node->parent != nullptr) {
-    diff++;
-    node = node->parent;
 
-    auto uv = map_to_0_1(node->center());
-
-    Texture* texture = m_tile_cache.get_cached_texture(uv, node->depth, tt);
-    if (texture) {
-      return {texture, node};
-    }
-  }
-
-  return {nullptr, nullptr};
-}
