@@ -84,20 +84,3 @@ Image* ThreadedTileService::get_tile(const TileId& tile_id)
     return nullptr;
   }
 }
-
-Image* ThreadedTileService::get_tile(float lat, float lon, unsigned zoom)
-{
-  TileId tile_id = wms::tile_id(lat, lon, zoom);
-
-  std::string tile_id_str = tile_filename(tile_id.x, tile_id.y, tile_id.zoom);
-
-  if (m_ram_cache.contains(tile_id_str)) {
-    return m_ram_cache[tile_id_str].get();
-  } else {
-    if (!m_already_requested.contains(tile_id.to_string())) {
-      // std::cout << "Request " << std::quoted(tile_id.to_string()) << std::endl;
-      request_download(tile_id);
-    }
-    return nullptr;
-  }
-}
