@@ -10,14 +10,15 @@ struct TileId {
   std::string to_string() const { return std::format("{}/{}/{}", zoom, x, y); }
 };
 
-template<> 
+template <>
 struct std::hash<TileId> {
-    std::size_t operator()(TileId const& s) const noexcept {
-        std::size_t h1 = std::hash<unsigned>{}(s.x);
-        std::size_t h2 = std::hash<unsigned>{}(s.y);
-        std::size_t h3 = std::hash<unsigned>{}(s.zoom);
-        return h1 ^ h2 ^ h3; // TODO: Is this a good idea?
-    }
+  std::size_t operator()(TileId const& s) const noexcept
+  {
+    std::size_t h1 = std::hash<unsigned>{}(s.x);
+    std::size_t h2 = std::hash<unsigned>{}(s.y);
+    std::size_t h3 = std::hash<unsigned>{}(s.zoom);
+    return h1 ^ h2 ^ h3;  // TODO: Is this a good idea?
+  }
 };
 
 struct Coordinate {
@@ -68,23 +69,18 @@ inline std::pair<Coordinate, Coordinate> tile_bounds(unsigned x, unsigned y, uns
   return {min, max};
 }
 
-inline TileId parent_tile(const TileId& tile) 
-{
-  return {.zoom = tile.zoom - 1, .x = tile.x / 2, .y = tile.y / 2 ;
-}
+inline TileId parent_tile(const TileId& tile) { return {.zoom = tile.zoom - 1, .x = tile.x / 2, .y = tile.y / 2}; }
 
 // https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Subtiles
-inline std::array<TileId, 4> child_tiles(const TileId& tile) 
+inline std::array<TileId, 4> child_tiles(const TileId& tile)
 {
-  auto x = tile.x;
-  auto y = tile.y;
-  auto new_zoom = tile.zoom + 1;
-  return {
-    { new_zoom, 2 * x, 2 * y },
-    { new_zoom, 2 * x + 1, 2 * y },
-    { new_zoom, 2 * x, 2 * y + 1 },
-    { new_zoom, 2 * x + 1, 2 * y + 1 },
-  };
+  unsigned x = tile.x, y = tile.y, new_zoom = tile.zoom + 1;
+  return std::array<TileId, 4>({
+      {new_zoom, 2 * x + 0, 2 * y + 0},
+      {new_zoom, 2 * x + 1, 2 * y + 0},
+      {new_zoom, 2 * x + 0, 2 * y + 1},
+      {new_zoom, 2 * x + 1, 2 * y + 1},
+  });
 }
 
 };  // namespace wms
