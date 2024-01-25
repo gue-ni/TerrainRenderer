@@ -19,17 +19,17 @@ constexpr float PI = std::numbers::pi_v<float>;
 
 inline unsigned num_tiles(unsigned zoom) { return (1 << zoom); }
 
-inline int lon2tilex(float lon, int z) { return (int)(floor((lon + 180.0f) / 360.0f * (1 << z))); }
+inline unsigned lon2tilex(float lon, unsigned z) { return (int)(floor((lon + 180.0f) / 360.0f * (1 << z))); }
 
-inline int lat2tiley(float lat, int z)
+inline unsigned lat2tiley(float lat, unsigned z)
 {
   float latrad = lat * PI / 180.0f;
-  return (int)(floor((1.0f - asinh(tan(latrad)) / PI) / 2.0f * (1 << z)));
+  return (unsigned)(floor((1.0f - asinh(tan(latrad)) / PI) / 2.0f * (1 << z)));
 }
 
-inline float tilex2lon(int x, int z) { return x / (float)(1 << z) * 360.0f - 180.0f; }
+inline float tilex2lon(unsigned x, unsigned z) { return x / (float)(1 << z) * 360.0f - 180.0f; }
 
-inline float tiley2lat(int y, int z)
+inline float tiley2lat(unsigned y, unsigned z)
 {
   float n = PI - 2.0f * PI * y / (float)(1 << z);
   return 180.0f / PI * atan(0.5f * (exp(n) - exp(-n)));
