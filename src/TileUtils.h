@@ -76,12 +76,14 @@ inline TileId parent_tile(const TileId& tile)
 // https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Subtiles
 inline std::array<TileId, 4> child_tiles(const TileId& tile) 
 {
-  auto zoom = tile.zoom + 1;
+  auto x = tile.x;
+  auto y = tile.y;
+  auto new_zoom = tile.zoom + 1;
   return {
-    {},
-    {},
-    {},
-    {}
+    { new_zoom, 2 * x, 2 * y },
+    { new_zoom, 2 * x + 1, 2 * y },
+    { new_zoom, 2 * x, 2 * y + 1 },
+    { new_zoom, 2 * x + 1, 2 * y + 1 },
   };
 }
 
