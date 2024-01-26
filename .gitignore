@@ -1,6 +1,10 @@
 .vs/
 libraries/
+libraries2/
 x64/
 *.user
 *.mp4
 cache/*
+tmp/
+*.zip
+
