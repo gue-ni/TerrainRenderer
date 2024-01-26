@@ -32,7 +32,7 @@ class ThreadedTileService : public TileService
   std::mutex m_mutex;
   std::condition_variable m_condition;
   std::unordered_map<std::string, std::unique_ptr<Image>> m_ram_cache;
-  std::set<std::string> m_already_requested;
+  std::set<TileId> m_already_requested;
 
   void request_download(const TileId&);
 };
