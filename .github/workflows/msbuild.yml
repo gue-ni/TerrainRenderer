@@ -37,9 +37,11 @@ jobs:
       run: |
         ls 
         mkdir libraries
-        curl -fsSL -o libraries/glm.zip https://github.com/g-truc/glm/releases/download/0.9.9.8/glm-0.9.9.8.zip
-        curl -fsSL -o libraries/SDL2.zip https://github.com/libsdl-org/SDL/releases/download/release-2.26.4/SDL2-devel-2.26.4-VC.zip
-        curl -fsSL -o libraries/glew.zip https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
+        curl -L -o libraries/glm.zip https://github.com/g-truc/glm/releases/download/0.9.9.8/glm-0.9.9.8.zip
+        curl -L -o libraries/SDL2.zip https://github.com/libsdl-org/SDL/releases/download/release-2.26.4/SDL2-devel-2.26.4-VC.zip
+        curl -L -o libraries/glew.zip https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
+
+        ls
 
         tar -xf glm.zip
         move glm libraries
