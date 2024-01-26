@@ -10,6 +10,11 @@ struct TileId {
   std::string to_string() const { return std::format("{}/{}/{}", zoom, x, y); }
 };
 
+inline std::ostream& operator<<(std::ostream& os, const TileId& t)
+{
+  return os << t.zoom << ", " << t.x << ", " << t.y;
+}
+
 template <>
 struct std::hash<TileId> {
   std::size_t operator()(TileId const& s) const noexcept
@@ -24,6 +29,11 @@ struct std::hash<TileId> {
 struct Coordinate {
   float lat, lon;
 };
+
+inline std::ostream& operator<<(std::ostream& os, const Coordinate& c)
+{
+  return os << c.lat << ", " << c.lon;
+}
 
 namespace wms
 {

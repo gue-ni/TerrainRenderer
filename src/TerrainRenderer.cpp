@@ -77,7 +77,7 @@ void main() {
 }
 )";
 
-constexpr uint MAX_ZOOM_LEVEL = 15;
+constexpr uint MAX_ZOOM_LEVEL = 11;
 
 const TileId LUDESCH = wms::tile_id(47.1958f, 9.7793f, 8);
 
@@ -106,6 +106,9 @@ TerrainRenderer::TerrainRenderer(const glm::vec2& min, const glm::vec2& max)
   float scaling_ratio = width / tile_width;
 
   m_height_scaling_factor = (max_elevation - min_elevation) * scaling_ratio;
+
+  (void)m_tile_cache.tile_texture(m_root_tile, TileType::ORTHO);
+  (void)m_tile_cache.tile_texture(m_root_tile, TileType::HEIGHT);
 }
 
 void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
@@ -135,8 +138,8 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
       // if parent is in cache, use it's texture but render only the correct
       // cutout.
 
-      auto uv = map_to_0_1(tile->center());
-      Coordinate coord = m_tile_cache.lat_lon(uv);
+      auto relative = map_to_0_1(tile->center());
+      Coordinate coord = m_tile_cache.lat_lon(relative);
       TileId tile_id = m_tile_cache.tile_id(coord, tile->depth);
 
       Texture* albedo = m_tile_cache.tile_texture(tile_id, TileType::ORTHO);
@@ -193,6 +196,26 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
         }
       }
 #endif
+#if 0
+      if (!albedo) {
+
+        std::cout << "tile not found, using root\n";
+
+        // if tile is not cached, get the root texture and scale the uv
+        Texture* albedo_root = m_tile_cache.tile_texture(m_root_tile, TileType::ORTHO);
+        unsigned lod_diff = m_root_tile.zoom - tile_id.zoom;
+        unsigned x = (m_root_tile.x * lod_diff * 2);
+        unsigned y = (m_root_tile.y * lod_diff * 2);
+        unsigned num_tiles_in_root = 1 << lod_diff;
+        float factor = 1.0f / num_tiles_in_root;
+        albedo_uv_min = glm::vec2(x * factor, y * factor);
+        albedo_uv_max = glm::vec2((x + 1) * factor, (y + 1) * factor);
+
+        albedo = albedo_root;
+
+      }
+
+#endif
 
       if (albedo && heightmap) {
         albedo->bind(0);
@@ -223,5 +246,3 @@ glm::vec2 TerrainRenderer::map_to_0_1(const glm::vec2& point)
 {
   return map_range(point, m_bounds.min, m_bounds.max, glm::vec2(0.0f), glm::vec2(1.0f));
 }
-
-
