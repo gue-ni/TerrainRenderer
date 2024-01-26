@@ -106,7 +106,6 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)\libraries\cpr-1.10.5\build\cpr_generated_includes;$(ProjectDir)\libraries\cpr-1.10.5\build\_deps\curl-src\include;$(ProjectDir)\libraries\cpr-1.10.5\include;$(ProjectDir)\libraries\glew-2.2.0\include;$(ProjectDir)\libraries\SDL2-2.26.4\include;$(ProjectDir)\libraries\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -125,7 +124,6 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)\libraries\cpr-1.10.5\build\cpr_generated_includes;$(ProjectDir)\libraries\cpr-1.10.5\build\_deps\curl-src\include;$(ProjectDir)\libraries\cpr-1.10.5\include;$(ProjectDir)\libraries\glew-2.2.0\include;$(ProjectDir)\libraries\SDL2-2.26.4\include;$(ProjectDir)\libraries\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
