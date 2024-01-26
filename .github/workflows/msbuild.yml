@@ -41,7 +41,13 @@ jobs:
         curl -fsSL -o libraries/SDL2.zip https://github.com/libsdl-org/SDL/releases/download/release-2.26.4/SDL2-devel-2.26.4-VC.zip
         curl -fsSL -o libraries/glew.zip https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
 
-        tar -xf libraries/glm.zip libraries
+        tar -xf glm.zip
+        move glm libraries
+        tar -xf glew.zip 
+        move glew libraries
+        tar -xf SDL2.zip
+        move SDL2 libraries
+        
         ls
         ls libraries
         ls libraries/glm
