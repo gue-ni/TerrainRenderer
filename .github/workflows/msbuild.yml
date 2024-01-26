@@ -45,11 +45,11 @@ jobs:
 
         ls
 
-        move glm-0.9.9.8 libraries
+        move glm libraries
         
         ls
         ls libraries
-        ls libraries/glm-0.9.9.8
+        ls libraries/glm
 
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
