@@ -52,7 +52,7 @@ jobs:
         tar -xf cpr.zip
         move cpr-1.10.5 libraries
         cd libraries/cpr-1.10.5
-        cmake -G "Ninja" -B build/ -DCMAKE_BUILD_TYPE=Release
+        cmake -B build/ -DCMAKE_BUILD_TYPE=Release
         cmake --build build/ --parallel
 
 
