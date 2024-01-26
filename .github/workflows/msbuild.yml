@@ -44,24 +44,33 @@ jobs:
         curl -L -o SDL2.zip https://github.com/libsdl-org/SDL/releases/download/release-2.26.4/SDL2-devel-2.26.4-VC.zip
         curl -L -o cpr.zip https://github.com/libcpr/cpr/archive/refs/tags/1.10.5.zip
 
-
         ls
 
         tar -xf glm-0.9.9.8.zip
         tar -xf glew.zip
         tar -xf SDL2.zip
+        tar -xf cpr.zip
 
         ls
 
         move glm libraries
         move glew-2.2.0 libraries
         move SDL2-2.26.4 libraries
+        move cpr-1.10.5 libraries
         
         ls
         ls libraries
-        ls libraries/glm
 
+
+    - name: Build cpr
+      run: |
         cmake --version
+        cd libraries/cpr-1.10.5
+        mkdir build
+        cd build
+        cmake ..
+        cmake --build .
+
 
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
