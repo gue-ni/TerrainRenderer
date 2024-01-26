@@ -38,18 +38,14 @@ jobs:
         ls 
         mkdir libraries
         curl -v -L -o glm-0.9.9.8.zip https://github.com/g-truc/glm/releases/download/0.9.9.8/glm-0.9.9.8.zip
-        curl -o SDL2.zip https://github.com/libsdl-org/SDL/releases/download/release-2.26.4/SDL2-devel-2.26.4-VC.zip
-        curl -o glew.zip https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
 
         ls
 
-        tar -xf glm-0.9.9.8.zip
-        tar -xf glew.zip 
-        tar -xf SDL2.zip
+        tar -v -xf glm-0.9.9.8.zip
+
+        ls
 
         move glm-0.9.9.8 libraries
-        move SDL2 libraries
-        move glew libraries
         
         ls
         ls libraries
