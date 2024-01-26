@@ -41,6 +41,7 @@ jobs:
         move glew-2.2.0 libraries
 
     - name: Download sdl2
+      run: |
         curl -L -o SDL2.zip https://github.com/libsdl-org/SDL/releases/download/release-2.26.4/SDL2-devel-2.26.4-VC.zip
         tar -xf SDL2.zip
         move SDL2-2.26.4 libraries
