@@ -2,7 +2,7 @@ name: MSBuild
 
 on:
   push:
-    branches: [ "master", "add-github-action" ]
+    branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
 
