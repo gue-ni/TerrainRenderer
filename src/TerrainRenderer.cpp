@@ -101,24 +101,13 @@ void main() {
 }
 )";
 
-constexpr uint MAX_ZOOM_LEVEL = 13;
-
-const TileId LUDESCH = wms::tile_id(47.1958f, 9.7793f, 8);
-
-const TileId SCHRUNS = wms::tile_id(47.0800f, 9.9199f, 8);
-
-const TileId GROSS_GLOCKNER = wms::tile_id(47.0742f, 12.6947f, 10);
-
-const TileId SCHNEEBERG = wms::tile_id(47.7671f, 15.8056f, 10);
-
-const TileId HALLSTATT = wms::tile_id(47.5622f, 13.6493f, 10);
-
-TerrainRenderer::TerrainRenderer(const glm::vec2& min, const glm::vec2& max)
+TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, const glm::vec2& min, const glm::vec2& max)
     : m_shader(std::make_unique<ShaderProgram>(shader_vert, shader_frag)),
-      m_root_tile(GROSS_GLOCKNER),
+      m_root_tile(root_tile),
       m_chunk(32, 1.0f),
       m_bounds({min, max}),
-      m_tile_cache(m_root_tile, MAX_ZOOM_LEVEL)
+      m_tile_cache(m_root_tile, m_root_tile.zoom + zoom_levels),
+      m_zoom_levels(zoom_levels)
 {
   float tile_width = wms::tile_width(wms::tiley2lat(m_root_tile.y, m_root_tile.zoom), m_root_tile.zoom);
 
@@ -138,10 +127,9 @@ TerrainRenderer::TerrainRenderer(const glm::vec2& min, const glm::vec2& max)
 void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 {
   const float min_node_size = 0.02f;
-  const uint max_depth = MAX_ZOOM_LEVEL - m_root_tile.zoom;
   const auto terrain_center = glm::clamp(center, m_bounds.min, m_bounds.max);
 
-  QuadTree quad_tree(m_bounds.min, m_bounds.max, min_node_size, max_depth);
+  QuadTree quad_tree(m_bounds.min, m_bounds.max, min_node_size, m_zoom_levels);
   quad_tree.insert(terrain_center);
 
   if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
