@@ -129,7 +129,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   const float min_node_size = 0.02f;
   const auto terrain_center = glm::clamp(center, m_bounds.min, m_bounds.max);
 
-  QuadTree quad_tree(m_bounds.min, m_bounds.max, min_node_size, m_zoom_levels);
+  QuadTree quad_tree(m_bounds.min, m_bounds.max,m_zoom_levels);
   quad_tree.insert(terrain_center);
 
   if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
