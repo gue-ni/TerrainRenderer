@@ -1,5 +1,6 @@
 #include "TerrainRenderer.h"
 
+#include <cassert>
 #include <chrono>
 #include <iostream>
 #include <thread>
@@ -49,11 +50,10 @@ void main() {
 
 #endif
 
-#if 1
+  // skirts on tiles
   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
     world_pos.y = -10.0;
   }
-#endif
 
   gl_Position = proj * view * world_pos;
 }
@@ -101,7 +101,7 @@ void main() {
 }
 )";
 
-constexpr uint MAX_ZOOM_LEVEL = 11;
+constexpr uint MAX_ZOOM_LEVEL = 13;
 
 const TileId LUDESCH = wms::tile_id(47.1958f, 9.7793f, 8);
 
@@ -133,8 +133,6 @@ TerrainRenderer::TerrainRenderer(const glm::vec2& min, const glm::vec2& max)
 
   (void)m_tile_cache.tile_texture_sync(m_root_tile, TileType::ORTHO);
   (void)m_tile_cache.tile_texture_sync(m_root_tile, TileType::HEIGHT);
-
-  // std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
 void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
@@ -154,81 +152,56 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
 
   auto render_tile = [this](Node* tile) -> bool {
-    if (tile->is_leaf) {
-      // check if tile exists in gpu cache
-      // if yes, render it
-      // if no, request it and backtrack to parent. try to render parent.
+    if (!tile->is_leaf) return true;
 
-      // different approach:
-      // if tile is not in cache, request it and check if parent is in cache
-      // if parent is in cache, use it's texture but render only the correct
-      // cutout.
+    auto relative = map_to_0_1(tile->center());
+    Coordinate coord = m_tile_cache.lat_lon(relative);
+    TileId tile_id = m_tile_cache.tile_id(coord, tile->depth);
 
-      auto relative = map_to_0_1(tile->center());
-      Coordinate coord = m_tile_cache.lat_lon(relative);
-      TileId tile_id = m_tile_cache.tile_id(coord, tile->depth);
+    Texture* albedo = m_tile_cache.tile_texture(tile_id, TileType::ORTHO);
+    Texture* heightmap = m_tile_cache.tile_texture(tile_id, TileType::HEIGHT);
 
-      Texture* albedo = m_tile_cache.tile_texture(tile_id, TileType::ORTHO);
-      Texture* heightmap = m_tile_cache.tile_texture(tile_id, TileType::HEIGHT);
+    glm::vec2 albedo_uv_min(0.0f), albedo_uv_max(1.0f);
+    glm::vec2 height_uv_min(0.0f), height_uv_max(1.0f);
 
-      glm::vec2 albedo_uv_min(0.0f), albedo_uv_max(1.0f);
-      glm::vec2 height_uv_min(0.0f), height_uv_max(1.0f);
+    unsigned zoom_delta = tile_id.zoom - m_root_tile.zoom;
+    TileId scaled_root_tile = {
+        .zoom = tile_id.zoom, .x = m_root_tile.x * (1 << zoom_delta), .y = m_root_tile.y * (1 << zoom_delta)};
+    unsigned delta_x = tile_id.x - scaled_root_tile.x, delta_y = tile_id.y - scaled_root_tile.y;
+    unsigned num_tiles = 1 << zoom_delta;
+    float factor = 1.0f / num_tiles;
 
-#if 1
-      if (!albedo) {
-        // if tile is not cached, get the root texture and scale the uv
-        Texture* albedo_root = m_tile_cache.tile_texture_sync(m_root_tile, TileType::ORTHO);
-        assert(albedo_root);
+    if (!albedo) {
+      Texture* albedo_root = m_tile_cache.tile_texture_sync(m_root_tile, TileType::ORTHO);
+      assert(albedo_root);
 
-        // TODO: handle if root is not direct parent
-        unsigned lod_diff = tile_id.zoom - m_root_tile.zoom;
-        TileId scaled_root_tile = {.zoom = tile_id.zoom, .x = 2 * m_root_tile.x, .y = 2 * m_root_tile.y};
-        unsigned x = tile_id.x - scaled_root_tile.x;
-        unsigned y = tile_id.y - scaled_root_tile.y;
-        unsigned num_tiles_in_root = 1 << lod_diff;
-        float factor = 1.0f / num_tiles_in_root;
+      albedo_uv_min = glm::vec2((delta_x + 0) * factor, (delta_y + 0) * factor);
+      albedo_uv_max = glm::vec2((delta_x + 1) * factor, (delta_y + 1) * factor);
+      albedo = albedo_root;
+    }
 
-        albedo_uv_min = glm::vec2((x + 0) * factor, (y + 0) * factor);
-        albedo_uv_max = glm::vec2((x + 1) * factor, (y + 1) * factor);
+    if (!heightmap) {
+      Texture* heightmap_root = m_tile_cache.tile_texture_sync(m_root_tile, TileType::HEIGHT);
+      assert(heightmap_root);
 
-        albedo = albedo_root;
-      }
-#endif
-#if 1
-      if (!heightmap) {
-        // std::cout << "tile " << tile_id << " not found, using root " << m_root_tile << std::endl;
+      height_uv_min = glm::vec2((delta_x + 0) * factor, (delta_y + 0) * factor);
+      height_uv_max = glm::vec2((delta_x + 1) * factor, (delta_y + 1) * factor);
 
-        // if tile is not cached, get the root texture and scale the uv
-        Texture* heightmap_root = m_tile_cache.tile_texture_sync(m_root_tile, TileType::HEIGHT);
-        assert(heightmap_root);
+      heightmap = heightmap_root;
+    }
 
-        unsigned lod_diff = tile_id.zoom - m_root_tile.zoom;
-        TileId scaled_root_tile = {.zoom = tile_id.zoom, .x = 2 * m_root_tile.x, .y = 2 * m_root_tile.y};
-        unsigned x = tile_id.x - scaled_root_tile.x;
-        unsigned y = tile_id.y - scaled_root_tile.y;
-        unsigned num_tiles_in_root = 1 << lod_diff;
-        float factor = 1.0f / num_tiles_in_root;
+    if (albedo && heightmap) {
+      albedo->bind(0);
+      m_shader->set_uniform("u_albedo_texture", 0);
+      m_shader->set_uniform("u_albedo_uv_min", albedo_uv_min);
+      m_shader->set_uniform("u_albedo_uv_max", albedo_uv_max);
 
-        height_uv_min = glm::vec2((x + 0) * factor, (y + 0) * factor);
-        height_uv_max = glm::vec2((x + 1) * factor, (y + 1) * factor);
+      heightmap->bind(1);
+      m_shader->set_uniform("u_height_texture", 1);
+      m_shader->set_uniform("u_height_uv_min", height_uv_min);
+      m_shader->set_uniform("u_height_uv_max", height_uv_max);
 
-        heightmap = heightmap_root;
-      }
-#endif
-
-      if (albedo && heightmap) {
-        albedo->bind(0);
-        m_shader->set_uniform("u_albedo_texture", 0);
-        m_shader->set_uniform("u_albedo_uv_min", albedo_uv_min);
-        m_shader->set_uniform("u_albedo_uv_max", albedo_uv_max);
-
-        heightmap->bind(1);
-        m_shader->set_uniform("u_height_texture", 1);
-        m_shader->set_uniform("u_height_uv_min", height_uv_min);
-        m_shader->set_uniform("u_height_uv_max", height_uv_max);
-
-        m_chunk.draw(m_shader.get(), tile->min, tile->max);
-      }
+      m_chunk.draw(m_shader.get(), tile->min, tile->max);
     }
 
     return true;
