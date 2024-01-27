@@ -42,8 +42,7 @@ Game::Game(size_t width, size_t height)
 
   float fov = 45.0f;
   float aspect_ratio = float(width) / float(height);
-  float near = 1.0f;
-  float far = 1000.0f;
+  float near = 1.0f, far = 1000.0f;
   auto projection = glm::perspective(glm::radians(fov), aspect_ratio, near, far);
   m_camera.set_projection_matrix(projection);
   m_camera.set_local_position(glm::vec3(0.0f, 40.f, 0.0f));
@@ -148,19 +147,20 @@ void Game::read_input(float dt)
   auto forward = m_camera.get_local_z_axis();
   auto position = m_camera.get_local_position();
 
-  float speed = 0.15f;
+  float speed = 100.0f;
 
   if (key_states[SDL_SCANCODE_W]) {
-    position -= forward * speed;
+    position -= forward * speed * dt;
   }
   if (key_states[SDL_SCANCODE_A]) {
-    position -= right * speed;
+    position -= right * speed * dt;
+    
   }
   if (key_states[SDL_SCANCODE_S]) {
-    position += forward * speed;
+    position += forward * speed * dt;
   }
   if (key_states[SDL_SCANCODE_D]) {
-    position += right * speed;
+    position += right * speed * dt;
   }
 
   m_camera.set_local_position(position);
