@@ -45,6 +45,33 @@ Texture* TileCache::tile_texture(const TileId& tile, const TileType& tile_type)
   }
 }
 
+Texture* TileCache::tile_texture_sync(const TileId& tile, const TileType& tile_type)
+{
+  std::string name = tile.to_string() + "+" + std::to_string(tile_type);
+
+  Image* image = nullptr;
+
+  if (m_gpu_cache.contains(name)) {
+    return m_gpu_cache[name].get();
+  } else {
+    switch (tile_type) {
+      case TileType::ORTHO:
+        image = m_ortho_tile_service.get_tile_sync(tile);
+        break;
+
+      case TileType::HEIGHT:
+        image = m_height_tile_service.get_tile_sync(tile);
+        break;
+    }
+
+    auto texture = create_texture(*image);
+    m_gpu_cache[name] = std::move(texture);
+    return m_gpu_cache[name].get();
+  }
+
+  return nullptr;
+}
+
 Texture* TileCache::cached_tile_texture(const TileId& tile, const TileType& tile_type)
 {
   std::string name = tile.to_string() + "+" + std::to_string(tile_type);

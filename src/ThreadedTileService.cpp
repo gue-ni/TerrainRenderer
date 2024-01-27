@@ -84,3 +84,33 @@ Image* ThreadedTileService::get_tile(const TileId& tile_id)
     return nullptr;
   }
 }
+
+Image* ThreadedTileService::get_tile_sync(const TileId& tile_id)
+{
+  auto filename = tile_filename(tile_id.x, tile_id.y, tile_id.zoom);
+
+  if (!std::filesystem::exists(filename)) {
+    auto url = tile_url(tile_id.x, tile_id.y, tile_id.zoom);
+
+    std::ofstream of(filename, std::ios::binary);
+    cpr::Response r = cpr::Download(of, cpr::Url{url});
+
+    if (r.status_code != 200) {
+      std::cerr << "Could not download " << std::quoted(url) << std::endl;
+      std::error_code err;
+      std::filesystem::remove(filename, err);
+    } else {
+#if LOG
+      std::cout << "Download " << std::quoted(url) << std::endl;
+#endif
+    }
+  }
+
+  auto image = std::make_unique<Image>();
+  image->read(filename);
+  assert(image->loaded());
+
+  m_ram_cache[filename] = std::move(image);
+
+  return m_ram_cache[filename].get();
+}

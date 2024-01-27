@@ -42,6 +42,8 @@ class TileCache
 
   Texture* tile_texture(const TileId&, const TileType&);
 
+  Texture* tile_texture_sync(const TileId&, const TileType&);
+
   Texture* cached_tile_texture(const TileId&, const TileType&);
 
   void invalidate_gpu_cache();
