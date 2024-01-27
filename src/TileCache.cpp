@@ -58,10 +58,11 @@ Texture* TileCache::tile_texture_sync(const TileId& tile, const TileType& tile_t
       case TileType::ORTHO:
         image = m_ortho_tile_service.get_tile_sync(tile);
         break;
-
       case TileType::HEIGHT:
         image = m_height_tile_service.get_tile_sync(tile);
         break;
+      default:
+        assert(false);
     }
 
     auto texture = create_texture(*image);

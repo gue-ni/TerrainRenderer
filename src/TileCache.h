@@ -58,7 +58,6 @@ class TileCache
   const Coordinate m_min_coord, m_max_coord;
   std::unique_ptr<Texture> m_debug_texture{nullptr};
   std::unordered_map<std::string, std::unique_ptr<Texture>> m_gpu_cache;
-
   ThreadedTileService m_ortho_tile_service;
   ThreadedTileService m_height_tile_service;
 

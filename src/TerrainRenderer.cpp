@@ -176,8 +176,6 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
     return true;
   };
 
-  // quad_tree.traverse(render_tile);
-
   auto children = quad_tree.children();
   std::sort(children.begin(), children.end(), [](Node* a, Node* b) { return a->depth > b->depth; });
   std::for_each(children.begin(), children.end(), render_tile);

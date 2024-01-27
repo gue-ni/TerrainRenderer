@@ -60,9 +60,7 @@ inline float tiley2lat(unsigned y, unsigned z)
 
 inline TileId tile_id(float lat, float lon, unsigned zoom)
 {
-  unsigned x = wms::lon2tilex(lon, zoom);
-  unsigned y = wms::lat2tiley(lat, zoom);
-  return {zoom, x, y};
+  return {zoom, wms::lon2tilex(lon, zoom), wms::lat2tiley(lat, zoom)};
 }
 
 // width of tile in meters

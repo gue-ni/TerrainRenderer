@@ -70,7 +70,7 @@ void Game::render(float dt)
   }
 #endif
 
-  m_terrain_renderer.render(m_camera, glm::vec2(lod_focus.x, lod_focus.z));
+  m_terrain_renderer.render(m_camera, {lod_focus.x, lod_focus.z});
 
   SDL_GL_SwapWindow(m_window);
 }
