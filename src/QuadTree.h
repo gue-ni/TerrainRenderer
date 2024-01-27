@@ -34,7 +34,7 @@ class QuadTree
  public:
   QuadTree(const glm::vec2& min, const glm::vec2& max, unsigned max_depth);
   void insert(const glm::vec2& point);
-  std::vector<Node*> get_children();
+  std::vector<Node*> children();
   Node* root() const { return m_root.get(); }
 
   template <typename Func>

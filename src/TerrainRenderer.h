@@ -20,9 +20,9 @@ class TerrainRenderer
   bool wireframe{false};
 
  private:
-  std::unique_ptr<ShaderProgram> m_shader{nullptr};
+  const std::unique_ptr<ShaderProgram> m_shader{nullptr};
   const TileId m_root_tile;
-  const Chunk m_chunk;
+  const Chunk m_chunk;  // terrain chunk geometry
   const Bounds m_bounds;
   const unsigned m_zoom_levels;
   TileCache m_tile_cache;

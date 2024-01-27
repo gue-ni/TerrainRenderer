@@ -40,9 +40,9 @@ void main() {
 
 #if 1
 
-  vec2 tmp_uv = map_range(uv, vec2(0), vec2(1), u_height_uv_min, u_height_uv_max);
+  vec2 scaled_uv = map_range(uv, vec2(0), vec2(1), u_height_uv_min, u_height_uv_max);
 
-  vec4 height_sample = texture(u_height_texture, tmp_uv);
+  vec4 height_sample = texture(u_height_texture, scaled_uv);
 
   float height = altitude_from_color(height_sample);
 
@@ -74,34 +74,17 @@ vec2 map_range(vec2 s, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) {
   return out_min + (s - in_min) * (out_max - out_min) / (in_max - in_min); 
 }
 
-float map_range_2(float s, float in_min, float in_max, float out_min, float out_max) { 
-  return out_min + (s - in_min) * (out_max - out_min) / (in_max - in_min); 
-}
-
 void main() {
-#if 1
-  vec2 tmp_uv;
+  vec2 scaled_uv = map_range(uv, vec2(0.0), vec2(1.0), u_albedo_uv_min, u_albedo_uv_max);
 
-  //tmp_uv = map_range(uv, vec2(0.0), vec2(1.0), vec2(0.5), vec2(1.0));
-
-  tmp_uv = map_range(uv, vec2(0.0), vec2(1.0), u_albedo_uv_min, u_albedo_uv_max);
-
-  //tmp_uv = u_albedo_uv_max;
-
-  float x = map_range_2(uv.x, 0, 1, u_albedo_uv_min.x, u_albedo_uv_max.x);
-
-  vec3 albedo = texture(u_albedo_texture, tmp_uv).rgb;
-
-  //albedo = vec3(tmp_uv, 0);
+  vec3 albedo = texture(u_albedo_texture, scaled_uv).rgb;
 
   FragColor = vec4(albedo, 1);
-#else
-  FragColor = vec4(vec3(1,0,0) * 0.5, 1);
-#endif
 }
 )";
 
-TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, const glm::vec2& min, const glm::vec2& max)
+TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, const glm::vec2& min,
+                                 const glm::vec2& max)
     : m_shader(std::make_unique<ShaderProgram>(shader_vert, shader_frag)),
       m_root_tile(root_tile),
       m_chunk(32, 1.0f),
@@ -109,12 +92,11 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, 
       m_tile_cache(m_root_tile, m_root_tile.zoom + zoom_levels),
       m_zoom_levels(zoom_levels)
 {
-  float tile_width = wms::tile_width(wms::tiley2lat(m_root_tile.y, m_root_tile.zoom), m_root_tile.zoom);
-
-  const float min_elevation = 0.0f;
-  const float max_elevation = 8191.0f;
+  const float min_elevation = 0.0f, max_elevation = 8191.0f;
 
   float width = m_bounds.size().x;
+
+  float tile_width = wms::tile_width(wms::tiley2lat(m_root_tile.y, m_root_tile.zoom), m_root_tile.zoom);
 
   float scaling_ratio = width / tile_width;
 
@@ -129,7 +111,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   const float min_node_size = 0.02f;
   const auto terrain_center = glm::clamp(center, m_bounds.min, m_bounds.max);
 
-  QuadTree quad_tree(m_bounds.min, m_bounds.max,m_zoom_levels);
+  QuadTree quad_tree(m_bounds.min, m_bounds.max, m_zoom_levels);
   quad_tree.insert(terrain_center);
 
   if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -194,9 +176,11 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
     return true;
   };
 
-  quad_tree.traverse(render_tile);
+  // quad_tree.traverse(render_tile);
 
-  // m_tile_cache.invalidate_gpu_cache();
+  auto children = quad_tree.children();
+  std::sort(children.begin(), children.end(), [](Node* a, Node* b) { return a->depth > b->depth; });
+  std::for_each(children.begin(), children.end(), render_tile);
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
