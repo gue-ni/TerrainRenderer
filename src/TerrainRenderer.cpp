@@ -165,8 +165,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
     glm::vec2 height_uv_min(0.0f), height_uv_max(1.0f);
 
     unsigned zoom_delta = tile_id.zoom - m_root_tile.zoom;
-    TileId scaled_root_tile = {
-        .zoom = tile_id.zoom, .x = m_root_tile.x * (1 << zoom_delta), .y = m_root_tile.y * (1 << zoom_delta)};
+    TileId scaled_root_tile = {tile_id.zoom, m_root_tile.x * (1 << zoom_delta), m_root_tile.y * (1 << zoom_delta)};
     unsigned delta_x = tile_id.x - scaled_root_tile.x, delta_y = tile_id.y - scaled_root_tile.y;
     unsigned num_tiles = 1 << zoom_delta;
     float factor = 1.0f / num_tiles;

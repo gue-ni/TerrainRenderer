@@ -6,6 +6,9 @@
 
 struct TileId {
   unsigned zoom{}, x{}, y{};
+
+  TileId() : TileId(0, 0, 0) {}
+  TileId(unsigned zoom_, unsigned x_, unsigned y_) : zoom(zoom_), x(x_), y(y_) {}
   auto operator<=>(const TileId&) const = default;
   std::string to_string() const { return std::format("{}/{}/{}", zoom, x, y); }
 };
@@ -30,10 +33,7 @@ struct Coordinate {
   float lat, lon;
 };
 
-inline std::ostream& operator<<(std::ostream& os, const Coordinate& c)
-{
-  return os << c.lat << ", " << c.lon;
-}
+inline std::ostream& operator<<(std::ostream& os, const Coordinate& c) { return os << c.lat << ", " << c.lon; }
 
 namespace wms
 {
@@ -61,10 +61,11 @@ inline TileId tile_id(float lat, float lon, unsigned zoom)
 {
   unsigned x = wms::lon2tilex(lon, zoom);
   unsigned y = wms::lat2tiley(lat, zoom);
-  return {.zoom = zoom, .x = x, .y = y};
+  return {zoom, x, y};
 }
 
 // width of tile in meters
+// https://wiki.openstreetmap.org/wiki/Zoom_levels
 inline float tile_width(float lat, unsigned zoom)
 {
   const float C = 40075016.686f;
@@ -79,7 +80,7 @@ inline std::pair<Coordinate, Coordinate> tile_bounds(unsigned x, unsigned y, uns
   return {min, max};
 }
 
-inline TileId parent_tile(const TileId& tile) { return {.zoom = tile.zoom - 1, .x = tile.x / 2, .y = tile.y / 2}; }
+inline TileId parent_tile(const TileId& tile) { return {tile.zoom - 1, tile.x / 2, tile.y / 2}; }
 
 // https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Subtiles
 inline std::array<TileId, 4> child_tiles(const TileId& tile)

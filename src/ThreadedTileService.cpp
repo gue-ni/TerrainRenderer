@@ -20,7 +20,7 @@ void ThreadedTileService::request_download(const TileId& tile_id)
 ThreadedTileService::~ThreadedTileService()
 {
   m_stop_thread = true;
-  TileId null;
+  TileId null{};
   request_download(null);
   m_thread.join();
 }
