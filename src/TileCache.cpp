@@ -9,16 +9,16 @@
 TileCache::TileCache(const TileId& root_tile, unsigned max_zoom_level)
     : m_root_tile(root_tile),
       m_max_zoom_level(max_zoom_level),
+      m_min_coord(wms::tiley2lat(root_tile.y, root_tile.zoom), wms::tilex2lon(m_root_tile.x, m_root_tile.zoom)),
+      m_max_coord(wms::tiley2lat(root_tile.y + 1, root_tile.zoom), wms::tilex2lon(m_root_tile.x + 1, m_root_tile.zoom)),
       m_ortho_tile_service("https://gataki.cg.tuwien.ac.at/raw/basemap/tiles", TileService::UrlPattern::ZYX_Y_SOUTH,
                            ".jpeg"),
       m_height_tile_service("https://alpinemaps.cg.tuwien.ac.at/tiles/alpine_png", TileService::UrlPattern::ZXY, ".png")
 
 {
-  m_min_coord.lat = wms::tiley2lat(m_root_tile.y, m_root_tile.zoom);
-  m_min_coord.lon = wms::tilex2lon(m_root_tile.x, m_root_tile.zoom);
-
-  m_max_coord.lat = wms::tiley2lat(m_root_tile.y + 1, m_root_tile.zoom);
-  m_max_coord.lon = wms::tilex2lon(m_root_tile.x + 1, m_root_tile.zoom);
+  // m_min_coord(wms::tiley2lat(root_tile.y, root_tile.zoom), wms::tilex2lon(m_root_tile.x, m_root_tile.zoom)),
+  // m_max_coord.lat = wms::tiley2lat(m_root_tile.y + 1, m_root_tile.zoom);
+  // m_max_coord.lon = wms::tilex2lon(m_root_tile.x + 1, m_root_tile.zoom);
 
 #if MULTITHREADING
   m_ortho_tile_service.start_worker_thread();
@@ -148,7 +148,7 @@ Coordinate TileCache::lat_lon(const glm::vec2& point)
   assert(glm::all(glm::lessThanEqual(glm::vec2(0.0f), point)) && glm::all(glm::lessThanEqual(point, glm::vec2(1.0f))));
   float lat = glm::mix(m_min_coord.lat, m_max_coord.lat, point.y);
   float lon = glm::mix(m_min_coord.lon, m_max_coord.lon, point.x);
-  return {.lat = lat, .lon = lon};
+  return {lat, lon};
 }
 
 TileId TileCache::tile_id(Coordinate& coord, unsigned lod_offset_from_root)

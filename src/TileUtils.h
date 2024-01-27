@@ -31,6 +31,7 @@ struct std::hash<TileId> {
 
 struct Coordinate {
   float lat, lon;
+  Coordinate(float lat_, float lon_) : lat(lat_), lon(lon_) {}
 };
 
 inline std::ostream& operator<<(std::ostream& os, const Coordinate& c) { return os << c.lat << ", " << c.lon; }
@@ -75,8 +76,8 @@ inline float tile_width(float lat, unsigned zoom)
 // get min and max latitude/longitude of a tile
 inline std::pair<Coordinate, Coordinate> tile_bounds(unsigned x, unsigned y, unsigned zoom)
 {
-  Coordinate min = {.lat = tiley2lat(y, zoom), .lon = tilex2lon(x, zoom)};
-  Coordinate max = {.lat = tiley2lat(y + 1, zoom), .lon = tilex2lon(x + 1, zoom)};
+  Coordinate min = {tiley2lat(y, zoom), tilex2lon(x, zoom)};
+  Coordinate max = {tiley2lat(y + 1, zoom), tilex2lon(x + 1, zoom)};
   return {min, max};
 }
 
