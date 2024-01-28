@@ -97,7 +97,6 @@ void Chunk::draw(ShaderProgram* shader, const glm::vec2& position) const
   m_vao->bind();
   glDrawElements(GL_TRIANGLES, m_vertex_count, GL_UNSIGNED_INT, 0);
   m_vao->unbind();
-  shader->unbind();
 }
 
 void Chunk::draw(ShaderProgram* shader, const glm::vec2& min, const glm::vec2& max) const
@@ -113,5 +112,4 @@ void Chunk::draw(ShaderProgram* shader, const glm::vec2& min, const glm::vec2& m
   m_vao->bind();
   glDrawElements(GL_TRIANGLES, m_vertex_count, GL_UNSIGNED_INT, 0);
   m_vao->unbind();
-  shader->unbind();
 }

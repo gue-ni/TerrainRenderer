@@ -42,6 +42,8 @@ class TileCache
 
   Texture* tile_texture(const TileId&, const TileType&);
 
+  Texture* tile_texture_sync(const TileId&, const TileType&);
+
   Texture* cached_tile_texture(const TileId&, const TileType&);
 
   void invalidate_gpu_cache();
@@ -53,18 +55,12 @@ class TileCache
  private:
   const TileId m_root_tile;
   const unsigned m_max_zoom_level;
-  Coordinate m_min_coord, m_max_coord;
+  const Coordinate m_min_coord, m_max_coord;
   std::unique_ptr<Texture> m_debug_texture{nullptr};
   std::unordered_map<std::string, std::unique_ptr<Texture>> m_gpu_cache;
-
-#if MULTITHREADING
   ThreadedTileService m_ortho_tile_service;
   ThreadedTileService m_height_tile_service;
-#else
-  TileService m_ortho_tile_service;
-  TileService m_height_tile_service;
-#endif
-  
+
   std::unique_ptr<Texture> create_texture(const Image& image);
 
   Image* request_image(const TileId&, const TileType&);

@@ -25,6 +25,9 @@ class ThreadedTileService : public TileService
   // If tile in cache, return tile. If not, request it for download and return nullptr
   Image* get_tile(const TileId& tile_id) override;
 
+  // get image sync
+  Image* get_tile_sync(const TileId& tile_id);
+
  private:
   bool m_stop_thread{false};
   std::thread m_thread;
@@ -35,4 +38,5 @@ class ThreadedTileService : public TileService
   std::set<TileId> m_already_requested;
 
   void request_download(const TileId&);
+
 };
