@@ -64,5 +64,5 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: terrain-renderer
-        path: ${{ github.workspace }}
+        path: ${{ github.workspace }}/x64/Release
 
