@@ -11,8 +11,8 @@ struct Node  {
   glm::vec2 min{}, max{};
   bool is_leaf{true};
   unsigned depth{0};
-  std::array<std::unique_ptr<Node>, 4> children;
   Node* parent{nullptr};
+  std::array<std::unique_ptr<Node>, 4> children;
 
   Node(const glm::vec2& min_, const glm::vec2& max_, unsigned depth_ = 0) : min(min_), max(max_), depth(depth_) {}
   glm::vec2 size() const { return max - min; }
