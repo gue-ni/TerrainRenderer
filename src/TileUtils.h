@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <format>
 #include <numbers>
 #include <string>
@@ -22,10 +23,17 @@ template <>
 struct std::hash<TileId> {
   std::size_t operator()(TileId const& s) const noexcept
   {
-    std::size_t h1 = std::hash<unsigned>{}(s.x);
-    std::size_t h2 = std::hash<unsigned>{}(s.y);
-    std::size_t h3 = std::hash<unsigned>{}(s.zoom);
-    return h1 ^ h2 ^ h3;  // TODO: Is this a good idea?
+#if 1
+    //auto str = std::format("{},{},{}", s.x, s.y, s.zoom);
+    auto str = s.to_string();
+    return std::hash<std::string>{}(str);
+#else
+    uint64_t h1 = uint64_t(s.x) << 24;
+    uint64_t h2 = uint64_t(s.y) << 8;
+    uint64_t h3 = uint64_t(s.zoom);
+    uint64_t h = h1 | h2 | h3;
+    return std::hash<uint64_t>{}(h);
+#endif
   }
 };
 

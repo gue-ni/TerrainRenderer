@@ -36,7 +36,7 @@ int intersect_segment_plane(glm::vec3 a, glm::vec3 b, Plane p, float &t, glm::ve
 }
 
 Game::Game(size_t width, size_t height)
-    : Window(width, height), m_terrain_renderer(INNSBRUCK, 4, glm::vec2(-200.0f), glm::vec2(200.0f))
+    : Window(width, height), m_terrain_renderer(INNSBRUCK, 4, {glm::vec2(-200.0f), glm::vec2(200.0f)})
 {
   SDL_ShowCursor(SDL_FALSE);
   SDL_CaptureMouse(SDL_TRUE);
@@ -155,7 +155,6 @@ void Game::read_input(float dt)
   }
   if (key_states[SDL_SCANCODE_A]) {
     position -= right * speed * dt;
-    
   }
   if (key_states[SDL_SCANCODE_S]) {
     position += forward * speed * dt;
@@ -167,7 +166,4 @@ void Game::read_input(float dt)
   m_camera.set_local_position(position);
 }
 
-void Game::update(float dt)
-{
-  // TODO: update camera position
-}
+void Game::update(float dt) {}

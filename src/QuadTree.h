@@ -7,26 +7,20 @@
 #include <memory>
 #include <vector>
 
-struct Bounds {
+struct Node  {
   glm::vec2 min{}, max{};
-  Bounds(const glm::vec2& min_, const glm::vec2& max_) : min{min_}, max{max_} {}
+  bool is_leaf{true};
+  unsigned depth{0};
+  Node* parent{nullptr};
+  std::array<std::unique_ptr<Node>, 4> children;
+
+  Node(const glm::vec2& min_, const glm::vec2& max_, unsigned depth_ = 0) : min(min_), max(max_), depth(depth_) {}
   glm::vec2 size() const { return max - min; }
-  glm::vec2 half_size() const { return size() / 2.0f; }
-  glm::vec2 center() const { return min + half_size(); }
+  glm::vec2 center() const { return min + size() / 2.0f; }
   bool contains(const glm::vec2& point)
   {
     return glm::all(glm::lessThanEqual(min, point)) && glm::all(glm::lessThanEqual(point, max));
   }
-};
-
-inline std::ostream& operator<<(std::ostream& os, const Bounds& b) { return os << b.min << ", " << b.max; }
-
-struct Node : public Bounds {
-  Node(const glm::vec2& min_, const glm::vec2& max_, unsigned depth_ = 0) : Bounds(min_, max_), depth(depth_) {}
-  bool is_leaf{true};
-  unsigned depth{0};
-  std::array<std::unique_ptr<Node>, 4> children;
-  Node* parent{nullptr};
 };
 
 class QuadTree

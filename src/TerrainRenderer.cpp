@@ -83,12 +83,11 @@ void main() {
 }
 )";
 
-TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, const glm::vec2& min,
-                                 const glm::vec2& max)
+TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, const Bounds<glm::vec2>& bounds)
     : m_shader(std::make_unique<ShaderProgram>(shader_vert, shader_frag)),
       m_root_tile(root_tile),
       m_chunk(32, 1.0f),
-      m_bounds({min, max}),
+      m_bounds(bounds),
       m_tile_cache(m_root_tile, m_root_tile.zoom + zoom_levels),
       m_zoom_levels(zoom_levels)
 {
@@ -123,9 +122,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   auto render_tile = [this](Node* tile) -> bool {
     if (!tile->is_leaf) return true;
 
-    auto relative = map_to_0_1(tile->center());
-    Coordinate coord = m_tile_cache.lat_lon(relative);
-    TileId tile_id = m_tile_cache.tile_id(coord, tile->depth);
+    TileId tile_id = tile_id_from_node(tile);
 
     Texture* albedo = m_tile_cache.tile_texture(tile_id, TileType::ORTHO);
     Texture* heightmap = m_tile_cache.tile_texture(tile_id, TileType::HEIGHT);
@@ -133,24 +130,43 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
     glm::vec2 albedo_uv_min(0.0f), albedo_uv_max(1.0f);
     glm::vec2 height_uv_min(0.0f), height_uv_max(1.0f);
 
-    unsigned zoom_delta = tile_id.zoom - m_root_tile.zoom;
-    unsigned num_tiles = 1 << zoom_delta;
-    TileId scaled_root_tile = {tile_id.zoom, m_root_tile.x * num_tiles, m_root_tile.y * num_tiles};
-    unsigned delta_x = tile_id.x - scaled_root_tile.x, delta_y = tile_id.y - scaled_root_tile.y;
-    float factor = 1.0f / num_tiles;
-
     if (!albedo) {
-      Texture* albedo_root = m_tile_cache.tile_texture_sync(m_root_tile, TileType::ORTHO);
-      assert(albedo_root);
+      Texture* parent_texture = nullptr;
+
+      Node* parent = tile->parent;
+      TileId parent_tile_id;
+
+      while (parent != nullptr) {
+        parent_tile_id = tile_id_from_node(parent);
+        parent_texture = m_tile_cache.cached_tile_texture(parent_tile_id, TileType::ORTHO);
+
+        if (parent_texture) {
+          break;
+        } else {
+          parent = parent->parent;
+        }
+      }
+
+      unsigned zoom_delta = tile_id.zoom - parent_tile_id.zoom;
+      unsigned num_tiles = 1 << zoom_delta;
+      TileId scaled_root_tile = {tile_id.zoom, parent_tile_id.x * num_tiles, parent_tile_id.y * num_tiles};
+      unsigned delta_x = tile_id.x - scaled_root_tile.x, delta_y = tile_id.y - scaled_root_tile.y;
+      float factor = 1.0f / num_tiles;
 
       albedo_uv_min = glm::vec2((delta_x + 0) * factor, (delta_y + 0) * factor);
       albedo_uv_max = glm::vec2((delta_x + 1) * factor, (delta_y + 1) * factor);
-      albedo = albedo_root;
+      albedo = parent_texture;
     }
 
     if (!heightmap) {
-      Texture* heightmap_root = m_tile_cache.tile_texture_sync(m_root_tile, TileType::HEIGHT);
+      Texture* heightmap_root = m_tile_cache.cached_tile_texture(m_root_tile, TileType::HEIGHT);
       assert(heightmap_root);
+
+      unsigned zoom_delta = tile_id.zoom - m_root_tile.zoom;
+      unsigned num_tiles = 1 << zoom_delta;
+      TileId scaled_root_tile = {tile_id.zoom, m_root_tile.x * num_tiles, m_root_tile.y * num_tiles};
+      unsigned delta_x = tile_id.x - scaled_root_tile.x, delta_y = tile_id.y - scaled_root_tile.y;
+      float factor = 1.0f / num_tiles;
 
       height_uv_min = glm::vec2((delta_x + 0) * factor, (delta_y + 0) * factor);
       height_uv_max = glm::vec2((delta_x + 1) * factor, (delta_y + 1) * factor);
@@ -185,4 +201,12 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 glm::vec2 TerrainRenderer::map_to_0_1(const glm::vec2& point)
 {
   return map_range(point, m_bounds.min, m_bounds.max, glm::vec2(0.0f), glm::vec2(1.0f));
+}
+
+TileId TerrainRenderer::tile_id_from_node(Node* node)
+{
+  auto relative = map_to_0_1(node->center());
+  Coordinate coord = m_tile_cache.lat_lon(relative);
+  TileId tile_id = m_tile_cache.tile_id(coord, node->depth);
+  return tile_id;
 }

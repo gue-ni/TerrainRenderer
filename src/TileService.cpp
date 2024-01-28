@@ -2,38 +2,54 @@
 
 #include <cpr/cpr.h>
 
-#include <filesystem>
-#include <format>
+void TileService::request_download(const TileId& tile_id)
+{
+  std::unique_lock<std::mutex> lock(m_mutex);
+  m_tiles_to_download.push(tile_id);
+  // lock.unlock();
+  m_condition.notify_one();
+  m_already_requested.insert(tile_id);
+}
 
 TileService::TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype)
     : m_url(url), m_url_pattern(url_pattern), m_filetype(filetype)
 {
-  if (!std::filesystem::exists(m_cache_location)) {
-    std::filesystem::create_directory(m_cache_location);
-  }
 }
 
-std::string TileService::tile_filename(unsigned x, unsigned y, unsigned zoom) const
+TileService::~TileService()
 {
-  return std::format("{}/{}-{}-{}{}", m_cache_location, zoom, x, y, m_filetype);
+  m_stop_thread = true;
+  TileId null{};
+  request_download(null);
+  m_thread.join();
 }
 
-std::string TileService::tile_url(unsigned x, unsigned y, unsigned zoom) const
+std::string TileService::tile_filename(const TileId& t) const
+{
+  return std::format("{}-{}-{}{}", t.zoom, t.x, t.y, m_filetype);
+}
+
+std::string TileService::tile_url(const TileId& tile_id) const
 {
   std::string url;
+  unsigned zoom = tile_id.zoom, x = tile_id.x, y = tile_id.y;
   const unsigned num_y_tiles = (1 << zoom);
 
   switch (m_url_pattern) {
-    case ZXY: {
+    case ZXY_Y_NORTH: {
       url = std::format("{}/{}/{}/{}{}", m_url, zoom, x, (num_y_tiles - y - 1), m_filetype);
       break;
     }
-    case ZYX: {
+    case ZYX_Y_NORTH: {
       url = std::format("{}/{}/{}/{}{}", m_url, zoom, (num_y_tiles - y - 1), x, m_filetype);
       break;
     }
     case ZYX_Y_SOUTH: {
       url = std::format("{}/{}/{}/{}{}", m_url, zoom, y, x, m_filetype);
+      break;
+    }
+    case ZXY_Y_SOUTH: {
+      url = std::format("{}/{}/{}/{}{}", m_url, zoom, x, y, m_filetype);
       break;
     }
     default:
@@ -43,29 +59,58 @@ std::string TileService::tile_url(unsigned x, unsigned y, unsigned zoom) const
   return url;
 }
 
-Image* TileService::get_tile(const TileId& tile)
+void TileService::start_worker_thread()
 {
-  std::string url = tile_url(tile.x, tile.y, tile.zoom);
+  auto worker = [this]() {
+    while (!m_stop_thread) {
+      std::unique_lock<std::mutex> lock(m_mutex);
+      m_condition.wait(lock, [this] { return !m_tiles_to_download.empty(); });
+      auto& tile_id = m_tiles_to_download.top();
+      m_tiles_to_download.pop();
+      lock.unlock();
 
-  std::string filename = tile_filename(tile.x, tile.y, tile.zoom);
-
-  if (!std::filesystem::exists(filename)) {
-    std::ofstream of(filename, std::ios::binary);
-    cpr::Response r = cpr::Download(of, cpr::Url{url});
-
-    if (r.status_code != 200) {
-      std::cerr << "Could not get tile from " << std::quoted(url) << std::endl;
-      std::filesystem::remove(filename);
-      return nullptr;
+      get_tile_sync(tile_id);
     }
+  };
+
+  m_thread = std::thread(worker);
+}
+
+Image* TileService::get_tile(const TileId& tile_id)
+{
+  std::string tile_id_str = tile_filename(tile_id);
+
+  if (m_ram_cache.contains(tile_id_str)) {
+    return m_ram_cache[tile_id_str].get();
+  } else {
+    if (!m_already_requested.contains(tile_id)) {
+      request_download(tile_id);
+    }
+    return nullptr;
+  }
+}
+
+Image* TileService::get_tile_sync(const TileId& tile_id)
+{
+  auto url = tile_url(tile_id);
+  auto filename = tile_filename(tile_id);
+
+  cpr::Response r = cpr::Get(cpr::Url{url});
+
+  if (r.status_code != 200) {
+    std::cerr << "Could not download " << std::quoted(url) << std::endl;
+  } else {
+    std::cout << "Download " << std::quoted(url) << std::endl;
   }
 
-  auto image = new Image();
-  image->read(filename);
-  if (!image->loaded()) {
-    std::cerr << "Could not read " << std::quoted(filename) << std::endl;
-  }
+  auto image = std::make_unique<Image>();
+  image->read_from_buffer(reinterpret_cast<unsigned char*>(r.text.data()), int(r.text.size()));
 
-  assert(image->loaded());
-  return image;
+  if (image->loaded()) {
+    m_ram_cache[filename] = std::move(image);
+    return m_ram_cache[filename].get();
+  } else {
+    std::cerr << "Could not read " << tile_id << std::endl;
+    return nullptr;
+  }
 }

@@ -130,7 +130,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)\libraries\cpr-1.10.5\build\lib\Release;$(ProjectDir)\libraries\glew-2.2.0\lib\Release\x64;$(ProjectDir)\libraries\SDL2-2.26.4\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)\libraries\cpr-1.10.5\build\lib\Debug;$(ProjectDir)\libraries\glew-2.2.0\lib\Release\x64;$(ProjectDir)\libraries\SDL2-2.26.4\lib\x64</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32.lib;opengl32.lib;cpr.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -143,8 +143,7 @@
     <ClCompile Include="src/TerrainRenderer.cpp" />
     <ClCompile Include="src/TileCache.cpp" />
     <ClCompile Include="src/Window.cpp" />
-    <ClCompile Include="src/TileService.cpp" />
-    <ClCompile Include="src/ThreadedTileService.cpp" />
+    <ClCompile Include="src\TileService.cpp" />
     <ClCompile Include="gfx/gl.cpp" />
     <ClCompile Include="gfx/image.cpp" />
     <ClCompile Include="gfx/transform.cpp" />
@@ -159,8 +158,7 @@
     <ClInclude Include="src/TerrainRenderer.h" />
     <ClInclude Include="src/TileCache.h" />
     <ClInclude Include="src/Window.h" />
-    <ClInclude Include="src/TileService.h" />
-    <ClInclude Include="src/ThreadedTileService.h" />
+    <ClInclude Include="src\TileService.h" />
     <ClInclude Include="src/TileUtils.h" />
     <ClInclude Include="gfx/gfx.h" />
     <ClInclude Include="gfx/gl.h" />
