@@ -99,7 +99,7 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, 
 
   float scaling_ratio = width / tile_width;
 
-  m_height_scaling_factor = (max_elevation - min_elevation) * scaling_ratio;
+  m_height_scaling_factor = (max_elevation - min_elevation) * scaling_ratio * 2;
 
   (void)m_tile_cache.tile_texture_sync(m_root_tile, TileType::ORTHO);
   (void)m_tile_cache.tile_texture_sync(m_root_tile, TileType::HEIGHT);
@@ -117,7 +117,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_shader->bind();
   m_shader->set_uniform("view", camera.get_view_matrix());
   m_shader->set_uniform("proj", camera.get_projection_matrix());
-  m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor * 2.0f);
+  m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
 
   auto render_tile = [this](Node* tile) -> bool {
     if (!tile->is_leaf) return true;
@@ -192,7 +192,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   };
 
   auto children = quad_tree.children();
-  std::sort(children.begin(), children.end(), [](Node* a, Node* b) { return a->depth > b->depth; });
+  std::sort(children.begin(), children.end(), [](Node* a, Node* b) { return a->depth < b->depth; });
   std::for_each(children.begin(), children.end(), render_tile);
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
