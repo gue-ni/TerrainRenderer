@@ -21,8 +21,6 @@
 using namespace gfx;
 using namespace gfx::gl;
 
-#define MULTITHREADING 1
-
 enum TileType : size_t { ORTHO = 0, HEIGHT = 1 };
 
 using TimePoint = std::chrono::time_point<std::chrono::system_clock>;

@@ -12,9 +12,8 @@
 #include <tuple>
 #include <unordered_map>
 
-#include "TileUtils.h"
-#include "../gfx/gfx.h"
 #include "../gfx/image.h"
+#include "TileUtils.h"
 
 using namespace gfx;
 
@@ -22,9 +21,9 @@ class TileService
 {
  public:
   enum UrlPattern {
-    ZXY,
+    ZXY_Y_NORTH,
     ZXY_Y_SOUTH,
-    ZYX,
+    ZYX_Y_NORTH,
     ZYX_Y_SOUTH,
   };
 
@@ -53,7 +52,7 @@ class TileService
 
   void request_download(const TileId&);
 
-  std::string tile_url(unsigned x, unsigned y, unsigned zoom) const;
+  std::string tile_filename(const TileId&) const;
 
-  std::string tile_filename(unsigned x, unsigned y, unsigned zoom) const;
+  std::string tile_url(const TileId&) const;
 };

@@ -11,8 +11,6 @@ void TileService::request_download(const TileId& tile_id)
   m_already_requested.insert(tile_id);
 }
 
-
-
 TileService::TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype)
     : m_url(url), m_url_pattern(url_pattern), m_filetype(filetype)
 {
@@ -26,27 +24,32 @@ TileService::~TileService()
   m_thread.join();
 }
 
-std::string TileService::tile_filename(unsigned x, unsigned y, unsigned zoom) const
+std::string TileService::tile_filename(const TileId& t) const
 {
-  return std::format("{}-{}-{}{}", zoom, x, y, m_filetype);
+  return std::format("{}-{}-{}{}", t.zoom, t.x, t.y, m_filetype);
 }
 
-std::string TileService::tile_url(unsigned x, unsigned y, unsigned zoom) const
+std::string TileService::tile_url(const TileId& tile_id) const
 {
   std::string url;
+  unsigned zoom = tile_id.zoom, x = tile_id.x, y = tile_id.y;
   const unsigned num_y_tiles = (1 << zoom);
 
   switch (m_url_pattern) {
-    case ZXY: {
+    case ZXY_Y_NORTH: {
       url = std::format("{}/{}/{}/{}{}", m_url, zoom, x, (num_y_tiles - y - 1), m_filetype);
       break;
     }
-    case ZYX: {
+    case ZYX_Y_NORTH: {
       url = std::format("{}/{}/{}/{}{}", m_url, zoom, (num_y_tiles - y - 1), x, m_filetype);
       break;
     }
     case ZYX_Y_SOUTH: {
       url = std::format("{}/{}/{}/{}{}", m_url, zoom, y, x, m_filetype);
+      break;
+    }
+    case ZXY_Y_SOUTH: {
+      url = std::format("{}/{}/{}/{}{}", m_url, zoom, x, y, m_filetype);
       break;
     }
     default:
@@ -75,7 +78,7 @@ void TileService::start_worker_thread()
 
 Image* TileService::get_tile(const TileId& tile_id)
 {
-  std::string tile_id_str = tile_filename(tile_id.x, tile_id.y, tile_id.zoom);
+  std::string tile_id_str = tile_filename(tile_id);
 
   if (m_ram_cache.contains(tile_id_str)) {
     return m_ram_cache[tile_id_str].get();
@@ -89,9 +92,8 @@ Image* TileService::get_tile(const TileId& tile_id)
 
 Image* TileService::get_tile_sync(const TileId& tile_id)
 {
-  auto filename = tile_filename(tile_id.x, tile_id.y, tile_id.zoom);
-
-  auto url = tile_url(tile_id.x, tile_id.y, tile_id.zoom);
+  auto url = tile_url(tile_id);
+  auto filename = tile_filename(tile_id);
 
   cpr::Response r = cpr::Get(cpr::Url{url});
 
@@ -108,7 +110,7 @@ Image* TileService::get_tile_sync(const TileId& tile_id)
     m_ram_cache[filename] = std::move(image);
     return m_ram_cache[filename].get();
   } else {
-    std::cerr << "Could not read " << std::quoted(filename) << std::endl;
+    std::cerr << "Could not read " << tile_id << std::endl;
     return nullptr;
   }
 }
