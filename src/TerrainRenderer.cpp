@@ -108,7 +108,6 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, 
 
 void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 {
-  const float min_node_size = 0.02f;
   const auto terrain_center = glm::clamp(center, m_bounds.min, m_bounds.max);
 
   QuadTree quad_tree(m_bounds.min, m_bounds.max, m_zoom_levels);
@@ -119,7 +118,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_shader->bind();
   m_shader->set_uniform("view", camera.get_view_matrix());
   m_shader->set_uniform("proj", camera.get_projection_matrix());
-  m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
+  m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor * 2.0f);
 
   auto render_tile = [this](Node* tile) -> bool {
     if (!tile->is_leaf) return true;
@@ -135,9 +134,9 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
     glm::vec2 height_uv_min(0.0f), height_uv_max(1.0f);
 
     unsigned zoom_delta = tile_id.zoom - m_root_tile.zoom;
-    TileId scaled_root_tile = {tile_id.zoom, m_root_tile.x * (1 << zoom_delta), m_root_tile.y * (1 << zoom_delta)};
-    unsigned delta_x = tile_id.x - scaled_root_tile.x, delta_y = tile_id.y - scaled_root_tile.y;
     unsigned num_tiles = 1 << zoom_delta;
+    TileId scaled_root_tile = {tile_id.zoom, m_root_tile.x * num_tiles, m_root_tile.y * num_tiles};
+    unsigned delta_x = tile_id.x - scaled_root_tile.x, delta_y = tile_id.y - scaled_root_tile.y;
     float factor = 1.0f / num_tiles;
 
     if (!albedo) {

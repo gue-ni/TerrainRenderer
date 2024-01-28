@@ -10,6 +10,8 @@ const TileId SCHNEEBERG = wms::tile_id(47.7671f, 15.8056f, 10);
 
 const TileId HALLSTATT = wms::tile_id(47.5622f, 13.6493f, 10);
 
+const TileId INNSBRUCK = wms::tile_id(47.2692f, 11.4041f, 9);
+
 struct Plane {
   glm::vec3 n;  // plane normal
   float d;      // d = dot(n, p) for a given point on the plane
@@ -34,7 +36,7 @@ int intersect_segment_plane(glm::vec3 a, glm::vec3 b, Plane p, float &t, glm::ve
 }
 
 Game::Game(size_t width, size_t height)
-    : Window(width, height), m_terrain_renderer(GROSS_GLOCKNER, 4, glm::vec2(-200.0f), glm::vec2(200.0f))
+    : Window(width, height), m_terrain_renderer(INNSBRUCK, 4, glm::vec2(-200.0f), glm::vec2(200.0f))
 {
   SDL_ShowCursor(SDL_FALSE);
   SDL_CaptureMouse(SDL_TRUE);
@@ -43,8 +45,7 @@ Game::Game(size_t width, size_t height)
   float fov = 45.0f;
   float aspect_ratio = float(width) / float(height);
   float near = 1.0f, far = 1000.0f;
-  auto projection = glm::perspective(glm::radians(fov), aspect_ratio, near, far);
-  m_camera.set_projection_matrix(projection);
+  m_camera.set_projection_matrix(glm::perspective(glm::radians(fov), aspect_ratio, near, far));
   m_camera.set_local_position(glm::vec3(0.0f, 40.f, 0.0f));
 }
 
