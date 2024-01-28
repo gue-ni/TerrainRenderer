@@ -2,18 +2,12 @@
 
 #include <cpr/cpr.h>
 
-#define LOG 1
-
 void ThreadedTileService::request_download(const TileId& tile_id)
 {
   std::unique_lock<std::mutex> lock(m_mutex);
-
   m_tiles_to_download.push(tile_id);
   // lock.unlock();
-
   m_condition.notify_one();
-  // m_condition.notify_all();
-
   m_already_requested.insert(tile_id);
 }
 
@@ -35,33 +29,7 @@ void ThreadedTileService::start_worker_thread()
       m_tiles_to_download.pop();
       lock.unlock();
 
-      auto filename = tile_filename(tile_id.x, tile_id.y, tile_id.zoom);
-
-      if (!std::filesystem::exists(filename)) {
-        auto url = tile_url(tile_id.x, tile_id.y, tile_id.zoom);
-
-        std::ofstream of(filename, std::ios::binary);
-        cpr::Response r = cpr::Download(of, cpr::Url{url});
-
-        if (r.status_code != 200) {
-          std::cerr << "Could not download " << std::quoted(url) << std::endl;
-          std::error_code err;
-          std::filesystem::remove(filename, err);
-        } else {
-#if LOG
-          std::cout << "Download " << std::quoted(url) << std::endl;
-#endif
-        }
-      }
-
-      auto image = std::make_unique<Image>();
-      image->read(filename);
-
-      if (image->loaded()) {
-        m_ram_cache[filename] = std::move(image);
-      } else {
-        std::cerr << "Could not read " << std::quoted(filename) << std::endl;
-      }
+      get_tile_sync(tile_id);
     }
   };
 
@@ -76,7 +44,6 @@ Image* ThreadedTileService::get_tile(const TileId& tile_id)
     return m_ram_cache[tile_id_str].get();
   } else {
     if (!m_already_requested.contains(tile_id)) {
-      // std::cout << "Request " << std::quoted(tile_id.to_string()) << std::endl;
       request_download(tile_id);
     }
     return nullptr;
@@ -87,25 +54,18 @@ Image* ThreadedTileService::get_tile_sync(const TileId& tile_id)
 {
   auto filename = tile_filename(tile_id.x, tile_id.y, tile_id.zoom);
 
-  if (!std::filesystem::exists(filename)) {
-    auto url = tile_url(tile_id.x, tile_id.y, tile_id.zoom);
+  auto url = tile_url(tile_id.x, tile_id.y, tile_id.zoom);
 
-    std::ofstream of(filename, std::ios::binary);
-    cpr::Response r = cpr::Download(of, cpr::Url{url});
+  cpr::Response r = cpr::Get(cpr::Url{url});
 
-    if (r.status_code != 200) {
-      std::cerr << "Could not download " << std::quoted(url) << std::endl;
-      std::error_code err;
-      std::filesystem::remove(filename, err);
-    } else {
-#if LOG
-      std::cout << "Download " << std::quoted(url) << std::endl;
-#endif
-    }
+  if (r.status_code != 200) {
+    std::cerr << "Could not download " << std::quoted(url) << std::endl;
+  } else {
+    std::cout << "Download " << std::quoted(url) << std::endl;
   }
 
   auto image = std::make_unique<Image>();
-  image->read(filename);
+  image->read_from_buffer(reinterpret_cast<unsigned char*>(r.text.data()), int(r.text.size()));
 
   if (image->loaded()) {
     m_ram_cache[filename] = std::move(image);
