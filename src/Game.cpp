@@ -1,16 +1,14 @@
 #include "Game.h"
 
-const TileId LUDESCH = wms::tile_id(47.1958f, 9.7793f, 8);
+const TileId BLUDENZ = wms::tile_id(47.1599f, 9.8082f, 9);
 
-const TileId SCHRUNS = wms::tile_id(47.0800f, 9.9199f, 8);
+const TileId GROSS_GLOCKNER = wms::tile_id(47.0742f, 12.6947f, 9);
 
-const TileId GROSS_GLOCKNER = wms::tile_id(47.0742f, 12.6947f, 10);
-
-const TileId SCHNEEBERG = wms::tile_id(47.7671f, 15.8056f, 10);
-
-const TileId HALLSTATT = wms::tile_id(47.5622f, 13.6493f, 10);
+const TileId SCHNEEBERG = wms::tile_id(47.7671f, 15.8056f, 9);
 
 const TileId INNSBRUCK = wms::tile_id(47.2692f, 11.4041f, 9);
+
+const TileId VIENNA = wms::tile_id(48.2082f, 16.3719f, 9);
 
 struct Plane {
   glm::vec3 n;  // plane normal

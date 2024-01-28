@@ -2,15 +2,6 @@
 
 #include <cpr/cpr.h>
 
-void TileService::request_download(const TileId& tile_id)
-{
-  std::unique_lock<std::mutex> lock(m_mutex);
-  m_tiles_to_download.push(tile_id);
-  // lock.unlock();
-  m_condition.notify_one();
-  m_already_requested.insert(tile_id);
-}
-
 TileService::TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype)
     : m_url(url), m_url_pattern(url_pattern), m_filetype(filetype)
 {
@@ -24,10 +15,7 @@ TileService::~TileService()
   m_thread.join();
 }
 
-std::string TileService::tile_filename(const TileId& t) const
-{
-  return std::format("{}-{}-{}{}", t.zoom, t.x, t.y, m_filetype);
-}
+std::string TileService::tile_filename(const TileId& t) const { return t.to_string(); }
 
 std::string TileService::tile_url(const TileId& tile_id) const
 {
@@ -113,4 +101,12 @@ Image* TileService::get_tile_sync(const TileId& tile_id)
     std::cerr << "Could not read " << tile_id << std::endl;
     return nullptr;
   }
+}
+
+void TileService::request_download(const TileId& tile_id)
+{
+  std::unique_lock<std::mutex> lock(m_mutex);
+  m_tiles_to_download.push(tile_id);
+  m_condition.notify_one();
+  m_already_requested.insert(tile_id);
 }

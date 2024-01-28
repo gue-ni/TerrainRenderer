@@ -9,7 +9,7 @@
 TileCache::TileCache(const TileId& root_tile, unsigned max_zoom_level)
     : m_root_tile(root_tile),
       m_max_zoom_level(max_zoom_level),
-      m_min_coord(wms::tiley2lat(root_tile.y, root_tile.zoom), wms::tilex2lon(m_root_tile.x, m_root_tile.zoom)),
+      m_min_coord(wms::tiley2lat(root_tile.y + 0, root_tile.zoom), wms::tilex2lon(m_root_tile.x + 0, m_root_tile.zoom)),
       m_max_coord(wms::tiley2lat(root_tile.y + 1, root_tile.zoom), wms::tilex2lon(m_root_tile.x + 1, m_root_tile.zoom)),
       m_ortho_tile_service("https://gataki.cg.tuwien.ac.at/raw/basemap/tiles", TileService::UrlPattern::ZYX_Y_SOUTH,
                            ".jpeg"),
@@ -67,7 +67,7 @@ Texture* TileCache::tile_texture_sync(const TileId& tile, const TileType& tile_t
   return nullptr;
 }
 
-Texture* TileCache::cached_tile_texture(const TileId& tile, const TileType& tile_type)
+Texture* TileCache::tile_texture_cached(const TileId& tile, const TileType& tile_type)
 {
   std::string name = tile.to_string() + "+" + std::to_string(tile_type);
   return m_gpu_cache[name].get();
@@ -147,5 +147,6 @@ TileId TileCache::tile_id(Coordinate& coord, unsigned lod_offset_from_root)
   return wms::tile_id(coord.lat, coord.lon, m_root_tile.zoom + lod_offset_from_root);
 }
 
-
-float TileCache::terrain_elevation(const Coordinate& point) { return 0; }
+float TileCache::terrain_elevation(const Coordinate& point) { 
+  return 0; 
+}
