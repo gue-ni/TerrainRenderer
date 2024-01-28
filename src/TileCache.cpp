@@ -11,9 +11,9 @@ TileCache::TileCache(const TileId& root_tile, unsigned max_zoom_level)
       m_max_zoom_level(max_zoom_level),
       m_min_coord(wms::tiley2lat(root_tile.y, root_tile.zoom), wms::tilex2lon(m_root_tile.x, m_root_tile.zoom)),
       m_max_coord(wms::tiley2lat(root_tile.y + 1, root_tile.zoom), wms::tilex2lon(m_root_tile.x + 1, m_root_tile.zoom)),
-      m_ortho_tile_service("https://gataki.cg.tuwien.ac.at/raw/basemap/tiles", TileService::UrlPattern::ZYX_Y_SOUTH,
+      m_ortho_tile_service("https://gataki.cg.tuwien.ac.at/raw/basemap/tiles", ThreadedTileService::UrlPattern::ZYX_Y_SOUTH,
                            ".jpeg"),
-      m_height_tile_service("https://alpinemaps.cg.tuwien.ac.at/tiles/alpine_png", TileService::UrlPattern::ZXY, ".png")
+      m_height_tile_service("https://alpinemaps.cg.tuwien.ac.at/tiles/alpine_png", ThreadedTileService::UrlPattern::ZXY, ".png")
 
 {
   // m_min_coord(wms::tiley2lat(root_tile.y, root_tile.zoom), wms::tilex2lon(m_root_tile.x, m_root_tile.zoom)),

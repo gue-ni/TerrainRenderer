@@ -16,7 +16,6 @@
 #include "../gfx/gfx.h"
 #include "QuadTree.h"
 #include "ThreadedTileService.h"
-#include "TileService.h"
 #include "TileUtils.h"
 
 using namespace gfx;

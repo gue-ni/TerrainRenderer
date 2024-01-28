@@ -11,12 +11,49 @@ void ThreadedTileService::request_download(const TileId& tile_id)
   m_already_requested.insert(tile_id);
 }
 
+
+
+ThreadedTileService::ThreadedTileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype)
+    : m_url(url), m_url_pattern(url_pattern), m_filetype(filetype)
+{
+}
+
 ThreadedTileService::~ThreadedTileService()
 {
   m_stop_thread = true;
   TileId null{};
   request_download(null);
   m_thread.join();
+}
+
+std::string ThreadedTileService::tile_filename(unsigned x, unsigned y, unsigned zoom) const
+{
+  return std::format("{}-{}-{}{}", zoom, x, y, m_filetype);
+}
+
+std::string ThreadedTileService::tile_url(unsigned x, unsigned y, unsigned zoom) const
+{
+  std::string url;
+  const unsigned num_y_tiles = (1 << zoom);
+
+  switch (m_url_pattern) {
+    case ZXY: {
+      url = std::format("{}/{}/{}/{}{}", m_url, zoom, x, (num_y_tiles - y - 1), m_filetype);
+      break;
+    }
+    case ZYX: {
+      url = std::format("{}/{}/{}/{}{}", m_url, zoom, (num_y_tiles - y - 1), x, m_filetype);
+      break;
+    }
+    case ZYX_Y_SOUTH: {
+      url = std::format("{}/{}/{}/{}{}", m_url, zoom, y, x, m_filetype);
+      break;
+    }
+    default:
+      assert(false);
+  }
+
+  return url;
 }
 
 void ThreadedTileService::start_worker_thread()
