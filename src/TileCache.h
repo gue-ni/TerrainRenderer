@@ -49,6 +49,8 @@ class TileCache
 
   TileId tile_id(Coordinate& coord, unsigned lod_offset_from_root);
 
+  float terrain_elevation(const Coordinate&);
+
  private:
   const TileId m_root_tile;
   const unsigned m_max_zoom_level;

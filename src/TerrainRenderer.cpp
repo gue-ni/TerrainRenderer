@@ -83,12 +83,11 @@ void main() {
 }
 )";
 
-TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, const glm::vec2& min,
-                                 const glm::vec2& max)
+TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, const Bounds<glm::vec2>& bounds)
     : m_shader(std::make_unique<ShaderProgram>(shader_vert, shader_frag)),
       m_root_tile(root_tile),
       m_chunk(32, 1.0f),
-      m_bounds({min, max}),
+      m_bounds(bounds),
       m_tile_cache(m_root_tile, m_root_tile.zoom + zoom_levels),
       m_zoom_levels(zoom_levels)
 {

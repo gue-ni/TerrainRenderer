@@ -96,10 +96,6 @@ void TileCache::invalidate_gpu_cache()
   if (removed > 0) {
     // std::cout << "gpu cache size " << m_gpu_cache.size() << std::endl;
   }
-#else
-  // m_ortho_tile_service.reset_queue();
-  // m_height_tile_service.reset_queue();
-
 #endif
 }
 
@@ -150,3 +146,6 @@ TileId TileCache::tile_id(Coordinate& coord, unsigned lod_offset_from_root)
 {
   return wms::tile_id(coord.lat, coord.lon, m_root_tile.zoom + lod_offset_from_root);
 }
+
+
+float TileCache::terrain_elevation(const Coordinate& point) { return 0; }

@@ -13,9 +13,10 @@ using namespace gfx::gl;
 class TerrainRenderer
 {
  public:
-  TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, const glm::vec2& min, const glm::vec2& max);
+  TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, const Bounds<glm::vec2>& bounds);
   void render(const Camera& camera, const glm::vec2& center);
   Bounds<glm::vec2> bounds() const { return m_bounds; }
+  float terrain_elevation(const glm::vec2& point);
 
   bool wireframe{false};
 
