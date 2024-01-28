@@ -5,6 +5,8 @@
 #include <numbers>
 #include <string>
 
+#include "Common.h"
+
 struct TileId {
   unsigned zoom{}, x{}, y{};
 
@@ -24,9 +26,7 @@ struct std::hash<TileId> {
   std::size_t operator()(TileId const& s) const noexcept
   {
 #if 1
-    //auto str = std::format("{},{},{}", s.x, s.y, s.zoom);
-    auto str = s.to_string();
-    return std::hash<std::string>{}(str);
+    return std::hash<std::string>{}(s.to_string());
 #else
     uint64_t h1 = uint64_t(s.x) << 24;
     uint64_t h2 = uint64_t(s.y) << 8;
@@ -80,7 +80,7 @@ inline float tile_width(float lat, unsigned zoom)
 }
 
 // get min and max latitude/longitude of a tile
-inline std::pair<Coordinate, Coordinate> tile_bounds(unsigned x, unsigned y, unsigned zoom)
+inline Bounds<Coordinate> tile_bounds(unsigned x, unsigned y, unsigned zoom)
 {
   Coordinate min = {tiley2lat(y, zoom), tilex2lon(x, zoom)};
   Coordinate max = {tiley2lat(y + 1, zoom), tilex2lon(x + 1, zoom)};
@@ -92,12 +92,12 @@ inline TileId parent_tile(const TileId& tile) { return {tile.zoom - 1, tile.x / 
 // https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Subtiles
 inline std::array<TileId, 4> child_tiles(const TileId& tile)
 {
-  unsigned x = tile.x, y = tile.y, new_zoom = tile.zoom + 1;
+  unsigned x = tile.x, y = tile.y, child_zoom = tile.zoom + 1;
   return std::array<TileId, 4>({
-      {new_zoom, 2 * x + 0, 2 * y + 0},
-      {new_zoom, 2 * x + 1, 2 * y + 0},
-      {new_zoom, 2 * x + 0, 2 * y + 1},
-      {new_zoom, 2 * x + 1, 2 * y + 1},
+      {child_zoom, 2 * x + 0, 2 * y + 0},
+      {child_zoom, 2 * x + 1, 2 * y + 0},
+      {child_zoom, 2 * x + 0, 2 * y + 1},
+      {child_zoom, 2 * x + 1, 2 * y + 1},
   });
 }
 

@@ -15,10 +15,7 @@ TileService::~TileService()
   m_thread.join();
 }
 
-std::string TileService::tile_filename(const TileId& t) const
-{
-  return std::format("{}-{}-{}{}", t.zoom, t.x, t.y, m_filetype);
-}
+std::string TileService::tile_filename(const TileId& t) const { return t.to_string(); }
 
 std::string TileService::tile_url(const TileId& tile_id) const
 {

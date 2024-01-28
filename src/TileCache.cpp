@@ -147,5 +147,6 @@ TileId TileCache::tile_id(Coordinate& coord, unsigned lod_offset_from_root)
   return wms::tile_id(coord.lat, coord.lon, m_root_tile.zoom + lod_offset_from_root);
 }
 
-
-float TileCache::terrain_elevation(const Coordinate& point) { return 0; }
+float TileCache::terrain_elevation(const Coordinate& point) { 
+  return 0; 
+}

@@ -2,8 +2,6 @@
 
 #include <array>
 #include <glm/glm.hpp>
-#include <glm/gtx/io.hpp>
-#include <iostream>
 #include <memory>
 #include <vector>
 

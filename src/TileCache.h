@@ -35,21 +35,19 @@ class TileCache
  public:
   TileCache(const TileId& root_tile, unsigned max_zoom_level);
 
-  Texture* debug_texture() { return m_debug_texture.get(); }
-
   Texture* tile_texture(const TileId&, const TileType&);
 
   Texture* tile_texture_sync(const TileId&, const TileType&);
 
   Texture* tile_texture_cached(const TileId&, const TileType&);
 
+  float terrain_elevation(const Coordinate&);
+
   void invalidate_gpu_cache();
 
   Coordinate lat_lon(const glm::vec2& point);
 
   TileId tile_id(Coordinate& coord, unsigned lod_offset_from_root);
-
-  float terrain_elevation(const Coordinate&);
 
  private:
   const TileId m_root_tile;

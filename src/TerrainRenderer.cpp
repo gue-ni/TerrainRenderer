@@ -207,6 +207,5 @@ TileId TerrainRenderer::tile_id_from_node(Node* node)
 {
   auto relative = map_to_0_1(node->center());
   Coordinate coord = m_tile_cache.lat_lon(relative);
-  TileId tile_id = m_tile_cache.tile_id(coord, node->depth);
-  return tile_id;
+  return m_tile_cache.tile_id(coord, node->depth);
 }
