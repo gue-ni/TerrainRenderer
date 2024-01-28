@@ -132,13 +132,14 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
     glm::vec2 height_uv_min(0.0f), height_uv_max(1.0f);
 
     if (!albedo) {
-#if 0
       Texture* parent_texture = nullptr;
 
       Node* parent = tile->parent;
+      TileId parent_tile_id;
 
       while (parent != nullptr) {
-        parent_texture = m_tile_cache.cached_tile_texture(m_root_tile, TileType::ORTHO);
+        parent_tile_id = tile_id_from_node(parent);
+        parent_texture = m_tile_cache.cached_tile_texture(parent_tile_id, TileType::ORTHO);
 
         if (parent_texture) {
           break;
@@ -146,8 +147,6 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
           parent = parent->parent;
         }
       }
-
-      TileId parent_tile_id = tile_id_from_node(parent);
 
       unsigned zoom_delta = tile_id.zoom - parent_tile_id.zoom;
       unsigned num_tiles = 1 << zoom_delta;
@@ -158,21 +157,6 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
       albedo_uv_min = glm::vec2((delta_x + 0) * factor, (delta_y + 0) * factor);
       albedo_uv_max = glm::vec2((delta_x + 1) * factor, (delta_y + 1) * factor);
       albedo = parent_texture;
-
-#else
-      Texture* albedo_root = m_tile_cache.cached_tile_texture(m_root_tile, TileType::ORTHO);
-      assert(albedo_root);
-
-      unsigned zoom_delta = tile_id.zoom - m_root_tile.zoom;
-      unsigned num_tiles = 1 << zoom_delta;
-      TileId scaled_root_tile = {tile_id.zoom, m_root_tile.x * num_tiles, m_root_tile.y * num_tiles};
-      unsigned delta_x = tile_id.x - scaled_root_tile.x, delta_y = tile_id.y - scaled_root_tile.y;
-      float factor = 1.0f / num_tiles;
-
-      albedo_uv_min = glm::vec2((delta_x + 0) * factor, (delta_y + 0) * factor);
-      albedo_uv_max = glm::vec2((delta_x + 1) * factor, (delta_y + 1) * factor);
-      albedo = albedo_root;
-#endif
     }
 
     if (!heightmap) {
