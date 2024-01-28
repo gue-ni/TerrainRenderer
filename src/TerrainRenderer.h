@@ -29,4 +29,6 @@ class TerrainRenderer
 
   // convert from world coordinate in range m_bounds to [0, 1]
   glm::vec2 map_to_0_1(const glm::vec2& point);
+
+  TileId tile_id_from_node(Node*);
 };
