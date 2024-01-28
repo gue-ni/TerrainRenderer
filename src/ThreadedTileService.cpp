@@ -62,8 +62,6 @@ void ThreadedTileService::start_worker_thread()
       } else {
         std::cerr << "Could not read " << std::quoted(filename) << std::endl;
       }
-
-      // std::cout << "Load " << std::quoted(tile_id.to_string()) << std::endl;
     }
   };
 
@@ -108,9 +106,12 @@ Image* ThreadedTileService::get_tile_sync(const TileId& tile_id)
 
   auto image = std::make_unique<Image>();
   image->read(filename);
-  assert(image->loaded());
 
-  m_ram_cache[filename] = std::move(image);
-
-  return m_ram_cache[filename].get();
+  if (image->loaded()) {
+    m_ram_cache[filename] = std::move(image);
+    return m_ram_cache[filename].get();
+  } else {
+    std::cerr << "Could not read " << std::quoted(filename) << std::endl;
+    return nullptr;
+  }
 }
