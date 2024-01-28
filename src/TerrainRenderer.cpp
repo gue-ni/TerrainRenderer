@@ -138,7 +138,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
       while (parent != nullptr) {
         parent_tile_id = tile_id_from_node(parent);
-        parent_texture = m_tile_cache.cached_tile_texture(parent_tile_id, TileType::ORTHO);
+        parent_texture = m_tile_cache.tile_texture_cached(parent_tile_id, TileType::ORTHO);
 
         if (parent_texture) {
           break;
@@ -159,7 +159,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
     }
 
     if (!heightmap) {
-      Texture* heightmap_root = m_tile_cache.cached_tile_texture(m_root_tile, TileType::HEIGHT);
+      Texture* heightmap_root = m_tile_cache.tile_texture_cached(m_root_tile, TileType::HEIGHT);
       assert(heightmap_root);
 
       unsigned zoom_delta = tile_id.zoom - m_root_tile.zoom;
