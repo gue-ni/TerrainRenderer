@@ -15,7 +15,7 @@
 
 #include "../gfx/gfx.h"
 #include "QuadTree.h"
-#include "ThreadedTileService.h"
+#include "TileService.h"
 #include "TileUtils.h"
 
 using namespace gfx;
@@ -57,8 +57,8 @@ class TileCache
   const Coordinate m_min_coord, m_max_coord;
   std::unique_ptr<Texture> m_debug_texture{nullptr};
   std::unordered_map<std::string, std::unique_ptr<Texture>> m_gpu_cache;
-  ThreadedTileService m_ortho_tile_service;
-  ThreadedTileService m_height_tile_service;
+  TileService m_ortho_tile_service;
+  TileService m_height_tile_service;
 
   std::unique_ptr<Texture> create_texture(const Image& image);
 

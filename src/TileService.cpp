@@ -1,8 +1,8 @@
-#include "ThreadedTileService.h"
+#include "TileService.h"
 
 #include <cpr/cpr.h>
 
-void ThreadedTileService::request_download(const TileId& tile_id)
+void TileService::request_download(const TileId& tile_id)
 {
   std::unique_lock<std::mutex> lock(m_mutex);
   m_tiles_to_download.push(tile_id);
@@ -13,12 +13,12 @@ void ThreadedTileService::request_download(const TileId& tile_id)
 
 
 
-ThreadedTileService::ThreadedTileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype)
+TileService::TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype)
     : m_url(url), m_url_pattern(url_pattern), m_filetype(filetype)
 {
 }
 
-ThreadedTileService::~ThreadedTileService()
+TileService::~TileService()
 {
   m_stop_thread = true;
   TileId null{};
@@ -26,12 +26,12 @@ ThreadedTileService::~ThreadedTileService()
   m_thread.join();
 }
 
-std::string ThreadedTileService::tile_filename(unsigned x, unsigned y, unsigned zoom) const
+std::string TileService::tile_filename(unsigned x, unsigned y, unsigned zoom) const
 {
   return std::format("{}-{}-{}{}", zoom, x, y, m_filetype);
 }
 
-std::string ThreadedTileService::tile_url(unsigned x, unsigned y, unsigned zoom) const
+std::string TileService::tile_url(unsigned x, unsigned y, unsigned zoom) const
 {
   std::string url;
   const unsigned num_y_tiles = (1 << zoom);
@@ -56,7 +56,7 @@ std::string ThreadedTileService::tile_url(unsigned x, unsigned y, unsigned zoom)
   return url;
 }
 
-void ThreadedTileService::start_worker_thread()
+void TileService::start_worker_thread()
 {
   auto worker = [this]() {
     while (!m_stop_thread) {
@@ -73,7 +73,7 @@ void ThreadedTileService::start_worker_thread()
   m_thread = std::thread(worker);
 }
 
-Image* ThreadedTileService::get_tile(const TileId& tile_id)
+Image* TileService::get_tile(const TileId& tile_id)
 {
   std::string tile_id_str = tile_filename(tile_id.x, tile_id.y, tile_id.zoom);
 
@@ -87,7 +87,7 @@ Image* ThreadedTileService::get_tile(const TileId& tile_id)
   }
 }
 
-Image* ThreadedTileService::get_tile_sync(const TileId& tile_id)
+Image* TileService::get_tile_sync(const TileId& tile_id)
 {
   auto filename = tile_filename(tile_id.x, tile_id.y, tile_id.zoom);
 

@@ -18,7 +18,7 @@
 
 using namespace gfx;
 
-class ThreadedTileService
+class TileService
 {
  public:
   enum UrlPattern {
@@ -28,8 +28,8 @@ class ThreadedTileService
     ZYX_Y_SOUTH,
   };
 
-  ThreadedTileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype = "png");
-  ~ThreadedTileService();
+  TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype = "png");
+  ~TileService();
 
   // Start seperate worker thread
   void start_worker_thread();
