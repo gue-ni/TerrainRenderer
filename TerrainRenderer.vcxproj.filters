@@ -105,4 +105,11 @@
       <UniqueIdentifier>{877a9738-a321-48e9-bdbb-aa7070c687b8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="libraries\SDL2-2.26.4\lib\x64\SDL2.dll" />
+    <CopyFileToFolders Include="libraries\glew-2.2.0\bin\Release\x64\glew32.dll" />
+    <CopyFileToFolders Include="libraries\cpr-1.10.5\build2\bin\Release\cpr.dll" />
+    <CopyFileToFolders Include="libraries\cpr-1.10.5\build2\bin\Release\libcurl.dll" />
+    <CopyFileToFolders Include="libraries\cpr-1.10.5\build2\bin\Release\zlib.dll" />
+  </ItemGroup>
 </Project>

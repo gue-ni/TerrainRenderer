@@ -8,7 +8,7 @@ on:
 
 env:
   SOLUTION_FILE_PATH: .
-  BUILD_CONFIGURATION: Debug
+  BUILD_CONFIGURATION: Release
 
 permissions:
   contents: read
@@ -52,8 +52,8 @@ jobs:
         tar -xf cpr.zip
         move cpr-1.10.5 libraries
         cd libraries/cpr-1.10.5
-        cmake -B build/ -DCMAKE_BUILD_TYPE=${{env.BUILD_CONFIGURATION}}
-        cmake --build build/ --parallel --config ${{env.BUILD_CONFIGURATION}}
+        cmake -B build2/ -DCMAKE_BUILD_TYPE=${{env.BUILD_CONFIGURATION}}
+        cmake --build build2/ --parallel --config ${{env.BUILD_CONFIGURATION}}
 
 
     - name: Build
@@ -64,5 +64,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: terrain-renderer
-        path: ${{github.workspace}}/x64/${{env.BUILD_CONFIGURATION}}
+        path: |
+          ${{github.workspace}}/x64/${{env.BUILD_CONFIGURATION}}/*.exe
+          ${{github.workspace}}/x64/${{env.BUILD_CONFIGURATION}}/*.dll
 
