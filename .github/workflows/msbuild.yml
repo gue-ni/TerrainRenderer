@@ -64,5 +64,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: terrain-renderer
-        path: ${{github.workspace}}/x64/${{env.BUILD_CONFIGURATION}}/*.exe
+        path: |
+          ${{github.workspace}}/x64/${{env.BUILD_CONFIGURATION}}/*.exe
+          ${{github.workspace}}/x64/${{env.BUILD_CONFIGURATION}}/*.dll
 
