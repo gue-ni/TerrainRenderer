@@ -8,7 +8,7 @@ on:
 
 env:
   SOLUTION_FILE_PATH: .
-  BUILD_CONFIGURATION: Debug
+  BUILD_CONFIGURATION: Release
 
 permissions:
   contents: read
