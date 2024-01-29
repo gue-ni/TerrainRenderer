@@ -105,4 +105,13 @@ inline std::array<TileId, 4> child_tiles(const TileId& tile)
   });
 }
 
+// https://en.wikipedia.org/wiki/Horizon#Derivation
+inline float distance_to_horizon(float altitude) {
+    return std::sqrt(2.0f * EARTH_RADIUS * altitude + (altitude * altitude));
+}
+
+// https://en.wikipedia.org/wiki/Horizon#Arc_distance
+inline float geographical_distance_to_horizon(float altitude) {
+    return EARTH_RADIUS * std::atan(distance_to_horizon(altitude) / EARTH_RADIUS);
+}
 };  // namespace wms
