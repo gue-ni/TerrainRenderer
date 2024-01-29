@@ -17,16 +17,16 @@
 
 using namespace gfx;
 
+enum UrlPattern {
+  ZXY_Y_NORTH,
+  ZXY_Y_SOUTH,
+  ZYX_Y_NORTH,
+  ZYX_Y_SOUTH,
+};
+
 class TileService
 {
  public:
-  enum UrlPattern {
-    ZXY_Y_NORTH,
-    ZXY_Y_SOUTH,
-    ZYX_Y_NORTH,
-    ZYX_Y_SOUTH,
-  };
-
   TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype = "png");
   ~TileService();
 
@@ -51,8 +51,6 @@ class TileService
   std::set<TileId> m_already_requested;
 
   void request_download(const TileId&);
-
-  std::string tile_filename(const TileId&) const;
 
   std::string tile_url(const TileId&) const;
 };

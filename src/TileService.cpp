@@ -15,8 +15,6 @@ TileService::~TileService()
   m_thread.join();
 }
 
-std::string TileService::tile_filename(const TileId& t) const { return t.to_string(); }
-
 std::string TileService::tile_url(const TileId& tile_id) const
 {
   std::string url;
@@ -66,7 +64,7 @@ void TileService::start_worker_thread()
 
 Image* TileService::get_tile(const TileId& tile_id)
 {
-  std::string tile_id_str = tile_filename(tile_id);
+  std::string tile_id_str = tile_id.to_string();
 
   if (m_ram_cache.contains(tile_id_str)) {
     return m_ram_cache[tile_id_str].get();
@@ -81,7 +79,7 @@ Image* TileService::get_tile(const TileId& tile_id)
 Image* TileService::get_tile_sync(const TileId& tile_id)
 {
   auto url = tile_url(tile_id);
-  auto filename = tile_filename(tile_id);
+  auto tile_id_str = tile_id.to_string();
 
   cpr::Response r = cpr::Get(cpr::Url{url});
 
@@ -95,8 +93,8 @@ Image* TileService::get_tile_sync(const TileId& tile_id)
   image->read_from_buffer(reinterpret_cast<unsigned char*>(r.text.data()), int(r.text.size()));
 
   if (image->loaded()) {
-    m_ram_cache[filename] = std::move(image);
-    return m_ram_cache[filename].get();
+    m_ram_cache[tile_id_str] = std::move(image);
+    return m_ram_cache[tile_id_str].get();
   } else {
     std::cerr << "Could not read " << tile_id << std::endl;
     return nullptr;

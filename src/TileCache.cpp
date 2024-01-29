@@ -11,13 +11,12 @@ TileCache::TileCache(const TileId& root_tile, unsigned max_zoom_level)
       m_max_zoom_level(max_zoom_level),
       m_min_coord(wms::tiley2lat(root_tile.y + 0, root_tile.zoom), wms::tilex2lon(m_root_tile.x + 0, m_root_tile.zoom)),
       m_max_coord(wms::tiley2lat(root_tile.y + 1, root_tile.zoom), wms::tilex2lon(m_root_tile.x + 1, m_root_tile.zoom)),
-      m_ortho_tile_service("https://gataki.cg.tuwien.ac.at/raw/basemap/tiles", TileService::UrlPattern::ZYX_Y_SOUTH,
-                           ".jpeg"),
-      m_height_tile_service("https://alpinemaps.cg.tuwien.ac.at/tiles/alpine_png", TileService::UrlPattern::ZXY_Y_NORTH, ".png")
+      m_ortho_service("https://gataki.cg.tuwien.ac.at/raw/basemap/tiles", UrlPattern::ZYX_Y_SOUTH, ".jpeg"),
+      m_height_service("https://alpinemaps.cg.tuwien.ac.at/tiles/alpine_png", UrlPattern::ZXY_Y_NORTH, ".png")
 
 {
-  m_ortho_tile_service.start_worker_thread();
-  m_height_tile_service.start_worker_thread();
+  m_ortho_service.start_worker_thread();
+  m_height_service.start_worker_thread();
 }
 
 Texture* TileCache::tile_texture(const TileId& tile, const TileType& tile_type)
@@ -50,10 +49,10 @@ Texture* TileCache::tile_texture_sync(const TileId& tile, const TileType& tile_t
   } else {
     switch (tile_type) {
       case TileType::ORTHO:
-        image = m_ortho_tile_service.get_tile_sync(tile);
+        image = m_ortho_service.get_tile_sync(tile);
         break;
       case TileType::HEIGHT:
-        image = m_height_tile_service.get_tile_sync(tile);
+        image = m_height_service.get_tile_sync(tile);
         break;
       default:
         assert(false);
@@ -122,10 +121,10 @@ Image* TileCache::request_image(const TileId& tile, const TileType& tile_type)
 {
   switch (tile_type) {
     case TileType::ORTHO:
-      return m_ortho_tile_service.get_tile(tile);
+      return m_ortho_service.get_tile(tile);
 
     case TileType::HEIGHT:
-      return m_height_tile_service.get_tile(tile);
+      return m_height_service.get_tile(tile);
 
     default:
       assert(false);
@@ -147,6 +146,4 @@ TileId TileCache::tile_id(Coordinate& coord, unsigned lod_offset_from_root)
   return wms::tile_id(coord.lat, coord.lon, m_root_tile.zoom + lod_offset_from_root);
 }
 
-float TileCache::terrain_elevation(const Coordinate& point) { 
-  return 0; 
-}
+float TileCache::terrain_elevation(const Coordinate& point) { return 0; }
