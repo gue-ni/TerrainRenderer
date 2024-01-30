@@ -17,6 +17,8 @@ class TerrainRenderer
   void render(const Camera& camera, const glm::vec2& center);
   Bounds<glm::vec2> bounds() const { return m_bounds; }
   float terrain_elevation(const glm::vec2& point);
+  unsigned zoom_levels() const { return m_zoom_levels; }
+  unsigned set_zoom_levels(unsigned zoom_levels) { m_zoom_levels = zoom_levels; }
 
   bool wireframe{false};
 
@@ -25,7 +27,7 @@ class TerrainRenderer
   const TileId m_root_tile;
   const Chunk m_chunk;  // terrain chunk geometry
   const Bounds<glm::vec2> m_bounds;
-  const unsigned m_zoom_levels;
+  unsigned m_zoom_levels;
   TileCache m_tile_cache;
   float m_height_scaling_factor;
 

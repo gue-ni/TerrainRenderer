@@ -125,6 +125,14 @@ void Game::read_input(float dt)
         break;
       }
       case SDL_KEYDOWN: {
+        switch (sdl_event.key.keysym.sym) {
+          case SDLK_n:
+            m_terrain_renderer.set_zoom_levels(m_terrain_renderer.zoom_levels() + 1);
+            break;
+          case SDLK_m:
+            m_terrain_renderer.set_zoom_levels(m_terrain_renderer.zoom_levels() - 1);
+            break;
+        }
         break;
       }
     }
