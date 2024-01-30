@@ -135,47 +135,11 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
     glm::vec2 height_uv_min(0.0f), height_uv_max(1.0f);
 
     if (!albedo) {
-      Texture* parent_texture = nullptr;
-
-      Node* parent = tile->parent;
-      TileId parent_tile_id;
-
-      while (parent != nullptr) {
-        parent_tile_id = tile_id_from_node(parent);
-        parent_texture = m_tile_cache.tile_texture_cached(parent_tile_id, TileType::ORTHO);
-
-        if (parent_texture) {
-          break;
-        } else {
-          parent = parent->parent;
-        }
-      }
-
-      unsigned zoom_delta = tile_id.zoom - parent_tile_id.zoom;
-      unsigned num_tiles = 1 << zoom_delta;
-      TileId scaled_root_tile = {tile_id.zoom, parent_tile_id.x * num_tiles, parent_tile_id.y * num_tiles};
-      unsigned delta_x = tile_id.x - scaled_root_tile.x, delta_y = tile_id.y - scaled_root_tile.y;
-      float factor = 1.0f / num_tiles;
-
-      albedo_uv_min = glm::vec2((delta_x + 0) * factor, (delta_y + 0) * factor);
-      albedo_uv_max = glm::vec2((delta_x + 1) * factor, (delta_y + 1) * factor);
-      albedo = parent_texture;
+      albedo = find_cached_lower_lod_parent(tile, albedo_uv_min, albedo_uv_max, TileType::ORTHO);
     }
 
     if (!heightmap) {
-      Texture* heightmap_root = m_tile_cache.tile_texture_cached(m_root_tile, TileType::HEIGHT);
-      assert(heightmap_root);
-
-      unsigned zoom_delta = tile_id.zoom - m_root_tile.zoom;
-      unsigned num_tiles = 1 << zoom_delta;
-      TileId scaled_root_tile = {tile_id.zoom, m_root_tile.x * num_tiles, m_root_tile.y * num_tiles};
-      unsigned delta_x = tile_id.x - scaled_root_tile.x, delta_y = tile_id.y - scaled_root_tile.y;
-      float factor = 1.0f / num_tiles;
-
-      height_uv_min = glm::vec2((delta_x + 0) * factor, (delta_y + 0) * factor);
-      height_uv_max = glm::vec2((delta_x + 1) * factor, (delta_y + 1) * factor);
-
-      heightmap = heightmap_root;
+      heightmap = find_cached_lower_lod_parent(tile, height_uv_min, height_uv_max, TileType::HEIGHT);
     }
 
     if (albedo && heightmap) {
@@ -220,4 +184,39 @@ TileId TerrainRenderer::tile_id_from_node(Node* node)
   auto relative = map_to_0_1(node->center());
   Coordinate coord = m_tile_cache.lat_lon(relative);
   return m_tile_cache.tile_id(coord, node->depth);
+}
+
+Texture* TerrainRenderer::find_cached_lower_lod_parent(Node* node, glm::vec2& uv_min, glm::vec2& uv_max,
+                                                       const TileType& type)
+{
+  Texture* parent_texture = nullptr;
+  TileId tile_id = tile_id_from_node(node);
+
+  Node* parent = node->parent;
+  TileId parent_tile_id;
+
+  while (parent != nullptr) {
+    parent_tile_id = tile_id_from_node(parent);
+    parent_texture = m_tile_cache.tile_texture_cached(parent_tile_id, type);
+    if (parent_texture) break;
+    parent = parent->parent;
+  }
+
+  if (!parent_texture) {
+    parent_tile_id = m_root_tile;
+    parent_texture = m_tile_cache.tile_texture_cached(m_root_tile, type);
+  }
+
+  assert(parent_texture);
+
+  unsigned zoom_delta = tile_id.zoom - parent_tile_id.zoom;
+  unsigned num_tiles = 1 << zoom_delta;
+  TileId scaled_root_tile = {tile_id.zoom, parent_tile_id.x * num_tiles, parent_tile_id.y * num_tiles};
+  unsigned delta_x = tile_id.x - scaled_root_tile.x, delta_y = tile_id.y - scaled_root_tile.y;
+  float factor = 1.0f / num_tiles;
+
+  uv_min = glm::vec2((delta_x + 0) * factor, (delta_y + 0) * factor);
+  uv_max = glm::vec2((delta_x + 1) * factor, (delta_y + 1) * factor);
+
+  return parent_texture;
 }
