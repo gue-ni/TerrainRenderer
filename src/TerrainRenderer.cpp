@@ -99,11 +99,12 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, 
 
   float width = m_bounds.size().x;
 
-  float tile_width = wms::tile_width(wms::tiley2lat(m_root_tile.y, m_root_tile.zoom), m_root_tile.zoom);
+  float latitude = wms::tiley2lat(m_root_tile.y, m_root_tile.zoom);
+  float tile_width = wms::tile_width(latitude, m_root_tile.zoom);
 
-  float scaling_ratio = width / tile_width;
+  float terrain_scaling_factor = width / tile_width;
 
-  m_height_scaling_factor = (max_elevation - min_elevation) * scaling_ratio * 2;
+  m_height_scaling_factor = (max_elevation - min_elevation) * terrain_scaling_factor * 2;
 
   (void)m_tile_cache.tile_texture_sync(m_root_tile, TileType::ORTHO);
   (void)m_tile_cache.tile_texture_sync(m_root_tile, TileType::HEIGHT);
@@ -134,6 +135,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
     glm::vec2 albedo_uv_min(0.0f), albedo_uv_max(1.0f);
     glm::vec2 height_uv_min(0.0f), height_uv_max(1.0f);
 
+#if 1
     if (!albedo) {
       albedo = find_cached_lower_lod_parent(tile, albedo_uv_min, albedo_uv_max, TileType::ORTHO);
     }
@@ -141,6 +143,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
     if (!heightmap) {
       heightmap = find_cached_lower_lod_parent(tile, height_uv_min, height_uv_max, TileType::HEIGHT);
     }
+#endif
 
     if (albedo && heightmap) {
       m_shader->set_uniform("u_zoom", tile_id.zoom);
@@ -162,7 +165,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   };
 
   auto children = quad_tree.children();
-  std::sort(children.begin(), children.end(), [](Node* a, Node* b) { return a->depth < b->depth; });
+  std::sort(children.begin(), children.end(), [](Node* a, Node* b) { return a->depth > b->depth; });
   std::for_each(children.begin(), children.end(), render_tile);
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
