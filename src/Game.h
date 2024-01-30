@@ -2,9 +2,9 @@
 #include <memory>
 
 #include "../gfx/gfx.h"
+#include "Clock.h"
 #include "TerrainRenderer.h"
 #include "Window.h"
-#include "Clock.h"
 
 using namespace gfx;
 using namespace gfx::gl;

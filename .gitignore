@@ -8,3 +8,4 @@ tmp/
 *.zip
 terrain-renderer/
 Debug/
+*.ps1
