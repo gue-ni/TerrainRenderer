@@ -198,6 +198,8 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
+float TerrainRenderer::terrain_elevation(const glm::vec2& point) { return 0.0f; }
+
 glm::vec2 TerrainRenderer::map_to_0_1(const glm::vec2& point)
 {
   return map_range(point, m_bounds.min, m_bounds.max, glm::vec2(0.0f), glm::vec2(1.0f));

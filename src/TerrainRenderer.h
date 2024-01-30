@@ -17,8 +17,8 @@ class TerrainRenderer
   void render(const Camera& camera, const glm::vec2& center);
   Bounds<glm::vec2> bounds() const { return m_bounds; }
   float terrain_elevation(const glm::vec2& point);
-  unsigned zoom_levels() const { return m_zoom_levels; }
-  unsigned set_zoom_levels(unsigned zoom_levels) { m_zoom_levels = zoom_levels; }
+  inline unsigned zoom_levels() const { return m_zoom_levels; }
+  inline void set_zoom_levels(unsigned zoom_levels) { m_zoom_levels = zoom_levels; }
 
   bool wireframe{false};
 
