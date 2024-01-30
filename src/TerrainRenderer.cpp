@@ -23,6 +23,8 @@ uniform vec2 u_height_uv_min;
 uniform vec2 u_height_uv_max;
 uniform sampler2D u_height_texture;
 
+uniform uint u_zoom;
+
 out vec2 uv;
 
 float altitude_from_color(vec4 color) { 
@@ -69,6 +71,8 @@ out vec4 FragColor;
 uniform vec2 u_albedo_uv_min;
 uniform vec2 u_albedo_uv_max;
 uniform sampler2D u_albedo_texture;
+
+uniform uint u_zoom;
 
 vec2 map_range(vec2 s, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) { 
   return out_min + (s - in_min) * (out_max - out_min) / (in_max - in_min); 
@@ -175,6 +179,8 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
     }
 
     if (albedo && heightmap) {
+      m_shader->set_uniform("u_zoom", tile_id.zoom);
+
       albedo->bind(0);
       m_shader->set_uniform("u_albedo_texture", 0);
       m_shader->set_uniform("u_albedo_uv_min", albedo_uv_min);
@@ -198,7 +204,11 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-float TerrainRenderer::terrain_elevation(const glm::vec2& point) { return 0.0f; }
+float TerrainRenderer::terrain_elevation(const glm::vec2& point)
+{
+  assert(false);  // not implemented
+  return 0.0f;
+}
 
 glm::vec2 TerrainRenderer::map_to_0_1(const glm::vec2& point)
 {

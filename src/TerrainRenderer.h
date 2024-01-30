@@ -3,9 +3,9 @@
 
 #include "../gfx/gfx.h"
 #include "Chunk.h"
+#include "Common.h"
 #include "QuadTree.h"
 #include "TileCache.h"
-#include "Common.h"
 
 using namespace gfx;
 using namespace gfx::gl;
@@ -14,11 +14,18 @@ class TerrainRenderer
 {
  public:
   TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, const Bounds<glm::vec2>& bounds);
+
   void render(const Camera& camera, const glm::vec2& center);
+
   Bounds<glm::vec2> bounds() const { return m_bounds; }
+
+  // Get terrain elevation at point.
   float terrain_elevation(const glm::vec2& point);
+
   inline unsigned zoom_levels() const { return m_zoom_levels; }
-  inline void set_zoom_levels(unsigned zoom_levels) { m_zoom_levels = zoom_levels; }
+
+  // Set range of zoom levels.
+  inline void set_zoom_levels(unsigned zoom_levels) { m_zoom_levels = std::clamp(zoom_levels, 1U, 7U); }
 
   bool wireframe{false};
 
