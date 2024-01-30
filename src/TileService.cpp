@@ -68,12 +68,12 @@ Image* TileService::get_tile(const TileId& tile_id)
 
   if (m_ram_cache.contains(tile_id_str)) {
     return m_ram_cache[tile_id_str].get();
-  } else {
-    if (!m_already_requested.contains(tile_id)) {
-      request_download(tile_id);
-    }
-    return nullptr;
   }
+
+  if (!m_already_requested.contains(tile_id)) {
+    request_download(tile_id);
+  }
+  return nullptr;
 }
 
 Image* TileService::get_tile_sync(const TileId& tile_id)

@@ -54,7 +54,7 @@ void main() {
 
   // skirts on tiles
   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
-    world_pos.y = -10.0;
+    world_pos.y = -2.0;
   }
 
   gl_Position = proj * view * world_pos;

@@ -132,7 +132,7 @@ Image* TileCache::request_image(const TileId& tile, const TileType& tile_type)
   }
 }
 
-Coordinate TileCache::lat_lon(const glm::vec2& point)
+Coordinate TileCache::lat_lon(const glm::vec2& point) const
 {
   // point is in range [0, 1]
   assert(glm::all(glm::lessThanEqual(glm::vec2(0.0f), point)) && glm::all(glm::lessThanEqual(point, glm::vec2(1.0f))));
@@ -141,9 +141,9 @@ Coordinate TileCache::lat_lon(const glm::vec2& point)
   return {lat, lon};
 }
 
-TileId TileCache::tile_id(Coordinate& coord, unsigned lod_offset_from_root)
+TileId TileCache::tile_id(Coordinate& coord, unsigned lod_offset_from_root) const
 {
   return wms::tile_id(coord.lat, coord.lon, m_root_tile.zoom + lod_offset_from_root);
 }
 
-float TileCache::terrain_elevation(const Coordinate& point) { return 0; }
+float TileCache::terrain_elevation(const Coordinate& point) const { return 0; }

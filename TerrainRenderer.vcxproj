@@ -70,6 +70,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -123,7 +126,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)\libraries\cpr-1.10.5\build2\cpr_generated_includes;$(ProjectDir)\libraries\cpr-1.10.5\build2\_deps\curl-src\include;$(ProjectDir)\libraries\cpr-1.10.5\include;$(ProjectDir)\libraries\glew-2.2.0\include;$(ProjectDir)\libraries\SDL2-2.26.4\include;$(ProjectDir)\libraries\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\libraries\cpr-1.10.5\build\cpr_generated_includes;$(ProjectDir)\libraries\cpr-1.10.5\build\_deps\curl-src\include;$(ProjectDir)\libraries\cpr-1.10.5\include;$(ProjectDir)\libraries\glew-2.2.0\include;$(ProjectDir)\libraries\SDL2-2.26.4\include;$(ProjectDir)\libraries\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -131,7 +134,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)\libraries\cpr-1.10.5\build2\lib\Release;$(ProjectDir)\libraries\glew-2.2.0\lib\Release\x64;$(ProjectDir)\libraries\SDL2-2.26.4\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)\libraries\cpr-1.10.5\build\lib\Release;$(ProjectDir)\libraries\glew-2.2.0\lib\Release\x64;$(ProjectDir)\libraries\SDL2-2.26.4\lib\x64</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;glew32.lib;opengl32.lib;cpr.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -194,15 +197,15 @@
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="libraries\cpr-1.10.5\build2\bin\Release\cpr.dll">
+    <CopyFileToFolders Include="libraries\cpr-1.10.5\build\bin\Release\cpr.dll">
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="libraries\cpr-1.10.5\build2\bin\Release\libcurl.dll">
+    <CopyFileToFolders Include="libraries\cpr-1.10.5\build\bin\Release\libcurl.dll">
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="libraries\cpr-1.10.5\build2\bin\Release\zlib.dll">
+    <CopyFileToFolders Include="libraries\cpr-1.10.5\build\bin\Release\zlib.dll">
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </CopyFileToFolders>
