@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-struct Node  {
+struct Node {
   glm::vec2 min{}, max{};
   bool is_leaf{true};
   unsigned depth{0};

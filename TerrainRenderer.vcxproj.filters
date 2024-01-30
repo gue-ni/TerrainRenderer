@@ -124,13 +124,13 @@
     <CopyFileToFolders Include="libraries\cpr-1.10.5\build\bin\Debug\zlib.dll">
       <Filter>dll</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="libraries\cpr-1.10.5\build2\bin\Release\cpr.dll">
+    <CopyFileToFolders Include="libraries\cpr-1.10.5\build\bin\Release\cpr.dll">
       <Filter>dll</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="libraries\cpr-1.10.5\build2\bin\Release\libcurl.dll">
+    <CopyFileToFolders Include="libraries\cpr-1.10.5\build\bin\Release\libcurl.dll">
       <Filter>dll</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="libraries\cpr-1.10.5\build2\bin\Release\zlib.dll">
+    <CopyFileToFolders Include="libraries\cpr-1.10.5\build\bin\Release\zlib.dll">
       <Filter>dll</Filter>
     </CopyFileToFolders>
   </ItemGroup>
