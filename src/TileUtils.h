@@ -48,6 +48,10 @@ namespace wms
 {
 constexpr float PI = std::numbers::pi_v<float>;
 
+constexpr float EARTH_RADIUS = 6378137.0f;
+
+constexpr float EQUATORIAL_CIRCUMFERENCE = 2.0f * PI * EARTH_RADIUS;
+
 inline unsigned num_tiles(unsigned zoom) { return (1 << zoom); }
 
 inline unsigned lon2tilex(float lon, unsigned z) { return (int)(floor((lon + 180.0f) / 360.0f * (1 << z))); }
@@ -75,15 +79,15 @@ inline TileId tile_id(float lat, float lon, unsigned zoom)
 // https://wiki.openstreetmap.org/wiki/Zoom_levels
 inline float tile_width(float lat, unsigned zoom)
 {
-  const float C = 40075016.686f;
-  return std::abs(C * std::cos(lat) / (1 << zoom));
+  float latrad = lat * PI / 180.0f;
+  return std::abs(EQUATORIAL_CIRCUMFERENCE * std::cos(latrad) / (1 << zoom));
 }
 
 // get min and max latitude/longitude of a tile
-inline Bounds<Coordinate> tile_bounds(unsigned x, unsigned y, unsigned zoom)
+inline Bounds<Coordinate> tile_bounds(const TileId& t)
 {
-  Coordinate min = {tiley2lat(y, zoom), tilex2lon(x, zoom)};
-  Coordinate max = {tiley2lat(y + 1, zoom), tilex2lon(x + 1, zoom)};
+  Coordinate min = {tiley2lat(t.y, t.zoom), tilex2lon(t.x, t.zoom)};
+  Coordinate max = {tiley2lat(t.y + 1, t.zoom), tilex2lon(t.x + 1, t.zoom)};
   return {min, max};
 }
 
@@ -101,4 +105,15 @@ inline std::array<TileId, 4> child_tiles(const TileId& tile)
   });
 }
 
+// https://en.wikipedia.org/wiki/Horizon#Derivation
+inline float distance_to_horizon(float altitude)
+{
+  return std::sqrt(2.0f * EARTH_RADIUS * altitude + (altitude * altitude));
+}
+
+// https://en.wikipedia.org/wiki/Horizon#Arc_distance
+inline float geographical_distance_to_horizon(float altitude)
+{
+  return EARTH_RADIUS * std::atan(distance_to_horizon(altitude) / EARTH_RADIUS);
+}
 };  // namespace wms
