@@ -5,6 +5,13 @@
 #include <memory>
 #include <vector>
 
+enum Dir : size_t {
+  SW = 0,
+  NW = 1,
+  NE = 2,
+  SE = 3,
+};
+
 struct Node {
   glm::vec2 min{}, max{};
   bool is_leaf{true};
@@ -26,10 +33,10 @@ struct Node {
     return glm::all(glm::lessThanEqual(min, point)) && glm::all(glm::lessThanEqual(point, max));
   }
 
-  inline Node* SW() const { return children[0].get(); }
-  inline Node* NW() const { return children[1].get(); }
-  inline Node* NE() const { return children[2].get(); }
-  inline Node* SE() const { return children[3].get(); }
+  inline Node* NE() const { return children[Dir::NE].get(); }
+  inline Node* NW() const { return children[Dir::NW].get(); }
+  inline Node* SE() const { return children[Dir::SE].get(); }
+  inline Node* SW() const { return children[Dir::SW].get(); }
 
   std::vector<Node*> neighbours() const;
 };
