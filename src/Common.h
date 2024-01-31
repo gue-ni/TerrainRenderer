@@ -1,7 +1,5 @@
 #pragma once
 
-using uint = unsigned int;
-
 template <typename T>
 struct Bounds {
   T min, max;

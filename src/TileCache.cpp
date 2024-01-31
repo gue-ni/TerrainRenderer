@@ -154,8 +154,6 @@ float TileCache::terrain_elevation(const Coordinate& coord)
 
   Bounds<Coordinate> bounds = wms::tile_bounds(id);
 
-  glm::vec2 uv(0.0f);
-  glm::u8vec3 sample = image->sample(uv);
   return 0;
 }
 
