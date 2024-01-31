@@ -1,7 +1,7 @@
 #include "QuadTree.h"
 
 QuadTree::QuadTree(const glm::vec2& min, const glm::vec2& max, unsigned m_max_depth)
-    : m_root(std::make_unique<Node>(min, max)), m_max_depth(m_max_depth)
+    : m_root(std::make_unique<Node>(min, max, 0, nullptr)), m_max_depth(m_max_depth)
 {
 }
 
@@ -30,29 +30,28 @@ void QuadTree::insert(std::unique_ptr<Node>& node, const glm::vec2& point)
   float factor = .75f;
 
   if (distance * factor < width && node->depth < m_max_depth) {
-    split(node);
+    node->split();
     for (auto& child : node->children) insert(child, point);
   }
 }
 
-void QuadTree::split(std::unique_ptr<Node>& node)
-{
-  auto child_depth = node->depth + 1;
-  auto min = node->min, max = node->max, midpoint = node->center();
 
-  node->is_leaf = false;
-  // lower left
-  node->children[Dir::SW] = std::make_unique<Node>(min, midpoint, child_depth);
-  // upper left
-  node->children[Dir::NW] =
-      std::make_unique<Node>(glm::vec2(min.x, midpoint.y), glm::vec2(midpoint.x, max.y), child_depth);
-  // upper right
-  node->children[Dir::NE] = std::make_unique<Node>(midpoint, max, child_depth);
-  // lower right
-  node->children[Dir::SE] =
-      std::make_unique<Node>(glm::vec2{midpoint.x, min.y}, glm::vec2{max.x, midpoint.y}, child_depth);
-
-  for (auto& child : node->children) child->parent = node.get();
-}
 
 std::vector<Node*> Node::neighbours() const { return {}; }
+
+void Node::split()
+{
+  auto child_depth = depth + 1;
+  auto midpoint = center();
+
+  is_leaf = false;
+  // lower left
+  children[Dir::SW] = std::make_unique<Node>(min, midpoint, child_depth, this);
+  // upper left
+  children[Dir::NW] = std::make_unique<Node>(glm::vec2(min.x, midpoint.y), glm::vec2(midpoint.x, max.y), child_depth, this);
+  // upper right
+  children[Dir::NE] = std::make_unique<Node>(midpoint, max, child_depth, this);
+  // lower right
+  children[Dir::SE] = std::make_unique<Node>(glm::vec2{midpoint.x, min.y}, glm::vec2{max.x, midpoint.y}, child_depth, this);
+
+}

@@ -127,8 +127,8 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_shader->set_uniform("proj", camera.get_projection_matrix());
   m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
 
-  auto render_tile = [this](Node* tile) -> bool {
-    if (!tile->is_leaf) return true;
+  auto render_tile = [this](Node* tile) {
+    if (!tile->is_leaf) return ;
 
     TileId tile_id = tile_id_from_node(tile);
 
@@ -163,8 +163,6 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
       m_chunk.draw(m_shader.get(), tile->min, tile->max);
     }
-
-    return true;
   };
 
   auto children = quad_tree.children();

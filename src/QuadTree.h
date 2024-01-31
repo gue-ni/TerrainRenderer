@@ -19,8 +19,8 @@ struct Node {
   Node* parent{nullptr};
   std::array<std::unique_ptr<Node>, 4> children;
 
-  Node(const glm::vec2& min_, const glm::vec2& max_, unsigned depth_ = 0)
-      : children{nullptr}, min(min_), max(max_), depth(depth_)
+  Node(const glm::vec2& min_, const glm::vec2& max_, unsigned depth_, Node* parent_ = nullptr)
+      : children{nullptr}, min(min_), max(max_), depth(depth_), parent(parent_)
   {
   }
 
@@ -39,14 +39,19 @@ struct Node {
   inline Node* SW() const { return children[Dir::SW].get(); }
 
   std::vector<Node*> neighbours() const;
+
+  void split();
 };
 
 class QuadTree
 {
  public:
   QuadTree(const glm::vec2& min, const glm::vec2& max, unsigned m_max_depth);
+
   void insert(const glm::vec2& point);
+
   std::vector<Node*> children();
+
   Node* root() const { return m_root.get(); }
 
   template <typename Visitor>
@@ -60,14 +65,16 @@ class QuadTree
   const unsigned m_max_depth;
   std::unique_ptr<Node> m_root{nullptr};
 
-  void split(std::unique_ptr<Node>& node);
-
   void insert(std::unique_ptr<Node>& child, const glm::vec2& point);
 
   template <typename Visitor>
   void visit(const std::unique_ptr<Node>& node, Visitor visitor) const
   {
-    if (node && visitor(node.get()) && !node->is_leaf) {
+    assert(node != nullptr);
+
+    visitor(node.get());
+
+    if (!node->is_leaf) {
       for (const auto& child : node->children) {
         visit(child, visitor);
       }
