@@ -39,9 +39,9 @@ class TerrainRenderer
   float m_height_scaling_factor;
 
   // convert from world coordinate in range m_bounds to [0, 1]
-  glm::vec2 map_to_0_1(const glm::vec2& point);
+  glm::vec2 map_to_0_1(const glm::vec2& point) const;
 
-  TileId tile_id_from_node(Node*);
+  TileId tile_id_from_node(Node*) const;
 
   Texture* find_cached_lower_lod_parent(Node* node, glm::vec2& uv_min, glm::vec2& uv_max, const TileType&);
 };

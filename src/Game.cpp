@@ -34,7 +34,7 @@ int intersect_segment_plane(glm::vec3 a, glm::vec3 b, Plane p, float &t, glm::ve
 }
 
 Game::Game(size_t width, size_t height)
-    : Window(width, height), m_terrain_renderer(INNSBRUCK, 4, {glm::vec2(-200.0f), glm::vec2(200.0f)})
+    : Window(width, height), m_terrain_renderer(INNSBRUCK, 4, {glm::vec2(-500.0f), glm::vec2(500.0f)})
 {
   SDL_ShowCursor(SDL_FALSE);
   SDL_CaptureMouse(SDL_TRUE);
@@ -53,10 +53,10 @@ void Game::render(float dt)
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  auto lod_focus = m_camera.get_local_position();
+  auto camera_position = m_camera.get_local_position();
+  auto lod_focus = glm::vec2(camera_position.x, camera_position.z);
 
 #if 0
-  auto camera_position = m_camera.get_local_position();
   auto camera_direction = m_camera.transform_direction(glm::vec3(0.0f, 0.0f, -1.0f));
   auto camera_target = camera_position + camera_direction * 1000.0f;
 
@@ -65,11 +65,13 @@ void Game::render(float dt)
   Plane plane(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 20.0f, 0.0f));
 
   if (intersect_segment_plane(camera_position, camera_target, plane, t, point)){
-    lod_focus = point;
+    auto tmp_lod_focus = glm::clamp(glm::vec2(point.x, point.z), m_terrain_renderer.bounds().min, m_terrain_renderer.bounds().max);
+
+    lod_focus = glm::mix(lod_focus, tmp_lod_focus, 0.5);
   }
 #endif
 
-  m_terrain_renderer.render(m_camera, {lod_focus.x, lod_focus.z});
+  m_terrain_renderer.render(m_camera, lod_focus);
 
   SDL_GL_SwapWindow(m_window);
 }

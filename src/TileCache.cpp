@@ -15,8 +15,8 @@ TileCache::TileCache(const TileId& root_tile, unsigned max_zoom_level)
       m_height_service("https://alpinemaps.cg.tuwien.ac.at/tiles/alpine_png", UrlPattern::ZXY_Y_NORTH, ".png")
 
 {
-  m_ortho_service.start_worker_thread();
-  m_height_service.start_worker_thread();
+  m_ortho_service.start_worker_threads();
+  m_height_service.start_worker_threads();
 }
 
 Texture* TileCache::tile_texture(const TileId& tile, const TileType& tile_type)
@@ -25,17 +25,17 @@ Texture* TileCache::tile_texture(const TileId& tile, const TileType& tile_type)
 
   if (m_gpu_cache.contains(name)) {
     return m_gpu_cache[name].get();
-  } else {
-    Image* image = request_image(tile, tile_type);
-
-    if (image) {
-      auto texture = create_texture(*image);
-      m_gpu_cache[name] = std::move(texture);
-      return m_gpu_cache[name].get();
-    } else {
-      return nullptr;
-    }
   }
+
+  Image* image = request_image(tile, tile_type);
+
+  if (image) {
+    auto texture = create_texture(*image);
+    m_gpu_cache[name] = std::move(texture);
+    return m_gpu_cache[name].get();
+  }
+
+  return nullptr;
 }
 
 Texture* TileCache::tile_texture_sync(const TileId& tile, const TileType& tile_type)

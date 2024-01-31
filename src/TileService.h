@@ -31,7 +31,7 @@ class TileService
   ~TileService();
 
   // Start seperate worker thread
-  void start_worker_thread();
+  void start_worker_threads();
 
   // If tile in cache, return tile. If not, request it for download and return nullptr
   Image* get_tile(const TileId& tile_id);
@@ -40,10 +40,11 @@ class TileService
   Image* get_tile_sync(const TileId& tile_id);
 
  private:
+  const size_t m_num_threads{2};
   const UrlPattern m_url_pattern;
   const std::string m_url, m_filetype;
   bool m_stop_thread{false};
-  std::thread m_thread;
+  std::vector<std::thread> m_threads;
   std::stack<TileId> m_tiles_to_download;
   std::mutex m_mutex;
   std::condition_variable m_condition;
