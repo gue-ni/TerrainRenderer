@@ -43,5 +43,5 @@ class TerrainRenderer
 
   TileId tile_id_from_node(Node*) const;
 
-  Texture* find_cached_lower_lod_parent(Node* node, glm::vec2& uv_min, glm::vec2& uv_max, const TileType&);
+  Texture* find_cached_lower_lod_parent(Node* node, Bounds<glm::vec2>& uv, const TileType&);
 };

@@ -1,5 +1,7 @@
 #include "Game.h"
 
+#include "Collision.h"
+
 const TileId BLUDENZ = wms::tile_id(47.1599f, 9.8082f, 9);
 
 const TileId GROSS_GLOCKNER = wms::tile_id(47.0742f, 12.6947f, 9);
@@ -9,29 +11,6 @@ const TileId SCHNEEBERG = wms::tile_id(47.7671f, 15.8056f, 9);
 const TileId INNSBRUCK = wms::tile_id(47.2692f, 11.4041f, 9);
 
 const TileId VIENNA = wms::tile_id(48.2082f, 16.3719f, 9);
-
-struct Plane {
-  glm::vec3 n;  // plane normal
-  float d;      // d = dot(n, p) for a given point on the plane
-  Plane(const glm::vec3 &normal, const glm::vec3 &point) : n(normal), d(glm::dot(normal, point)) {}
-};
-
-// Real Time Collison Detection - Christer Ericson
-int intersect_segment_plane(glm::vec3 a, glm::vec3 b, Plane p, float &t, glm::vec3 &q)
-{
-  // Compute the t value for the directed line ab intersecting the plane
-  glm::vec3 ab = b - a;
-
-  t = (p.d - glm::dot(p.n, a)) / glm::dot(p.n, ab);
-
-  // If t in [0..1] compute and return intersection point
-  if (t >= 0.0f && t <= 1.0f) {
-    q = a + t * ab;
-    return true;
-  }
-
-  return false;
-}
 
 Game::Game(size_t width, size_t height)
     : Window(width, height), m_terrain_renderer(INNSBRUCK, 4, {glm::vec2(-500.0f), glm::vec2(500.0f)})

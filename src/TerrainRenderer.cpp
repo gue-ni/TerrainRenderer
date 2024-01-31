@@ -135,16 +135,16 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
     Texture* albedo = m_tile_cache.tile_texture(tile_id, TileType::ORTHO);
     Texture* heightmap = m_tile_cache.tile_texture(tile_id, TileType::HEIGHT);
 
-    glm::vec2 albedo_uv_min(0.0f), albedo_uv_max(1.0f);
-    glm::vec2 height_uv_min(0.0f), height_uv_max(1.0f);
+    Bounds<glm::vec2> albedo_uv = {glm::vec2(0.0f), glm::vec2(1.0f)};
+    Bounds<glm::vec2> height_uv = {glm::vec2(0.0f), glm::vec2(1.0f)};
 
 #if 1
     if (!albedo) {
-      albedo = find_cached_lower_lod_parent(tile, albedo_uv_min, albedo_uv_max, TileType::ORTHO);
+      albedo = find_cached_lower_lod_parent(tile, albedo_uv, TileType::ORTHO);
     }
 
     if (!heightmap) {
-      heightmap = find_cached_lower_lod_parent(tile, height_uv_min, height_uv_max, TileType::HEIGHT);
+      heightmap = find_cached_lower_lod_parent(tile, height_uv, TileType::HEIGHT);
     }
 #endif
 
@@ -153,13 +153,13 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
       albedo->bind(0);
       m_shader->set_uniform("u_albedo_texture", 0);
-      m_shader->set_uniform("u_albedo_uv_min", albedo_uv_min);
-      m_shader->set_uniform("u_albedo_uv_max", albedo_uv_max);
+      m_shader->set_uniform("u_albedo_uv_min", albedo_uv.min);
+      m_shader->set_uniform("u_albedo_uv_max", albedo_uv.max);
 
       heightmap->bind(1);
       m_shader->set_uniform("u_height_texture", 1);
-      m_shader->set_uniform("u_height_uv_min", height_uv_min);
-      m_shader->set_uniform("u_height_uv_max", height_uv_max);
+      m_shader->set_uniform("u_height_uv_min", height_uv.min);
+      m_shader->set_uniform("u_height_uv_max", height_uv.max);
 
       m_chunk.draw(m_shader.get(), tile->min, tile->max);
     }
@@ -185,13 +185,11 @@ glm::vec2 TerrainRenderer::map_to_0_1(const glm::vec2& point) const
 
 TileId TerrainRenderer::tile_id_from_node(Node* node) const
 {
-  auto relative = map_to_0_1(node->center());
-  Coordinate coord = m_tile_cache.lat_lon(relative);
+  Coordinate coord = m_tile_cache.lat_lon(map_to_0_1(node->center()));
   return m_tile_cache.tile_id(coord, node->depth);
 }
 
-Texture* TerrainRenderer::find_cached_lower_lod_parent(Node* node, glm::vec2& uv_min, glm::vec2& uv_max,
-                                                       const TileType& type)
+Texture* TerrainRenderer::find_cached_lower_lod_parent(Node* node, Bounds<glm::vec2>& uv, const TileType& type)
 {
   Texture* parent_texture = nullptr;
   TileId tile_id = tile_id_from_node(node);
@@ -219,8 +217,8 @@ Texture* TerrainRenderer::find_cached_lower_lod_parent(Node* node, glm::vec2& uv
   unsigned delta_x = tile_id.x - scaled_root_tile.x, delta_y = tile_id.y - scaled_root_tile.y;
   float factor = 1.0f / num_tiles;
 
-  uv_min = glm::vec2((delta_x + 0) * factor, (delta_y + 0) * factor);
-  uv_max = glm::vec2((delta_x + 1) * factor, (delta_y + 1) * factor);
+  uv.min = glm::vec2((delta_x + 0) * factor, (delta_y + 0) * factor);
+  uv.max = glm::vec2((delta_x + 1) * factor, (delta_y + 1) * factor);
 
   return parent_texture;
 }
