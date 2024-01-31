@@ -88,8 +88,6 @@ Chunk::Chunk(unsigned vertex_count, float size)
   m_vao->unbind();
 }
 
-
-
 void Chunk::draw(ShaderProgram* shader, const glm::vec2& min, const glm::vec2& max) const
 {
   shader->bind();
