@@ -20,10 +20,9 @@ struct Node {
     return glm::all(glm::lessThanEqual(min, point)) && glm::all(glm::lessThanEqual(point, max));
   }
 
-  // TODO: confirm
-  inline Node* NW() { return is_leaf ? nullptr : children[0].get(); }
-  inline Node* NE() { return is_leaf ? nullptr : children[1].get(); }
-  inline Node* SW() { return is_leaf ? nullptr : children[2].get(); }
+  inline Node* SW() { return is_leaf ? nullptr : children[0].get(); }
+  inline Node* NW() { return is_leaf ? nullptr : children[1].get(); }
+  inline Node* NE() { return is_leaf ? nullptr : children[2].get(); }
   inline Node* SE() { return is_leaf ? nullptr : children[3].get(); }
 };
 
