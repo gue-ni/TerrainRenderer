@@ -19,3 +19,9 @@ inline T map_range(const T& value, const Bounds<T>& in, const Bounds<T>& out)
 {
   return out.min + (value - in.min) * (out.max - out.min) / (in.max - in.min);
 }
+
+template <typename T>
+inline T clamp(const T& value, const Bounds<T>& range)
+{
+  return max(range.min, min(value, range.max));
+}

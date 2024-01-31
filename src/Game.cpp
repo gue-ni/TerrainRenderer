@@ -2,6 +2,8 @@
 
 #include "Collision.h"
 
+#define INTERSECT_PLANE 1
+
 const TileId BLUDENZ = wms::tile_id(47.1599f, 9.8082f, 9);
 
 const TileId GROSS_GLOCKNER = wms::tile_id(47.0742f, 12.6947f, 9);
@@ -35,18 +37,19 @@ void Game::render(float dt)
   auto camera_position = m_camera.get_local_position();
   auto lod_focus = glm::vec2(camera_position.x, camera_position.z);
 
-#if 0
+#if INTERSECT_PLANE
   auto camera_direction = m_camera.transform_direction(glm::vec3(0.0f, 0.0f, -1.0f));
   auto camera_target = camera_position + camera_direction * 1000.0f;
 
   float t;
   glm::vec3 point;
   Plane plane(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 20.0f, 0.0f));
+  Segment segment(camera_position, camera_target);
 
-  if (intersect_segment_plane(camera_position, camera_target, plane, t, point)){
-    auto tmp_lod_focus = glm::clamp(glm::vec2(point.x, point.z), m_terrain_renderer.bounds().min, m_terrain_renderer.bounds().max);
-
-    lod_focus = glm::mix(lod_focus, tmp_lod_focus, 0.5);
+  if (segment_vs_plane(segment, plane, t)) {
+    glm::vec3 point = segment.point_at(t);
+    auto clamped_point = clamp(glm::vec2(point.x, point.z), m_terrain_renderer.bounds());
+    lod_focus = glm::mix(lod_focus, clamped_point, 0.5);
   }
 #endif
 

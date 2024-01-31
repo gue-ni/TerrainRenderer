@@ -1,17 +1,22 @@
 #include "Collision.h"
 
-int intersect_segment_plane(glm::vec3 a, glm::vec3 b, Plane p, float &t, glm::vec3 &q)
+#include <cassert>
+
+bool segment_vs_plane(const Segment& segment, const Plane& plane, float& t)
 {
-  // Compute the t value for the directed line ab intersecting the plane
-  glm::vec3 ab = b - a;
+  glm::vec3 ab = segment.b - segment.a;
 
-  t = (p.d - glm::dot(p.n, a)) / glm::dot(p.n, ab);
+  t = (plane.d - glm::dot(plane.n, segment.a)) / glm::dot(plane.n, ab);
 
-  // If t in [0..1] compute and return intersection point
-  if (t >= 0.0f && t <= 1.0f) {
-    q = a + t * ab;
+  if (0.0f <= t && t <= 1.0f) {
     return true;
   }
 
+  return false;
+}
+
+bool ray_vs_sphere(const Ray& ray, const Sphere& sphere, float& t)
+{
+  assert(false);
   return false;
 }
