@@ -11,11 +11,6 @@ struct ChunkVertex {
   glm::vec2 uv;
 };
 
-
-
-
-
-
 class Chunk
 {
  public:
