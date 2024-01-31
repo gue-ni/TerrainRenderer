@@ -111,7 +111,6 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, 
     (void)m_tile_cache.tile_texture_sync(child, TileType::ORTHO);
     (void)m_tile_cache.tile_texture_sync(child, TileType::HEIGHT);
   }
-
 }
 
 void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
@@ -181,12 +180,12 @@ float TerrainRenderer::terrain_elevation(const glm::vec2& point)
   return 0.0f;
 }
 
-glm::vec2 TerrainRenderer::map_to_0_1(const glm::vec2& point)
+glm::vec2 TerrainRenderer::map_to_0_1(const glm::vec2& point) const
 {
   return map_range(point, m_bounds.min, m_bounds.max, glm::vec2(0.0f), glm::vec2(1.0f));
 }
 
-TileId TerrainRenderer::tile_id_from_node(Node* node)
+TileId TerrainRenderer::tile_id_from_node(Node* node) const
 {
   auto relative = map_to_0_1(node->center());
   Coordinate coord = m_tile_cache.lat_lon(relative);
