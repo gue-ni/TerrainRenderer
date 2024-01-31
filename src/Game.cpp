@@ -21,9 +21,7 @@ Game::Game(size_t width, size_t height)
   SDL_CaptureMouse(SDL_TRUE);
   SDL_SetRelativeMouseMode(SDL_TRUE);
 
-  float fov = 45.0f;
-  float aspect_ratio = float(width) / float(height);
-  float near = 1.0f, far = 1000.0f;
+  float fov = 45.0f, aspect_ratio = float(width) / float(height), near = 1.0f, far = 1000.0f;
   m_camera.set_projection_matrix(glm::perspective(glm::radians(fov), aspect_ratio, near, far));
   m_camera.set_local_position(glm::vec3(0.0f, 40.f, 0.0f));
 }
