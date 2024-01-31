@@ -28,8 +28,9 @@ Game::Game(size_t width, size_t height)
 
 void Game::render(float dt)
 {
+  const glm::vec3 cc = gfx::rgb(0x809BAA);
   glViewport(0, 0, static_cast<GLsizei>(m_width), static_cast<GLsizei>(m_height));
-  glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+  glClearColor(cc.r, cc.g, cc.b, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   auto camera_position = m_camera.local_position();

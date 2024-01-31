@@ -8,14 +8,17 @@
 #include "../gfx/gfx.h"
 #include "Common.h"
 
+#define ENABLE_FOG      1
+#define ENABLE_FALLBACK 1
+
 const std::string shader_vert = R"(
 #version 430
 layout (location = 0) in vec3 a_pos;
 layout (location = 1) in vec2 a_tex;
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 proj;
+uniform mat4 u_model;
+uniform mat4 u_view;
+uniform mat4 u_proj;
 
 uniform float u_height_scaling_factor;
 
@@ -26,21 +29,20 @@ uniform sampler2D u_height_texture;
 uniform uint u_zoom;
 
 out vec2 uv;
+out vec4 world_pos;
 
 float altitude_from_color(vec4 color) { 
   return (color.r + color.g / 255.0); 
 }
 
-vec2 map_range(vec2 s, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) { 
-  return out_min + (s - in_min) * (out_max - out_min) / (in_max - in_min); 
+vec2 map_range(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) { 
+  return out_min + (value - in_min) * (out_max - out_min) / (in_max - in_min); 
 }
 
 void main() {
   uv = a_tex;
 
-  vec4 world_pos = model * vec4(a_pos, 1.0);
-
-#if 1
+  world_pos = u_model * vec4(a_pos, 1.0);
 
   vec2 scaled_uv = map_range(uv, vec2(0), vec2(1), u_height_uv_min, u_height_uv_max);
 
@@ -50,14 +52,12 @@ void main() {
 
   world_pos.y = height * u_height_scaling_factor;
 
-#endif
-
   // skirts on tiles
   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
     world_pos.y = -2.0;
   }
 
-  gl_Position = proj * view * world_pos;
+  gl_Position = u_proj * u_view * world_pos;
 }
 )";
 
@@ -65,25 +65,51 @@ const std::string shader_frag = R"(
 #version 430
 
 in vec2 uv;
+in vec4 world_pos;
 
-out vec4 FragColor;
+out vec4 frag_color;
 
 uniform vec2 u_albedo_uv_min;
 uniform vec2 u_albedo_uv_max;
 uniform sampler2D u_albedo_texture;
 
+uniform vec3 u_fog_color;
+uniform float u_fog_near;
+uniform float u_fog_far;
+uniform float u_fog_density;
+
+uniform vec3 u_camera_position;
+
 uniform uint u_zoom;
 
-vec2 map_range(vec2 s, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) { 
-  return out_min + (s - in_min) * (out_max - out_min) / (in_max - in_min); 
+vec2 map_range(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) { 
+  return out_min + (value - in_min) * (out_max - out_min) / (in_max - in_min); 
+}
+
+float linear_fog_factor() {
+  float camera_dist = length(world_pos.xyz - u_camera_position);
+  float fog_range = u_fog_far - u_fog_near;
+  float fog_dist = u_fog_far - camera_dist;
+  return clamp(fog_dist / fog_range, 0, 1);
+}
+
+float exp_fog_factor(float density) {
+  float camera_dist = length(world_pos.xyz - u_camera_position);
+  float dist_ratio = 4.0 * camera_dist / u_fog_far;
+  return exp(-dist_ratio * density);
 }
 
 void main() {
-  vec2 scaled_uv = map_range(uv, vec2(0.0), vec2(1.0), u_albedo_uv_min, u_albedo_uv_max);
+  vec2 scaled_uv = map_range(uv, vec2(0), vec2(1), u_albedo_uv_min, u_albedo_uv_max);
 
-  vec3 albedo = texture(u_albedo_texture, scaled_uv).rgb;
+  vec3 color = texture(u_albedo_texture, scaled_uv).rgb;
 
-  FragColor = vec4(albedo, 1);
+  if (u_fog_color != vec3(0)) {
+    float fog_factor = exp_fog_factor(u_fog_density);
+    color = mix(color, u_fog_color, (1 - fog_factor));
+  }
+
+  frag_color = vec4(color, 1);
 }
 )";
 
@@ -123,9 +149,20 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   m_shader->bind();
-  m_shader->set_uniform("view", camera.view_matrix());
-  m_shader->set_uniform("proj", camera.projection_matrix());
+  m_shader->set_uniform("u_view", camera.view_matrix());
+  m_shader->set_uniform("u_proj", camera.projection_matrix());
+  m_shader->set_uniform("u_camera_position", camera.local_position());
   m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
+
+#if ENABLE_FOG
+  const glm::vec3 cc = gfx::rgb(0x809BAA);
+  m_shader->set_uniform("u_fog_color", cc);
+  m_shader->set_uniform("u_fog_near", 50.0f);
+  m_shader->set_uniform("u_fog_far", 1000.0f);
+  m_shader->set_uniform("u_fog_density", 0.5f);
+#else
+  m_shader->set_uniform("u_fog_color", glm::vec3(0.0f));
+#endif
 
   auto render_tile = [this](Node* node) {
     if (!node->is_leaf) return;
@@ -138,7 +175,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
     Bounds<glm::vec2> albedo_uv = {glm::vec2(0.0f), glm::vec2(1.0f)};
     Bounds<glm::vec2> height_uv = {glm::vec2(0.0f), glm::vec2(1.0f)};
 
-#if 1
+#if ENABLE_FALLBACK
     if (!albedo) {
       albedo = find_cached_lower_zoom_parent(node, albedo_uv, TileType::ORTHO);
     }

@@ -96,7 +96,7 @@ void Chunk::draw(ShaderProgram* shader, const glm::vec2& min, const glm::vec2& m
   glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(max.x - min.x));
   auto model = translate * scale;
 
-  shader->set_uniform("model", model);
+  shader->set_uniform("u_model", model);
 
   m_vao->bind();
   glDrawElements(GL_TRIANGLES, m_vertex_count, GL_UNSIGNED_INT, 0);
