@@ -25,10 +25,11 @@ std::vector<Node*> QuadTree::children()
 
 void QuadTree::insert(std::unique_ptr<Node>& node, const glm::vec2& point)
 {
-  float size = node->size().x;
+  float width = node->size().x;
   float distance = glm::distance(node->center(), point);
+  float factor = .75f;
 
-  if (distance < size && node->depth < m_max_depth) {
+  if (distance * factor < width && node->depth < m_max_depth) {
     split(node);
     for (auto& child : node->children) insert(child, point);
   }

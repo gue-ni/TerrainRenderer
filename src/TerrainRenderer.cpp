@@ -106,8 +106,12 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, 
 
   m_height_scaling_factor = (max_elevation - min_elevation) * terrain_scaling_factor * 2;
 
-  (void)m_tile_cache.tile_texture_sync(m_root_tile, TileType::ORTHO);
-  (void)m_tile_cache.tile_texture_sync(m_root_tile, TileType::HEIGHT);
+  // request low zoom tiles as fallback
+  for (auto& child : wms::child_tiles(m_root_tile)) {
+    (void)m_tile_cache.tile_texture_sync(child, TileType::ORTHO);
+    (void)m_tile_cache.tile_texture_sync(child, TileType::HEIGHT);
+  }
+
 }
 
 void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
