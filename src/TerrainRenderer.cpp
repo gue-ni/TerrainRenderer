@@ -151,7 +151,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_shader->bind();
   m_shader->set_uniform("u_view", camera.view_matrix());
   m_shader->set_uniform("u_proj", camera.projection_matrix());
-  m_shader->set_uniform("u_camera_position", camera.local_position());
+  m_shader->set_uniform("u_camera_position", camera.world_position());
   m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
 
 #if ENABLE_FOG
@@ -172,6 +172,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
     Texture* albedo = m_tile_cache.tile_texture(tile_id, TileType::ORTHO);
     Texture* heightmap = m_tile_cache.tile_texture(tile_id, TileType::HEIGHT);
 
+    // Render only part of tile if we fallback to lower resolution
     Bounds<glm::vec2> albedo_uv = {glm::vec2(0.0f), glm::vec2(1.0f)};
     Bounds<glm::vec2> height_uv = {glm::vec2(0.0f), glm::vec2(1.0f)};
 
@@ -251,7 +252,8 @@ Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::
   unsigned zoom_delta = tile_id.zoom - parent_tile_id.zoom;
   unsigned num_tiles = 1 << zoom_delta;
   TileId scaled_root_tile = {tile_id.zoom, parent_tile_id.x * num_tiles, parent_tile_id.y * num_tiles};
-  unsigned delta_x = tile_id.x - scaled_root_tile.x, delta_y = tile_id.y - scaled_root_tile.y;
+  unsigned delta_x = tile_id.x - scaled_root_tile.x;
+  unsigned delta_y = tile_id.y - scaled_root_tile.y;
   float factor = 1.0f / num_tiles;
 
   uv.min = glm::vec2((delta_x + 0) * factor, (delta_y + 0) * factor);
