@@ -2,7 +2,7 @@
 
 #include <cpr/cpr.h>
 
-#define LOG 1
+#define LOG 0
 
 TileService::TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype)
     : m_url(url), m_url_pattern(url_pattern), m_filetype(filetype)
@@ -82,7 +82,7 @@ Image* TileService::get_tile(const TileId& tile_id)
 Image* TileService::get_tile_sync(const TileId& tile_id)
 {
   auto url = tile_url(tile_id);
-  auto tile_id_str = tile_id.to_string();
+  auto tile_id_str_1 = tile_id.to_string();
 
   cpr::Response r = cpr::Get(cpr::Url{url});
 
@@ -103,8 +103,18 @@ Image* TileService::get_tile_sync(const TileId& tile_id)
     return nullptr;
   }
 
-  m_ram_cache[tile_id_str] = std::move(image);
-  return m_ram_cache[tile_id_str].get();
+  auto tile_id_str_2 = tile_id.to_string();
+
+  // What???
+  // TODO: fix this, probably some problem with thread sync
+  // assert(tile_id_str_1 == tile_id_str_2);
+
+  if (!(tile_id_str_1 == tile_id_str_2)) {
+    std::cout << tile_id << ": " << std::quoted(tile_id_str_1) << " != " << std::quoted(tile_id_str_2) << std::endl;
+  }
+
+  m_ram_cache[tile_id_str_1] = std::move(image);
+  return m_ram_cache[tile_id_str_1].get();
 }
 
 void TileService::request_download(const TileId& tile_id)
