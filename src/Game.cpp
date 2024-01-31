@@ -35,7 +35,7 @@ void Game::render(float dt)
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   auto camera_position = m_camera.local_position();
-  auto lod_focus = glm::vec2(camera_position.x, camera_position.z);
+  auto center = glm::vec2(camera_position.x, camera_position.z);
 
 #if INTERSECT_PLANE
   auto camera_direction = m_camera.transform_direction(glm::vec3(0.0f, 0.0f, -1.0f));
@@ -48,11 +48,11 @@ void Game::render(float dt)
   if (segment_vs_plane(segment, plane, t)) {
     glm::vec3 point = segment.point_at(t);
     auto clamped_point = clamp(glm::vec2(point.x, point.z), m_terrain_renderer.bounds());
-    lod_focus = glm::mix(lod_focus, clamped_point, 0.5);
+    center = glm::mix(center, clamped_point, 0.5);
   }
 #endif
 
-  m_terrain_renderer.render(m_camera, lod_focus);
+  m_terrain_renderer.render(m_camera, center);
 
   SDL_GL_SwapWindow(m_window);
 }
