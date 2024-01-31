@@ -165,7 +165,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   };
 
   auto children = quad_tree.children();
-  std::sort(children.begin(), children.end(), [](Node* a, Node* b) { return a->depth > b->depth; });
+  std::sort(children.begin(), children.end(), [](Node* a, Node* b) { return a->depth < b->depth; });
   std::for_each(children.begin(), children.end(), render_tile);
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
