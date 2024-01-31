@@ -123,8 +123,8 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   m_shader->bind();
-  m_shader->set_uniform("view", camera.get_view_matrix());
-  m_shader->set_uniform("proj", camera.get_projection_matrix());
+  m_shader->set_uniform("view", camera.view_matrix());
+  m_shader->set_uniform("proj", camera.projection_matrix());
   m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
 
   auto render_tile = [this](Node* tile) {

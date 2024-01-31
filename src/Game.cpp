@@ -34,7 +34,7 @@ void Game::render(float dt)
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  auto camera_position = m_camera.get_local_position();
+  auto camera_position = m_camera.local_position();
   auto lod_focus = glm::vec2(camera_position.x, camera_position.z);
 
 #if INTERSECT_PLANE
@@ -42,7 +42,6 @@ void Game::render(float dt)
   auto camera_target = camera_position + camera_direction * 1000.0f;
 
   float t;
-  glm::vec3 point;
   Plane plane(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 20.0f, 0.0f));
   Segment segment(camera_position, camera_target);
 
@@ -99,7 +98,7 @@ void Game::read_input(float dt)
         glm::vec3 world_up = {0.0f, 1.0f, 0.0f};
         glm::vec3 right = glm::normalize(glm::cross(front, world_up));
         glm::vec3 up = glm::normalize(glm::cross(right, front));
-        glm::vec3 position = m_camera.get_local_position();
+        glm::vec3 position = m_camera.local_position();
 
         auto look_at = glm::lookAt(position, position + front, up);
         m_camera.set_local_transform(glm::inverse(look_at));
@@ -134,9 +133,9 @@ void Game::read_input(float dt)
 
   const Uint8 *key_states = SDL_GetKeyboardState(nullptr);
 
-  auto right = m_camera.get_local_x_axis();
-  auto forward = m_camera.get_local_z_axis();
-  auto position = m_camera.get_local_position();
+  auto right = m_camera.local_x_axis();
+  auto forward = m_camera.local_z_axis();
+  auto position = m_camera.local_position();
 
   float speed = 100.0f;
 
