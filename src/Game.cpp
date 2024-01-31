@@ -2,7 +2,7 @@
 
 #include "Collision.h"
 
-#define INTERSECT_PLANE 1
+#define INTERSECT_PLANE 0
 
 const TileId BLUDENZ = wms::tile_id(47.1599f, 9.8082f, 9);
 
