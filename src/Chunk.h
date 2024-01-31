@@ -11,11 +11,10 @@ struct ChunkVertex {
   glm::vec2 uv;
 };
 
-inline std::ostream& operator<<(std::ostream& os, const ChunkVertex& v)
-{
-  os << v.pos << ", " << v.uv;
-  return os;
-}
+
+
+
+
 
 class Chunk
 {
