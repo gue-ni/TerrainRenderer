@@ -128,7 +128,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
 
   auto render_tile = [this](Node* tile) {
-    if (!tile->is_leaf) return ;
+    if (!tile->is_leaf) return;
 
     TileId tile_id = tile_id_from_node(tile);
 
@@ -165,9 +165,9 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
     }
   };
 
-  auto children = quad_tree.children();
-  std::sort(children.begin(), children.end(), [](Node* a, Node* b) { return a->depth < b->depth; });
-  std::for_each(children.begin(), children.end(), render_tile);
+  auto nodes = quad_tree.nodes();
+  std::sort(nodes.begin(), nodes.end(), [](Node* a, Node* b) { return a->depth < b->depth; });
+  std::for_each(nodes.begin(), nodes.end(), render_tile);
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }

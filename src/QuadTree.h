@@ -50,7 +50,7 @@ class QuadTree
 
   void insert(const glm::vec2& point);
 
-  std::vector<Node*> children();
+  std::vector<Node*> nodes();
 
   Node* root() const { return m_root.get(); }
 
