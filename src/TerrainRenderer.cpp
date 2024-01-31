@@ -115,7 +115,7 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, 
 
 void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 {
-  const auto terrain_center = glm::clamp(center, m_bounds.min, m_bounds.max);
+  const auto terrain_center = clamp(center, m_bounds);
 
   QuadTree quad_tree(m_bounds.min, m_bounds.max, m_zoom_levels);
   quad_tree.insert(terrain_center);
@@ -140,11 +140,11 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
 #if 1
     if (!albedo) {
-      albedo = find_cached_lower_lod_parent(node, albedo_uv, TileType::ORTHO);
+      albedo = find_cached_lower_zoom_parent(node, albedo_uv, TileType::ORTHO);
     }
 
     if (!heightmap) {
-      heightmap = find_cached_lower_lod_parent(node, height_uv, TileType::HEIGHT);
+      heightmap = find_cached_lower_zoom_parent(node, height_uv, TileType::HEIGHT);
     }
 #endif
 
@@ -180,7 +180,7 @@ float TerrainRenderer::terrain_elevation(const glm::vec2& point)
 
 glm::vec2 TerrainRenderer::map_to_0_1(const glm::vec2& point) const
 {
-  return map_range(point, m_bounds.min, m_bounds.max, glm::vec2(0.0f), glm::vec2(1.0f));
+  return map_range(point, m_bounds, Bounds(glm::vec2(0.0f), glm::vec2(1.0f)));
 }
 
 TileId TerrainRenderer::tile_id_from_node(Node* node) const
@@ -189,7 +189,7 @@ TileId TerrainRenderer::tile_id_from_node(Node* node) const
   return m_tile_cache.tile_id(coord, node->depth);
 }
 
-Texture* TerrainRenderer::find_cached_lower_lod_parent(Node* node, Bounds<glm::vec2>& uv, const TileType& type)
+Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::vec2>& uv, const TileType& type)
 {
   Texture* parent_texture = nullptr;
   TileId tile_id = tile_id_from_node(node);
