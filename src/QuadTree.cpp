@@ -3,12 +3,6 @@
 QuadTree::QuadTree(const glm::vec2& min, const glm::vec2& max, unsigned m_max_depth)
     : m_root(std::make_unique<Node>(min, max)), m_max_depth(m_max_depth)
 {
-
-
-
-
-
-
 }
 
 void QuadTree::insert(const glm::vec2& point)

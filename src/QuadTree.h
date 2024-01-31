@@ -6,10 +6,10 @@
 #include <vector>
 
 enum Dir : size_t {
-  SW = 0,
+  NE = 0,
   NW = 1,
-  NE = 2,
-  SE = 3,
+  SE = 2,
+  SW = 3,
 };
 
 struct Node {
