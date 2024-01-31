@@ -127,10 +127,10 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_shader->set_uniform("proj", camera.projection_matrix());
   m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
 
-  auto render_tile = [this](Node* tile) {
-    if (!tile->is_leaf) return;
+  auto render_tile = [this](Node* node) {
+    if (!node->is_leaf) return;
 
-    TileId tile_id = tile_id_from_node(tile);
+    TileId tile_id = tile_id_from_node(node);
 
     Texture* albedo = m_tile_cache.tile_texture(tile_id, TileType::ORTHO);
     Texture* heightmap = m_tile_cache.tile_texture(tile_id, TileType::HEIGHT);
@@ -140,11 +140,11 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
 #if 1
     if (!albedo) {
-      albedo = find_cached_lower_lod_parent(tile, albedo_uv, TileType::ORTHO);
+      albedo = find_cached_lower_lod_parent(node, albedo_uv, TileType::ORTHO);
     }
 
     if (!heightmap) {
-      heightmap = find_cached_lower_lod_parent(tile, height_uv, TileType::HEIGHT);
+      heightmap = find_cached_lower_lod_parent(node, height_uv, TileType::HEIGHT);
     }
 #endif
 
@@ -161,7 +161,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
       m_shader->set_uniform("u_height_uv_min", height_uv.min);
       m_shader->set_uniform("u_height_uv_max", height_uv.max);
 
-      m_chunk.draw(m_shader.get(), tile->min, tile->max);
+      m_chunk.draw(m_shader.get(), node->min, node->max);
     }
   };
 
