@@ -43,7 +43,7 @@ class TileCache
 
   float terrain_elevation(const Coordinate&);
 
-  float terrain_elevation(const glm::vec2&) ;
+  float terrain_elevation(const glm::vec2&);
 
   void invalidate_gpu_cache();
 
