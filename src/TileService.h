@@ -155,7 +155,6 @@ class TileService
  private:
   const UrlPattern m_url_pattern;
   const std::string m_url, m_filetype;
-  std::stack<TileId> m_tiles_to_download;
   std::unordered_map<std::string, std::unique_ptr<Image>> m_ram_cache;
   std::set<TileId> m_already_requested;
   ThreadPool m_thread_pool;
