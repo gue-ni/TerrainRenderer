@@ -12,7 +12,7 @@ Chunk::Chunk(unsigned vertex_count, float size)
 {
   assert(vertex_count >= 2);
 
-  std::vector<ChunkVertex> vertices;
+  std::vector<Vertex> vertices;
   std::vector<unsigned> indices;
 
   float stride = size / (vertex_count - 1);
@@ -81,9 +81,9 @@ Chunk::Chunk(unsigned vertex_count, float size)
   m_ebo->bind();
   m_ebo->buffer_data(std::span(indices));
 
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(ChunkVertex), (void*)(offsetof(ChunkVertex, pos)));
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, pos)));
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(ChunkVertex), (void*)(offsetof(ChunkVertex, uv)));
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, uv)));
   glEnableVertexAttribArray(1);
   m_vao->unbind();
 }

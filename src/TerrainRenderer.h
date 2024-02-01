@@ -4,6 +4,7 @@
 #include "../gfx/gfx.h"
 #include "Chunk.h"
 #include "Common.h"
+#include "Cube.h"
 #include "QuadTree.h"
 #include "TileCache.h"
 
@@ -30,9 +31,10 @@ class TerrainRenderer
   bool wireframe{false};
 
  private:
-  const std::unique_ptr<ShaderProgram> m_shader{nullptr};
+  const std::unique_ptr<ShaderProgram> m_shader, m_sky_shader;
   const TileId m_root_tile;
   const Chunk m_chunk;
+  const Cube m_sky_box;
   const Bounds<glm::vec2> m_bounds;
   unsigned m_zoom_levels;
   TileCache m_tile_cache;

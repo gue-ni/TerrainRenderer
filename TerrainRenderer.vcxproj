@@ -149,6 +149,7 @@
     <ClCompile Include="src/Window.cpp" />
     <ClCompile Include="src/TileService.cpp" />
     <ClCompile Include="src/Collision.cpp" />
+    <ClCompile Include="src/Cube.cpp" />
     <ClCompile Include="gfx/gl.cpp" />
     <ClCompile Include="gfx/image.cpp" />
     <ClCompile Include="gfx/transform.cpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="src/TileService.h" />
     <ClInclude Include="src/TileUtils.h" />
     <ClInclude Include="src/Collision.h" />
+    <ClInclude Include="src/Cube.h" />
     <ClInclude Include="gfx/gfx.h" />
     <ClInclude Include="gfx/gl.h" />
     <ClInclude Include="gfx/image.h" />

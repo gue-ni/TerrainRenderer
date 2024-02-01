@@ -10,6 +10,7 @@
 
 #define ENABLE_FOG      1
 #define ENABLE_FALLBACK 1
+#define ENABLE_SKYBOX   1
 
 const std::string shader_vert = R"(
 #version 430
@@ -19,13 +20,10 @@ layout (location = 1) in vec2 a_tex;
 uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_proj;
-
 uniform float u_height_scaling_factor;
-
 uniform vec2 u_height_uv_min;
 uniform vec2 u_height_uv_max;
 uniform sampler2D u_height_texture;
-
 uniform uint u_zoom;
 
 out vec2 uv;
@@ -72,31 +70,15 @@ out vec4 frag_color;
 uniform vec2 u_albedo_uv_min;
 uniform vec2 u_albedo_uv_max;
 uniform sampler2D u_albedo_texture;
-
 uniform vec3 u_fog_color;
 uniform float u_fog_near;
 uniform float u_fog_far;
 uniform float u_fog_density;
-
 uniform vec3 u_camera_position;
-
 uniform uint u_zoom;
 
 vec2 map_range(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) { 
   return out_min + (value - in_min) * (out_max - out_min) / (in_max - in_min); 
-}
-
-float linear_fog_factor() {
-  float camera_dist = length(world_pos.xyz - u_camera_position);
-  float fog_range = u_fog_far - u_fog_near;
-  float fog_dist = u_fog_far - camera_dist;
-  return clamp(fog_dist / fog_range, 0, 1);
-}
-
-float exp_fog_factor(float density) {
-  float camera_dist = length(world_pos.xyz - u_camera_position);
-  float dist_ratio = 4.0 * camera_dist / u_fog_far;
-  return exp(-dist_ratio * density);
 }
 
 void main() {
@@ -123,8 +105,43 @@ void main() {
 }
 )";
 
+const std::string skybox_vert = R"(
+#version 430
+layout (location = 0) in vec3 a_pos;
+
+uniform mat4 u_model;
+uniform mat4 u_view;
+uniform mat4 u_proj;
+
+out vec4 world_pos;
+
+void main() {
+  world_pos = u_model * vec4(a_pos, 1.0);
+  gl_Position = u_proj * u_view * world_pos;
+}
+)";
+
+const std::string skybox_frag = R"(
+#version 430
+
+uniform vec3 u_fog_color;
+uniform float u_fog_near;
+uniform float u_fog_far;
+uniform float u_fog_density;
+uniform vec3 u_camera_position;
+
+in vec4 world_pos;
+
+out vec4 frag_color;
+
+void main() {
+  frag_color = vec4(1, 0, 0, 1);
+}
+)";
+
 TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, const Bounds<glm::vec2>& bounds)
     : m_shader(std::make_unique<ShaderProgram>(shader_vert, shader_frag)),
+      m_sky_shader(std::make_unique<ShaderProgram>(skybox_vert, skybox_frag)),
       m_root_tile(root_tile),
       m_chunk(32, 1.0f),
       m_bounds(bounds),
@@ -167,9 +184,9 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 #if ENABLE_FOG
   const glm::vec3 cc = gfx::rgb(0x7f99b2);
   m_shader->set_uniform("u_fog_color", cc);
-  m_shader->set_uniform("u_fog_near", 50.0f);
+  m_shader->set_uniform("u_fog_near", 0.0f);
   m_shader->set_uniform("u_fog_far", 1000.0f);
-  m_shader->set_uniform("u_fog_density", 0.5f);
+  m_shader->set_uniform("u_fog_density", 0.25f);
 
   float sun_elevation = 25.61f;
   float sun_azimuth = 179.85f;
@@ -221,6 +238,13 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   auto nodes = quad_tree.nodes();
   std::sort(nodes.begin(), nodes.end(), [](Node* a, Node* b) { return a->depth < b->depth; });
   std::for_each(nodes.begin(), nodes.end(), render_tile);
+
+#if ENABLE_SKYBOX
+  m_sky_shader->bind();
+  m_sky_shader->set_uniform("u_view", camera.view_matrix());
+  m_sky_shader->set_uniform("u_proj", camera.projection_matrix());
+  m_sky_box.draw(m_sky_shader.get(), glm::vec3(0.0f, 60.0f, 0.0f), 10.0f);
+#endif
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }

@@ -1,15 +1,10 @@
 /*  */
 #pragma once
 
-#include "../gfx/gfx.h"
+#include "../gfx/gl.h"
 #include "Common.h"
 
 using namespace gfx::gl;
-
-struct ChunkVertex {
-  glm::vec3 pos;
-  glm::vec2 uv;
-};
 
 class Chunk
 {
@@ -19,7 +14,12 @@ class Chunk
   void draw(ShaderProgram* shader, const glm::vec2& min, const glm::vec2& max) const;
 
  private:
-  GLsizei m_vertex_count{0};
+  struct Vertex {
+    glm::vec3 pos;
+    glm::vec2 uv;
+  };
+
+  GLsizei m_vertex_count = 0;
   std::unique_ptr<VertexArrayObject> m_vao;
   std::unique_ptr<VertexBuffer> m_vbo;
   std::unique_ptr<ElementBuffer> m_ebo;

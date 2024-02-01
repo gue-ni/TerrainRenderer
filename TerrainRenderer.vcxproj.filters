@@ -43,6 +43,9 @@
     <ClCompile Include="src/TileService.cpp">
       <Filter>src\terrain</Filter>
     </ClCompile>
+    <ClCompile Include="src/Cube.cpp">
+      <Filter>src\terrain</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gfx/camera.h">
@@ -97,6 +100,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src/TileService.h">
+      <Filter>src\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="src/Cube.h">
       <Filter>src\terrain</Filter>
     </ClInclude>
   </ItemGroup>

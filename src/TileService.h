@@ -100,14 +100,10 @@ class ThreadPool
         while (true) {
           Work work{};
 
-          // std::cout << "Waiting for work...\n";
-          m_queue.pop(work);
+          bool success = m_queue.pop(work);
 
-          if (!work) {
-            break;
-          }
+          if (!(work && success)) break;
 
-          // std::cout << "Do some work...\n";
           work();
         }
       };
