@@ -25,3 +25,8 @@ inline T clamp(const T& value, const Bounds<T>& range)
 {
   return max(range.min, min(value, range.max));
 }
+
+inline glm::vec3 vector_from_spherical(float pitch, float yaw)
+{
+  return {std::cos(yaw) * std::sin(pitch), std::cos(pitch), std::sin(yaw) * std::sin(pitch)};
+}

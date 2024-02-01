@@ -15,8 +15,6 @@ TileCache::TileCache(const TileId& root_tile, unsigned max_zoom_level)
       m_height_service("https://alpinemaps.cg.tuwien.ac.at/tiles/alpine_png", UrlPattern::ZXY_Y_NORTH, ".png")
 
 {
-  m_ortho_service.start_worker_threads();
-  m_height_service.start_worker_threads();
 }
 
 Texture* TileCache::tile_texture(const TileId& tile, const TileType& tile_type)

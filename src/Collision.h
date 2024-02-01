@@ -1,6 +1,9 @@
 #pragma once
 
+#include <array>
 #include <glm/glm.hpp>
+
+using Point = glm::vec3;
 
 struct AABB {
   glm::vec3 min, max;
@@ -19,9 +22,9 @@ struct Sphere {
 };
 
 struct Plane {
-  glm::vec3 n;  // plane normal
-  float d;      // d = dot(n, p) for a given point on the plane
-  Plane(const glm::vec3 &normal, const glm::vec3 &point) : n(normal), d(glm::dot(normal, point)) {}
+  glm::vec3 normal;  // plane normal
+  float distance;    // distance from origin
+  Plane(const glm::vec3 &normal_, const glm::vec3 &point_) : normal(normal_), distance(glm::dot(normal_, point_)) {}
 };
 
 // A segment is a part of a straigt line bounded by two end points.
@@ -30,7 +33,15 @@ struct Segment {
   inline glm::vec3 point_at(float t) const { return a + (b - a) * t; }
 };
 
+struct Frustum {
+  std::array<Plane, 6> planes;
+};
+
 // Real Time Collison Detection - Christer Ericson, Page
 bool segment_vs_plane(const Segment &segment, const Plane &plane, float &t);
 
+bool ray_vs_plane(const Ray &ray, const Plane &plane, float &t);
+
 bool ray_vs_sphere(const Ray &ray, const Sphere &sphere, float &t);
+
+bool point_vs_plane(const Point &point, const Plane &plane);
