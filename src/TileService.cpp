@@ -72,6 +72,7 @@ void TileService::request_tile(const TileId& tile_id)
     auto image = download_tile(tile_id);
 
     if (image) {
+      auto tile_id_str = tile_id.to_string();
       m_ram_cache[tile_id_str] = std::move(image);
     }
   });
@@ -98,5 +99,4 @@ std::unique_ptr<Image> TileService::download_tile(const TileId& tile_id)
   }
 
   return image;
-
 }
