@@ -15,7 +15,7 @@ bool segment_vs_plane(const Segment& segment, const Plane& plane, float& t)
   return false;
 }
 
-bool ray_vs_plane(const Ray& ray, const Plane& plane, float &t)
+bool ray_vs_plane(const Ray& ray, const Plane& plane, float& t)
 {
   float nd = glm::dot(ray.direction, plane.normal);
   float pn = glm::dot(ray.origin, plane.normal);

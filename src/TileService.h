@@ -2,6 +2,7 @@
 
 #include <condition_variable>
 #include <format>
+#include <functional>
 #include <iostream>
 #include <mutex>
 #include <queue>
@@ -11,124 +12,126 @@
 #include <thread>
 #include <tuple>
 #include <unordered_map>
-#include <functional>
 
 #include "../gfx/image.h"
 #include "TileUtils.h"
 
 using namespace gfx;
 
-template<typename T>
-class ThreadedQueue {
-public:
-    ThreadedQueue() = default;
+template <typename T>
+class ThreadedQueue
+{
+ public:
+  ThreadedQueue() = default;
 
-    ~ThreadedQueue() {
-        stop();
+  ~ThreadedQueue() { stop(); }
+
+  void push(const T& item)
+  {
+    {
+      std::unique_lock lock(m_mutex);
+      m_queue.push(item);
+    }
+    m_condition.notify_one();
+  }
+
+  void push(T&& item)
+  {
+    {
+      std::unique_lock lock(m_mutex);
+      m_queue.push(std::move(item));
+    }
+    m_condition.notify_one();
+  }
+
+  bool pop(T& item)
+  {
+    std::unique_lock lock(m_mutex);
+    m_condition.wait(lock, [&]() { return !m_queue.empty() || m_stop; });
+
+    if (m_stop) {
+      return false;
     }
 
-    void push(const T& item) {
-        {
-            std::unique_lock lock(m_mutex);
-            m_queue.push(item);
-        }
-        m_condition.notify_one();
+    item = std::move(m_queue.front());
+    m_queue.pop();
+    return true;
+  }
+
+  size_t size() const
+  {
+    std::unique_lock lock(m_mutex);
+    return m_queue.size();
+  }
+
+  bool empty() const
+  {
+    std::unique_lock lock(m_mutex);
+    return m_queue.empty();
+  }
+
+  void stop()
+  {
+    {
+      std::unique_lock lock(m_mutex);
+      m_stop = true;
     }
+    m_condition.notify_all();
+  }
 
-    void push(T&& item) {
-        {
-            std::unique_lock lock(m_mutex);
-            m_queue.push(std::move(item));
-        }
-        m_condition.notify_one();       
-    }
-
-    bool pop(T& item) { 
-        std::unique_lock lock(m_mutex);
-        m_condition.wait(lock, [&]() { return !m_queue.empty() || m_stop; });
-
-        if (m_stop) {
-            return false;
-        }
-
-        item = std::move(m_queue.front());
-        m_queue.pop();
-        return true;
-    }
-
-    size_t size() const {
-        std::unique_lock lock(m_mutex);
-        return m_queue.size();
-    }
-
-    bool empty() const {
-        std::unique_lock lock(m_mutex);
-        return m_queue.empty();
-    }
-
-    void stop() {
-        {
-            std::unique_lock lock(m_mutex);
-            m_stop = true;
-        }
-        m_condition.notify_all();
-    }
-
-private:   
-    bool m_stop = false;
-    std::queue<T> m_queue;
-    std::mutex m_mutex;
-    std::condition_variable m_condition;
+ private:
+  bool m_stop = false;
+  std::queue<T> m_queue;
+  std::mutex m_mutex;
+  std::condition_variable m_condition;
 };
 
-class ThreadPool {
-public:
+class ThreadPool
+{
+ public:
+  using Work = std::function<void(void)>;
 
-	using Work = std::function<void(void)>;
+  ThreadPool(size_t thread_count = std::thread::hardware_concurrency())
+  {
+    m_threads.reserve(thread_count);
 
-    ThreadPool(size_t thread_count = std::thread::hardware_concurrency()) {
+    for (auto i = 0U; i < thread_count; ++i) {
+      auto worker = [this]() {
+        while (true) {
+          Work work{};
 
-        m_threads.reserve(thread_count);
+          // std::cout << "Waiting for work...\n";
+          m_queue.pop(work);
 
-        for (auto i = 0U; i < thread_count; ++i) {
+          if (!work) {
+            break;
+          }
 
-            auto worker = [this]() {
-                while (true) {
-                    Work work{};
-
-                    // std::cout << "Waiting for work...\n";
-                    m_queue.pop(work);
-
-                    if (!work) {
-                        break;
-                    }
-
-                    // std::cout << "Do some work...\n";
-                    work();
-                }
-            };
-
-            m_threads.push_back(std::thread(worker));
+          // std::cout << "Do some work...\n";
+          work();
         }
+      };
+
+      m_threads.push_back(std::thread(worker));
+    }
+  }
+
+  ~ThreadPool()
+  {
+    for (auto i = 0U; i < m_threads.size(); ++i) {
+      m_queue.push(Work{});  // null item
     }
 
-    ~ThreadPool() {
-        for (auto i =  0U; i < m_threads.size(); ++i) {
-            m_queue.push(Work{}); // null item
-        }
-
-        for (auto& t : m_threads) { 
-            t.join();
-        }
+    for (auto& t : m_threads) {
+      t.join();
     }
+  }
 
-    void assign_work(Work work) {
-        m_queue.push(std::move(work));
-    }
+  void assign_work(Work work) { m_queue.push(std::move(work)); }
 
-private:
-    ThreadedQueue<Work> m_queue;
-    std::vector<std::thread> m_threads;
+ private:
+  ThreadedQueue<Work> m_queue;
+  std::vector<std::thread> m_threads;
 };
 
 enum UrlPattern {
@@ -152,9 +155,9 @@ class TileService
  private:
   const UrlPattern m_url_pattern;
   const std::string m_url, m_filetype;
-  std::unordered_map<TileId, std::unique_ptr<Image>> m_ram_cache;
-  std::set<TileId> m_already_requested;
   ThreadPool m_thread_pool;
+  std::set<TileId> m_already_requested;
+  std::unordered_map<TileId, std::unique_ptr<Image>> m_ram_cache;
 
   void request_tile(const TileId&);
 

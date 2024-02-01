@@ -61,7 +61,6 @@ void TileService::request_tile(const TileId& tile_id)
   m_already_requested.insert(tile_id);
 
   m_thread_pool.assign_work([this, tile_id]() {
-
     auto image = download_tile(tile_id);
 
     if (image) {

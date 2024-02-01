@@ -1,7 +1,7 @@
 #pragma once
 
-#include <glm/glm.hpp>
 #include <array>
+#include <glm/glm.hpp>
 
 using Point = glm::vec3;
 
@@ -23,7 +23,7 @@ struct Sphere {
 
 struct Plane {
   glm::vec3 normal;  // plane normal
-  float distance;  // distance from origin     
+  float distance;    // distance from origin
   Plane(const glm::vec3 &normal_, const glm::vec3 &point_) : normal(normal_), distance(glm::dot(normal_, point_)) {}
 };
 
