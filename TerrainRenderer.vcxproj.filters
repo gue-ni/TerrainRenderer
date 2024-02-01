@@ -37,7 +37,10 @@
     <ClCompile Include="src/TileCache.cpp">
       <Filter>src\terrain</Filter>
     </ClCompile>
-    <ClCompile Include="src\TileService.cpp">
+    <ClCompile Include="src/Collision.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src/TileService.cpp">
       <Filter>src\terrain</Filter>
     </ClCompile>
   </ItemGroup>
@@ -87,10 +90,13 @@
     <ClInclude Include="src/TileCache.h">
       <Filter>src\terrain</Filter>
     </ClInclude>
-    <ClInclude Include="src\TileService.h">
+    <ClInclude Include="src/TileUtils.h">
       <Filter>src\terrain</Filter>
     </ClInclude>
-    <ClInclude Include="src/TileUtils.h">
+    <ClInclude Include="src/Collision.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src/TileService.h">
       <Filter>src\terrain</Filter>
     </ClInclude>
   </ItemGroup>
@@ -133,5 +139,8 @@
     <CopyFileToFolders Include="libraries\cpr-1.10.5\build\bin\Release\zlib.dll">
       <Filter>dll</Filter>
     </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
   </ItemGroup>
 </Project>

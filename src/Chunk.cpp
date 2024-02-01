@@ -5,7 +5,7 @@
 
 #define SKIRTS 1
 
-Chunk::Chunk(uint vertex_count, float size)
+Chunk::Chunk(unsigned vertex_count, float size)
     : m_vao(std::make_unique<VertexArrayObject>()),
       m_vbo(std::make_unique<VertexBuffer>()),
       m_ebo(std::make_unique<ElementBuffer>())
@@ -13,22 +13,22 @@ Chunk::Chunk(uint vertex_count, float size)
   assert(vertex_count >= 2);
 
   std::vector<ChunkVertex> vertices;
-  std::vector<uint> indices;
+  std::vector<unsigned> indices;
 
   float stride = size / (vertex_count - 1);
   auto dimensions = glm::vec2(stride * (vertex_count - 1));
 
   // add padding for skirts
-  uint vertex_count_no_padding = vertex_count;
+  unsigned vertex_count_no_padding = vertex_count;
 #if SKIRTS
   vertex_count += 2;
 #endif
 
-  uint max_vertex = vertex_count - 1;  // with padding
-  uint max_clamped_vertex = max_vertex - 1;
+  unsigned max_vertex = vertex_count - 1;  // with padding
+  unsigned max_clamped_vertex = max_vertex - 1;
 
-  for (uint y = 0; y < vertex_count; ++y) {
-    for (uint x = 0; x < vertex_count; ++x) {
+  for (unsigned y = 0; y < vertex_count; ++y) {
+    for (unsigned x = 0; x < vertex_count; ++x) {
       bool on_border = false;
 
 #if SKIRTS
@@ -36,10 +36,10 @@ Chunk::Chunk(uint vertex_count, float size)
         on_border = true;
       }
 
-      auto tmp_x = glm::clamp(x, 1U, max_clamped_vertex);
+      auto tmp_x = glm::clamp(x, 1u, max_clamped_vertex);
       tmp_x = map_range(tmp_x, 1u, max_clamped_vertex, 0u, vertex_count_no_padding - 1u);
 
-      auto tmp_y = glm::clamp(y, 1U, max_clamped_vertex);
+      auto tmp_y = glm::clamp(y, 1u, max_clamped_vertex);
       tmp_y = map_range(tmp_y, 1u, max_clamped_vertex, 0u, vertex_count_no_padding - 1u);
 #else
       auto tmp_x = x;
@@ -88,17 +88,6 @@ Chunk::Chunk(uint vertex_count, float size)
   m_vao->unbind();
 }
 
-void Chunk::draw(ShaderProgram* shader, const glm::vec2& position) const
-{
-  shader->bind();
-  auto model = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, 0.0f, position.y));
-  shader->set_uniform("model", model);
-
-  m_vao->bind();
-  glDrawElements(GL_TRIANGLES, m_vertex_count, GL_UNSIGNED_INT, 0);
-  m_vao->unbind();
-}
-
 void Chunk::draw(ShaderProgram* shader, const glm::vec2& min, const glm::vec2& max) const
 {
   shader->bind();
@@ -107,7 +96,7 @@ void Chunk::draw(ShaderProgram* shader, const glm::vec2& min, const glm::vec2& m
   glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(max.x - min.x));
   auto model = translate * scale;
 
-  shader->set_uniform("model", model);
+  shader->set_uniform("u_model", model);
 
   m_vao->bind();
   glDrawElements(GL_TRIANGLES, m_vertex_count, GL_UNSIGNED_INT, 0);

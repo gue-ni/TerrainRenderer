@@ -32,7 +32,7 @@ class TerrainRenderer
  private:
   const std::unique_ptr<ShaderProgram> m_shader{nullptr};
   const TileId m_root_tile;
-  const Chunk m_chunk;  // terrain chunk geometry
+  const Chunk m_chunk;
   const Bounds<glm::vec2> m_bounds;
   unsigned m_zoom_levels;
   TileCache m_tile_cache;
@@ -43,5 +43,5 @@ class TerrainRenderer
 
   TileId tile_id_from_node(Node*) const;
 
-  Texture* find_cached_lower_lod_parent(Node* node, glm::vec2& uv_min, glm::vec2& uv_max, const TileType&);
+  Texture* find_cached_lower_zoom_parent(Node* node, Bounds<glm::vec2>& uv, const TileType&);
 };

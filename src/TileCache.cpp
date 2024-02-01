@@ -141,9 +141,24 @@ Coordinate TileCache::lat_lon(const glm::vec2& point) const
   return {lat, lon};
 }
 
-TileId TileCache::tile_id(Coordinate& coord, unsigned lod_offset_from_root) const
+TileId TileCache::tile_id(const Coordinate& coord, unsigned lod_offset_from_root) const
 {
   return wms::tile_id(coord.lat, coord.lon, m_root_tile.zoom + lod_offset_from_root);
 }
 
-float TileCache::terrain_elevation(const Coordinate& point) const { return 0; }
+float TileCache::terrain_elevation(const Coordinate& coord)
+{
+  TileId id = tile_id(coord, m_max_zoom_level);
+
+  Image* image = m_height_service.get_tile(id);
+
+  Bounds<Coordinate> bounds = wms::tile_bounds(id);
+
+  return 0;
+}
+
+float TileCache::terrain_elevation(const glm::vec2& point)
+{
+  Coordinate coord = lat_lon(point);
+  return terrain_elevation(coord);
+}

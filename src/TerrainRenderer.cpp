@@ -8,14 +8,17 @@
 #include "../gfx/gfx.h"
 #include "Common.h"
 
+#define ENABLE_FOG      1
+#define ENABLE_FALLBACK 1
+
 const std::string shader_vert = R"(
 #version 430
 layout (location = 0) in vec3 a_pos;
 layout (location = 1) in vec2 a_tex;
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 proj;
+uniform mat4 u_model;
+uniform mat4 u_view;
+uniform mat4 u_proj;
 
 uniform float u_height_scaling_factor;
 
@@ -26,21 +29,20 @@ uniform sampler2D u_height_texture;
 uniform uint u_zoom;
 
 out vec2 uv;
+out vec4 world_pos;
 
 float altitude_from_color(vec4 color) { 
   return (color.r + color.g / 255.0); 
 }
 
-vec2 map_range(vec2 s, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) { 
-  return out_min + (s - in_min) * (out_max - out_min) / (in_max - in_min); 
+vec2 map_range(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) { 
+  return out_min + (value - in_min) * (out_max - out_min) / (in_max - in_min); 
 }
 
 void main() {
   uv = a_tex;
 
-  vec4 world_pos = model * vec4(a_pos, 1.0);
-
-#if 1
+  world_pos = u_model * vec4(a_pos, 1.0);
 
   vec2 scaled_uv = map_range(uv, vec2(0), vec2(1), u_height_uv_min, u_height_uv_max);
 
@@ -50,14 +52,12 @@ void main() {
 
   world_pos.y = height * u_height_scaling_factor;
 
-#endif
-
   // skirts on tiles
   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
     world_pos.y = -2.0;
   }
 
-  gl_Position = proj * view * world_pos;
+  gl_Position = u_proj * u_view * world_pos;
 }
 )";
 
@@ -65,25 +65,51 @@ const std::string shader_frag = R"(
 #version 430
 
 in vec2 uv;
+in vec4 world_pos;
 
-out vec4 FragColor;
+out vec4 frag_color;
 
 uniform vec2 u_albedo_uv_min;
 uniform vec2 u_albedo_uv_max;
 uniform sampler2D u_albedo_texture;
 
+uniform vec3 u_fog_color;
+uniform float u_fog_near;
+uniform float u_fog_far;
+uniform float u_fog_density;
+
+uniform vec3 u_camera_position;
+
 uniform uint u_zoom;
 
-vec2 map_range(vec2 s, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) { 
-  return out_min + (s - in_min) * (out_max - out_min) / (in_max - in_min); 
+vec2 map_range(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) { 
+  return out_min + (value - in_min) * (out_max - out_min) / (in_max - in_min); 
+}
+
+float linear_fog_factor() {
+  float camera_dist = length(world_pos.xyz - u_camera_position);
+  float fog_range = u_fog_far - u_fog_near;
+  float fog_dist = u_fog_far - camera_dist;
+  return clamp(fog_dist / fog_range, 0, 1);
+}
+
+float exp_fog_factor(float density) {
+  float camera_dist = length(world_pos.xyz - u_camera_position);
+  float dist_ratio = 4.0 * camera_dist / u_fog_far;
+  return exp(-dist_ratio * density);
 }
 
 void main() {
-  vec2 scaled_uv = map_range(uv, vec2(0.0), vec2(1.0), u_albedo_uv_min, u_albedo_uv_max);
+  vec2 scaled_uv = map_range(uv, vec2(0), vec2(1), u_albedo_uv_min, u_albedo_uv_max);
 
-  vec3 albedo = texture(u_albedo_texture, scaled_uv).rgb;
+  vec3 color = texture(u_albedo_texture, scaled_uv).rgb;
 
-  FragColor = vec4(albedo, 1);
+  if (u_fog_color != vec3(0)) {
+    float fog_factor = exp_fog_factor(u_fog_density);
+    color = mix(color, u_fog_color, (1 - fog_factor));
+  }
+
+  frag_color = vec4(color, 1);
 }
 )";
 
@@ -115,7 +141,7 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, 
 
 void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 {
-  const auto terrain_center = glm::clamp(center, m_bounds.min, m_bounds.max);
+  const auto terrain_center = clamp(center, m_bounds);
 
   QuadTree quad_tree(m_bounds.min, m_bounds.max, m_zoom_levels);
   quad_tree.insert(terrain_center);
@@ -123,28 +149,40 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   m_shader->bind();
-  m_shader->set_uniform("view", camera.get_view_matrix());
-  m_shader->set_uniform("proj", camera.get_projection_matrix());
+  m_shader->set_uniform("u_view", camera.view_matrix());
+  m_shader->set_uniform("u_proj", camera.projection_matrix());
+  m_shader->set_uniform("u_camera_position", camera.world_position());
   m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
 
-  auto render_tile = [this](Node* tile) {
-    if (!tile->is_leaf) return;
+#if ENABLE_FOG
+  const glm::vec3 cc = gfx::rgb(0x809BAA);
+  m_shader->set_uniform("u_fog_color", cc);
+  m_shader->set_uniform("u_fog_near", 50.0f);
+  m_shader->set_uniform("u_fog_far", 1000.0f);
+  m_shader->set_uniform("u_fog_density", 0.5f);
+#else
+  m_shader->set_uniform("u_fog_color", glm::vec3(0.0f));
+#endif
 
-    TileId tile_id = tile_id_from_node(tile);
+  auto render_tile = [this](Node* node) {
+    if (!node->is_leaf) return;
+
+    TileId tile_id = tile_id_from_node(node);
 
     Texture* albedo = m_tile_cache.tile_texture(tile_id, TileType::ORTHO);
     Texture* heightmap = m_tile_cache.tile_texture(tile_id, TileType::HEIGHT);
 
-    glm::vec2 albedo_uv_min(0.0f), albedo_uv_max(1.0f);
-    glm::vec2 height_uv_min(0.0f), height_uv_max(1.0f);
+    // Render only part of tile if we fallback to lower resolution
+    Bounds<glm::vec2> albedo_uv = {glm::vec2(0.0f), glm::vec2(1.0f)};
+    Bounds<glm::vec2> height_uv = {glm::vec2(0.0f), glm::vec2(1.0f)};
 
-#if 1
+#if ENABLE_FALLBACK
     if (!albedo) {
-      albedo = find_cached_lower_lod_parent(tile, albedo_uv_min, albedo_uv_max, TileType::ORTHO);
+      albedo = find_cached_lower_zoom_parent(node, albedo_uv, TileType::ORTHO);
     }
 
     if (!heightmap) {
-      heightmap = find_cached_lower_lod_parent(tile, height_uv_min, height_uv_max, TileType::HEIGHT);
+      heightmap = find_cached_lower_zoom_parent(node, height_uv, TileType::HEIGHT);
     }
 #endif
 
@@ -153,15 +191,15 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
       albedo->bind(0);
       m_shader->set_uniform("u_albedo_texture", 0);
-      m_shader->set_uniform("u_albedo_uv_min", albedo_uv_min);
-      m_shader->set_uniform("u_albedo_uv_max", albedo_uv_max);
+      m_shader->set_uniform("u_albedo_uv_min", albedo_uv.min);
+      m_shader->set_uniform("u_albedo_uv_max", albedo_uv.max);
 
       heightmap->bind(1);
       m_shader->set_uniform("u_height_texture", 1);
-      m_shader->set_uniform("u_height_uv_min", height_uv_min);
-      m_shader->set_uniform("u_height_uv_max", height_uv_max);
+      m_shader->set_uniform("u_height_uv_min", height_uv.min);
+      m_shader->set_uniform("u_height_uv_max", height_uv.max);
 
-      m_chunk.draw(m_shader.get(), tile->min, tile->max);
+      m_chunk.draw(m_shader.get(), node->min, node->max);
     }
   };
 
@@ -180,18 +218,16 @@ float TerrainRenderer::terrain_elevation(const glm::vec2& point)
 
 glm::vec2 TerrainRenderer::map_to_0_1(const glm::vec2& point) const
 {
-  return map_range(point, m_bounds.min, m_bounds.max, glm::vec2(0.0f), glm::vec2(1.0f));
+  return map_range(point, m_bounds, Bounds(glm::vec2(0.0f), glm::vec2(1.0f)));
 }
 
 TileId TerrainRenderer::tile_id_from_node(Node* node) const
 {
-  auto relative = map_to_0_1(node->center());
-  Coordinate coord = m_tile_cache.lat_lon(relative);
+  Coordinate coord = m_tile_cache.lat_lon(map_to_0_1(node->center()));
   return m_tile_cache.tile_id(coord, node->depth);
 }
 
-Texture* TerrainRenderer::find_cached_lower_lod_parent(Node* node, glm::vec2& uv_min, glm::vec2& uv_max,
-                                                       const TileType& type)
+Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::vec2>& uv, const TileType& type)
 {
   Texture* parent_texture = nullptr;
   TileId tile_id = tile_id_from_node(node);
@@ -216,11 +252,12 @@ Texture* TerrainRenderer::find_cached_lower_lod_parent(Node* node, glm::vec2& uv
   unsigned zoom_delta = tile_id.zoom - parent_tile_id.zoom;
   unsigned num_tiles = 1 << zoom_delta;
   TileId scaled_root_tile = {tile_id.zoom, parent_tile_id.x * num_tiles, parent_tile_id.y * num_tiles};
-  unsigned delta_x = tile_id.x - scaled_root_tile.x, delta_y = tile_id.y - scaled_root_tile.y;
+  unsigned delta_x = tile_id.x - scaled_root_tile.x;
+  unsigned delta_y = tile_id.y - scaled_root_tile.y;
   float factor = 1.0f / num_tiles;
 
-  uv_min = glm::vec2((delta_x + 0) * factor, (delta_y + 0) * factor);
-  uv_max = glm::vec2((delta_x + 1) * factor, (delta_y + 1) * factor);
+  uv.min = glm::vec2((delta_x + 0) * factor, (delta_y + 0) * factor);
+  uv.max = glm::vec2((delta_x + 1) * factor, (delta_y + 1) * factor);
 
   return parent_texture;
 }

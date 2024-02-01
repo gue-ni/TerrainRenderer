@@ -1,5 +1,9 @@
 #include "Game.h"
 
+#include "Collision.h"
+
+#define INTERSECT_PLANE 0
+
 const TileId BLUDENZ = wms::tile_id(47.1599f, 9.8082f, 9);
 
 const TileId GROSS_GLOCKNER = wms::tile_id(47.0742f, 12.6947f, 9);
@@ -10,29 +14,6 @@ const TileId INNSBRUCK = wms::tile_id(47.2692f, 11.4041f, 9);
 
 const TileId VIENNA = wms::tile_id(48.2082f, 16.3719f, 9);
 
-struct Plane {
-  glm::vec3 n;  // plane normal
-  float d;      // d = dot(n, p) for a given point on the plane
-  Plane(const glm::vec3 &normal, const glm::vec3 &point) : n(normal), d(glm::dot(normal, point)) {}
-};
-
-// Real Time Collison Detection - Christer Ericson
-int intersect_segment_plane(glm::vec3 a, glm::vec3 b, Plane p, float &t, glm::vec3 &q)
-{
-  // Compute the t value for the directed line ab intersecting the plane
-  glm::vec3 ab = b - a;
-
-  t = (p.d - glm::dot(p.n, a)) / glm::dot(p.n, ab);
-
-  // If t in [0..1] compute and return intersection point
-  if (t >= 0.0f && t <= 1.0f) {
-    q = a + t * ab;
-    return true;
-  }
-
-  return false;
-}
-
 Game::Game(size_t width, size_t height)
     : Window(width, height), m_terrain_renderer(INNSBRUCK, 4, {glm::vec2(-500.0f), glm::vec2(500.0f)})
 {
@@ -40,38 +21,37 @@ Game::Game(size_t width, size_t height)
   SDL_CaptureMouse(SDL_TRUE);
   SDL_SetRelativeMouseMode(SDL_TRUE);
 
-  float fov = 45.0f;
-  float aspect_ratio = float(width) / float(height);
-  float near = 1.0f, far = 1000.0f;
+  float fov = 45.0f, aspect_ratio = float(width) / float(height), near = 1.0f, far = 1000.0f;
   m_camera.set_projection_matrix(glm::perspective(glm::radians(fov), aspect_ratio, near, far));
   m_camera.set_local_position(glm::vec3(0.0f, 40.f, 0.0f));
 }
 
 void Game::render(float dt)
 {
+  const glm::vec3 cc = gfx::rgb(0x809BAA);
   glViewport(0, 0, static_cast<GLsizei>(m_width), static_cast<GLsizei>(m_height));
-  glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+  glClearColor(cc.r, cc.g, cc.b, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  auto camera_position = m_camera.get_local_position();
-  auto lod_focus = glm::vec2(camera_position.x, camera_position.z);
+  auto camera_position = m_camera.local_position();
+  auto center = glm::vec2(camera_position.x, camera_position.z);
 
-#if 0
+#if INTERSECT_PLANE
   auto camera_direction = m_camera.transform_direction(glm::vec3(0.0f, 0.0f, -1.0f));
   auto camera_target = camera_position + camera_direction * 1000.0f;
 
   float t;
-  glm::vec3 point;
   Plane plane(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 20.0f, 0.0f));
+  Segment segment(camera_position, camera_target);
 
-  if (intersect_segment_plane(camera_position, camera_target, plane, t, point)){
-    auto tmp_lod_focus = glm::clamp(glm::vec2(point.x, point.z), m_terrain_renderer.bounds().min, m_terrain_renderer.bounds().max);
-
-    lod_focus = glm::mix(lod_focus, tmp_lod_focus, 0.5);
+  if (segment_vs_plane(segment, plane, t)) {
+    glm::vec3 point = segment.point_at(t);
+    auto clamped_point = clamp(glm::vec2(point.x, point.z), m_terrain_renderer.bounds());
+    center = glm::mix(center, clamped_point, 0.5);
   }
 #endif
 
-  m_terrain_renderer.render(m_camera, lod_focus);
+  m_terrain_renderer.render(m_camera, center);
 
   SDL_GL_SwapWindow(m_window);
 }
@@ -117,7 +97,7 @@ void Game::read_input(float dt)
         glm::vec3 world_up = {0.0f, 1.0f, 0.0f};
         glm::vec3 right = glm::normalize(glm::cross(front, world_up));
         glm::vec3 up = glm::normalize(glm::cross(right, front));
-        glm::vec3 position = m_camera.get_local_position();
+        glm::vec3 position = m_camera.local_position();
 
         auto look_at = glm::lookAt(position, position + front, up);
         m_camera.set_local_transform(glm::inverse(look_at));
@@ -128,10 +108,10 @@ void Game::read_input(float dt)
       }
       case SDL_KEYDOWN: {
         switch (sdl_event.key.keysym.sym) {
-          case SDLK_n:
+          case SDLK_j:
             m_terrain_renderer.set_zoom_levels(m_terrain_renderer.zoom_levels() + 1);
             break;
-          case SDLK_m:
+          case SDLK_k:
             m_terrain_renderer.set_zoom_levels(m_terrain_renderer.zoom_levels() - 1);
             break;
         }
@@ -152,9 +132,9 @@ void Game::read_input(float dt)
 
   const Uint8 *key_states = SDL_GetKeyboardState(nullptr);
 
-  auto right = m_camera.get_local_x_axis();
-  auto forward = m_camera.get_local_z_axis();
-  auto position = m_camera.get_local_position();
+  auto right = m_camera.local_x_axis();
+  auto forward = m_camera.local_z_axis();
+  auto position = m_camera.local_position();
 
   float speed = 100.0f;
 

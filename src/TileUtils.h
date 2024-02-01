@@ -8,7 +8,7 @@
 #include "Common.h"
 
 struct TileId {
-  unsigned zoom{}, x{}, y{};
+  unsigned zoom, x, y;
 
   TileId() : TileId(0, 0, 0) {}
   TileId(unsigned zoom_, unsigned x_, unsigned y_) : zoom(zoom_), x(x_), y(y_) {}
@@ -23,10 +23,10 @@ inline std::ostream& operator<<(std::ostream& os, const TileId& t)
 
 template <>
 struct std::hash<TileId> {
-  std::size_t operator()(TileId const& s) const noexcept
+  std::size_t operator()(const TileId& t) const noexcept
   {
 #if 1
-    return std::hash<std::string>{}(s.to_string());
+    return std::hash<std::string>{}(t.to_string());
 #else
     uint64_t h1 = uint64_t(s.x) << 24;
     uint64_t h2 = uint64_t(s.y) << 8;
@@ -54,19 +54,19 @@ constexpr float EQUATORIAL_CIRCUMFERENCE = 2.0f * PI * EARTH_RADIUS;
 
 inline unsigned num_tiles(unsigned zoom) { return (1 << zoom); }
 
-inline unsigned lon2tilex(float lon, unsigned z) { return (int)(floor((lon + 180.0f) / 360.0f * (1 << z))); }
+inline unsigned lon2tilex(float lon, unsigned zoom) { return (int)(floor((lon + 180.0f) / 360.0f * (1 << zoom))); }
 
-inline unsigned lat2tiley(float lat, unsigned z)
+inline unsigned lat2tiley(float lat, unsigned zoom)
 {
   float latrad = lat * PI / 180.0f;
-  return (unsigned)(floor((1.0f - asinh(tan(latrad)) / PI) / 2.0f * (1 << z)));
+  return (unsigned)(floor((1.0f - asinh(tan(latrad)) / PI) / 2.0f * (1 << zoom)));
 }
 
-inline float tilex2lon(unsigned x, unsigned z) { return x / (float)(1 << z) * 360.0f - 180.0f; }
+inline float tilex2lon(unsigned x, unsigned zoom) { return x / (float)(1 << zoom) * 360.0f - 180.0f; }
 
-inline float tiley2lat(unsigned y, unsigned z)
+inline float tiley2lat(unsigned y, unsigned zoom)
 {
-  float n = PI - 2.0f * PI * y / (float)(1 << z);
+  float n = PI - 2.0f * PI * y / (float)(1 << zoom);
   return 180.0f / PI * atan(0.5f * (exp(n) - exp(-n)));
 }
 

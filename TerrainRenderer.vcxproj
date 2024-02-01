@@ -147,7 +147,8 @@
     <ClCompile Include="src/TerrainRenderer.cpp" />
     <ClCompile Include="src/TileCache.cpp" />
     <ClCompile Include="src/Window.cpp" />
-    <ClCompile Include="src\TileService.cpp" />
+    <ClCompile Include="src/TileService.cpp" />
+    <ClCompile Include="src/Collision.cpp" />
     <ClCompile Include="gfx/gl.cpp" />
     <ClCompile Include="gfx/image.cpp" />
     <ClCompile Include="gfx/transform.cpp" />
@@ -162,8 +163,9 @@
     <ClInclude Include="src/TerrainRenderer.h" />
     <ClInclude Include="src/TileCache.h" />
     <ClInclude Include="src/Window.h" />
-    <ClInclude Include="src\TileService.h" />
+    <ClInclude Include="src/TileService.h" />
     <ClInclude Include="src/TileUtils.h" />
+    <ClInclude Include="src/Collision.h" />
     <ClInclude Include="gfx/gfx.h" />
     <ClInclude Include="gfx/gl.h" />
     <ClInclude Include="gfx/image.h" />
@@ -209,6 +211,9 @@
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

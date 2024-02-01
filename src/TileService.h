@@ -34,10 +34,10 @@ class TileService
   void start_worker_threads();
 
   // If tile in cache, return tile. If not, request it for download and return nullptr
-  Image* get_tile(const TileId& tile_id);
+  Image* get_tile(const TileId&);
 
   // get image sync
-  Image* get_tile_sync(const TileId& tile_id);
+  Image* get_tile_sync(const TileId&);
 
  private:
   const size_t m_num_threads{2};

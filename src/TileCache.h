@@ -41,13 +41,15 @@ class TileCache
 
   Texture* tile_texture_cached(const TileId&, const TileType&);
 
-  float terrain_elevation(const Coordinate&) const;
+  float terrain_elevation(const Coordinate&);
+
+  float terrain_elevation(const glm::vec2&);
 
   void invalidate_gpu_cache();
 
   Coordinate lat_lon(const glm::vec2& point) const;
 
-  TileId tile_id(Coordinate& coord, unsigned lod_offset_from_root) const;
+  TileId tile_id(const Coordinate& coord, unsigned lod_offset_from_root) const;
 
  private:
   const TileId m_root_tile;
