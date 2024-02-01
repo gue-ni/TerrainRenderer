@@ -32,16 +32,10 @@ std::string TileService::tile_url(const TileId& t) const
   }
 }
 
-void TileService::start_worker_threads()
-{
-}
-
 Image* TileService::get_tile(const TileId& tile_id)
 {
-  std::string tile_id_str = tile_id.to_string();
-
-  if (m_ram_cache.contains(tile_id_str)) {
-    return m_ram_cache[tile_id_str].get();
+  if (m_ram_cache.contains(tile_id)) {
+    return m_ram_cache[tile_id].get();
   }
 
   if (!m_already_requested.contains(tile_id)) {
@@ -58,9 +52,8 @@ Image* TileService::get_tile_sync(const TileId& tile_id)
     return nullptr;
   }
 
-  auto tile_id_str = tile_id.to_string();
-  m_ram_cache[tile_id_str] = std::move(image);
-  return m_ram_cache[tile_id_str].get();
+  m_ram_cache[tile_id] = std::move(image);
+  return m_ram_cache[tile_id].get();
 }
 
 void TileService::request_tile(const TileId& tile_id)
@@ -72,8 +65,7 @@ void TileService::request_tile(const TileId& tile_id)
     auto image = download_tile(tile_id);
 
     if (image) {
-      auto tile_id_str = tile_id.to_string();
-      m_ram_cache[tile_id_str] = std::move(image);
+      m_ram_cache[tile_id] = std::move(image);
     }
   });
 }

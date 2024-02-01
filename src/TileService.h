@@ -96,14 +96,14 @@ public:
                 while (true) {
                     Work work{};
 
-                    std::cout << "Waiting for work...\n";
+                    // std::cout << "Waiting for work...\n";
                     m_queue.pop(work);
 
                     if (!work) {
                         break;
                     }
 
-                    std::cout << "Do some work...\n";
+                    // std::cout << "Do some work...\n";
                     work();
                 }
             };
@@ -143,9 +143,6 @@ class TileService
  public:
   TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype = "png");
 
-  // Start seperate worker thread
-  void start_worker_threads();
-
   // If tile in cache, return tile. If not, request it for download and return nullptr
   Image* get_tile(const TileId&);
 
@@ -155,7 +152,7 @@ class TileService
  private:
   const UrlPattern m_url_pattern;
   const std::string m_url, m_filetype;
-  std::unordered_map<std::string, std::unique_ptr<Image>> m_ram_cache;
+  std::unordered_map<TileId, std::unique_ptr<Image>> m_ram_cache;
   std::set<TileId> m_already_requested;
   ThreadPool m_thread_pool;
 
