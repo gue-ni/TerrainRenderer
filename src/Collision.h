@@ -43,3 +43,5 @@ bool segment_vs_plane(const Segment &segment, const Plane &plane, float &t);
 bool ray_vs_plane(const Ray &ray, const Plane &plane, float &t);
 
 bool ray_vs_sphere(const Ray &ray, const Sphere &sphere, float &t);
+
+bool point_vs_plane(const Point &point, const Plane &plane);
