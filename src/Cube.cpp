@@ -1,7 +1,6 @@
 #include "Cube.h"
 
 Cube::Cube() : m_vao(std::make_unique<VertexArrayObject>()), m_vbo(std::make_unique<VertexBuffer>())
-
 {
   const std::vector<glm::vec3> vertices = {
       {-1.0f, 1.0f, -1.0f},  {-1.0f, -1.0f, -1.0f}, {1.0f, -1.0f, -1.0f},  {1.0f, -1.0f, -1.0f}, {1.0f, 1.0f, -1.0f},
