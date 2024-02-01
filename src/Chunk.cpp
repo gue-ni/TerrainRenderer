@@ -92,9 +92,9 @@ void Chunk::draw(ShaderProgram* shader, const glm::vec2& min, const glm::vec2& m
 {
   shader->bind();
 
-  glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(min.x, 0.0f, min.y));
-  glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(max.x - min.x));
-  auto model = translate * scale;
+  glm::mat4 model(1.0f);
+  model = glm::translate(model, glm::vec3(min.x, 0.0f, min.y));
+  model = glm::scale(model, glm::vec3(max.x - min.x));
 
   shader->set_uniform("u_model", model);
 

@@ -28,7 +28,10 @@ void Cube::draw(ShaderProgram* shader, const glm::vec3& position, float scale) c
 {
   shader->bind();
 
-  auto model = glm::translate(glm::mat4(1.0f), position) * glm::scale(glm::mat4(1.0f), glm::vec3(scale));
+  glm::mat4 model(1.0f);
+  model = glm::translate(model, position);
+  model = glm::scale(model, glm::vec3(scale));
+
   shader->set_uniform("u_model", model);
 
   m_vao->bind();
