@@ -28,7 +28,7 @@ Game::Game(size_t width, size_t height)
 
 void Game::render(float dt)
 {
-  const glm::vec3 cc = gfx::rgb(0x809BAA);
+  const glm::vec3 cc = gfx::rgb(0x7f99b2);
   glViewport(0, 0, static_cast<GLsizei>(m_width), static_cast<GLsizei>(m_height));
   glClearColor(cc.r, cc.g, cc.b, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

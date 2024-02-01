@@ -105,8 +105,18 @@ void main() {
   vec3 color = texture(u_albedo_texture, scaled_uv).rgb;
 
   if (u_fog_color != vec3(0)) {
-    float fog_factor = exp_fog_factor(u_fog_density);
-    color = mix(color, u_fog_color, (1 - fog_factor));
+    vec3 camera_dir = normalize(u_camera_position - world_pos.xyz);
+    float camera_dist = length(world_pos.xyz - u_camera_position);
+    float dist_ratio = 4.0 * camera_dist / u_fog_far;
+    float fog_factor = 1.0 - exp(-dist_ratio * u_fog_density);
+
+    vec3 sun_dir = normalize(vec3(2, 1, 2));
+    vec3 sun_color = vec3(1.0, 0.9, 0.7);
+    float sun_factor = max(dot(camera_dir, sun_dir), 0.0);
+
+    vec3 fog_color  = mix(u_fog_color, sun_color, pow(sun_factor, 8.0));
+
+    color = mix(color, fog_color, fog_factor);
   }
 
   frag_color = vec4(color, 1);
@@ -155,7 +165,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
 
 #if ENABLE_FOG
-  const glm::vec3 cc = gfx::rgb(0x809BAA);
+  const glm::vec3 cc = gfx::rgb(0x7f99b2);
   m_shader->set_uniform("u_fog_color", cc);
   m_shader->set_uniform("u_fog_near", 50.0f);
   m_shader->set_uniform("u_fog_far", 1000.0f);
