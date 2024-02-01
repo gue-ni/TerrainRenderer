@@ -170,6 +170,11 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_shader->set_uniform("u_fog_near", 50.0f);
   m_shader->set_uniform("u_fog_far", 1000.0f);
   m_shader->set_uniform("u_fog_density", 0.5f);
+
+  float sun_elevation = 25.61f;
+  float sun_azimuth = 179.85f;
+  glm::vec3 sun_direction = vector_from_spherical(glm::radians(sun_elevation), glm::radians(sun_azimuth));
+  m_shader->set_uniform("u_sun_dir", sun_direction);
 #else
   m_shader->set_uniform("u_fog_color", glm::vec3(0.0f));
 #endif
