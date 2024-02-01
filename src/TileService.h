@@ -11,6 +11,7 @@
 #include <thread>
 #include <tuple>
 #include <unordered_map>
+#include <functional>
 
 #include "../gfx/image.h"
 #include "TileUtils.h"
