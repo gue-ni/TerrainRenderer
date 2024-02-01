@@ -5,19 +5,8 @@
 #define LOG 0
 
 TileService::TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype)
-    : m_url(url), m_url_pattern(url_pattern), m_filetype(filetype)
+    : m_url(url), m_url_pattern(url_pattern), m_filetype(filetype), m_thread_pool(2)
 {
-}
-
-TileService::~TileService()
-{
-  m_stop_thread = true;
-
-  for (unsigned i = 0; i < m_num_threads; ++i) {
-    request_download(TileId(0, 0, i));
-  }
-
-  std::for_each(m_threads.begin(), m_threads.end(), [](auto& t) { t.join(); });
 }
 
 std::string TileService::tile_url(const TileId& t) const
@@ -45,24 +34,6 @@ std::string TileService::tile_url(const TileId& t) const
 
 void TileService::start_worker_threads()
 {
-  auto worker = [this]() {
-    while (!m_stop_thread) {
-      std::unique_lock<std::mutex> lock(m_mutex);
-
-      m_condition.wait(lock, [this] { return !m_tiles_to_download.empty(); });
-
-      auto& tile_id = m_tiles_to_download.top();
-      m_tiles_to_download.pop();
-
-      lock.unlock();
-
-      get_tile_sync(tile_id);
-    }
-  };
-
-  for (auto i = 0; i < m_num_threads; ++i) {
-    m_threads.emplace_back(std::thread(worker));
-  }
 }
 
 Image* TileService::get_tile(const TileId& tile_id)
@@ -74,16 +45,41 @@ Image* TileService::get_tile(const TileId& tile_id)
   }
 
   if (!m_already_requested.contains(tile_id)) {
-    request_download(tile_id);
+    request_tile(tile_id);
   }
   return nullptr;
 }
 
 Image* TileService::get_tile_sync(const TileId& tile_id)
 {
-  auto url = tile_url(tile_id);
-  auto tile_id_str_1 = tile_id.to_string();
+  auto image = download_tile(tile_id);
 
+  if (!image) {
+    return nullptr;
+  }
+
+  auto tile_id_str = tile_id.to_string();
+  m_ram_cache[tile_id_str] = std::move(image);
+  return m_ram_cache[tile_id_str].get();
+}
+
+void TileService::request_tile(const TileId& tile_id)
+{
+  m_already_requested.insert(tile_id);
+
+  m_thread_pool.assign_work([this, tile_id]() {
+
+    auto image = download_tile(tile_id);
+
+    if (image) {
+      m_ram_cache[tile_id_str] = std::move(image);
+    }
+  });
+}
+
+std::unique_ptr<Image> TileService::download_tile(const TileId& tile_id)
+{
+  auto url = tile_url(tile_id);
   cpr::Response r = cpr::Get(cpr::Url{url});
 
   if (r.status_code != 200) {
@@ -91,9 +87,7 @@ Image* TileService::get_tile_sync(const TileId& tile_id)
     return nullptr;
   }
 
-#if LOG
   std::cout << "GET " << std::quoted(url) << std::endl;
-#endif
 
   auto image = std::make_unique<Image>();
   image->read_from_buffer(reinterpret_cast<unsigned char*>(r.text.data()), int(r.text.size()));
@@ -103,24 +97,6 @@ Image* TileService::get_tile_sync(const TileId& tile_id)
     return nullptr;
   }
 
-  auto tile_id_str_2 = tile_id.to_string();
+  return image;
 
-  // What???
-  // TODO: fix this, probably some problem with thread sync
-  // assert(tile_id_str_1 == tile_id_str_2);
-
-  if (!(tile_id_str_1 == tile_id_str_2)) {
-    std::cout << tile_id << ": " << std::quoted(tile_id_str_1) << " != " << std::quoted(tile_id_str_2) << std::endl;
-  }
-
-  m_ram_cache[tile_id_str_1] = std::move(image);
-  return m_ram_cache[tile_id_str_1].get();
-}
-
-void TileService::request_download(const TileId& tile_id)
-{
-  std::unique_lock<std::mutex> lock(m_mutex);
-  m_tiles_to_download.push(tile_id);
-  m_condition.notify_one();
-  m_already_requested.insert(tile_id);
 }

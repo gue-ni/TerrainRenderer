@@ -141,7 +141,6 @@ class TileService
 {
  public:
   TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype = "png");
-  ~TileService();
 
   // Start seperate worker thread
   void start_worker_threads();
@@ -153,18 +152,16 @@ class TileService
   Image* get_tile_sync(const TileId&);
 
  private:
-  const size_t m_num_threads{2};
   const UrlPattern m_url_pattern;
   const std::string m_url, m_filetype;
-  bool m_stop_thread{false};
-  std::vector<std::thread> m_threads;
   std::stack<TileId> m_tiles_to_download;
-  std::mutex m_mutex;
-  std::condition_variable m_condition;
   std::unordered_map<std::string, std::unique_ptr<Image>> m_ram_cache;
   std::set<TileId> m_already_requested;
+  ThreadPool m_thread_pool;
 
-  void request_download(const TileId&);
+  void request_tile(const TileId&);
+
+  std::unique_ptr<Image> download_tile(const TileId&);
 
   std::string tile_url(const TileId&) const;
 };
