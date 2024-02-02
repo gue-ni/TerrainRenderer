@@ -4,31 +4,22 @@
 
 #define INTERSECT_PLANE 0
 
-const TileId BLUDENZ = wms::tile_id(47.1599f, 9.8082f, 9);
-
 const TileId GROSS_GLOCKNER = wms::tile_id(47.0742f, 12.6947f, 8);
 
-const TileId SCHNEEBERG = wms::tile_id(47.7671f, 15.8056f, 9);
+const TileId SCHNEEBERG = wms::tile_id(47.7671f, 15.8056f, 7);
 
-const TileId INNSBRUCK = wms::tile_id(47.2692f, 11.4041f, 8);
+const TileId INNSBRUCK = wms::tile_id(47.2692f, 11.4041f, 7);
 
-const TileId VIENNA = wms::tile_id(48.2082f, 16.3719f, 9);
+const TileId root = GROSS_GLOCKNER;
 
-const TileId ROOT = INNSBRUCK;
-
-const float WIDTH = wms::tile_width(wms::tiley2lat(ROOT.y, ROOT.zoom), ROOT.zoom) * 0.01f;
-// const float WIDTH = 5000.0f;
+const float terrain_width = wms::tile_width(wms::tiley2lat(root.y, root.zoom), root.zoom) * 0.01f;
 
 Game::Game(size_t width, size_t height)
-    : Window(width, height), m_terrain_renderer(ROOT, 4, {glm::vec2(-WIDTH / 2.0f), glm::vec2(WIDTH / 2.0f)})
+    : Window(width, height), m_terrain_renderer(root, 4, {glm::vec2(-terrain_width / 2.0f), glm::vec2(terrain_width / 2.0f)})
 {
-  // SDL_ShowCursor(SDL_FALSE);
-  // SDL_CaptureMouse(SDL_TRUE);
-  // SDL_SetRelativeMouseMode(SDL_TRUE);
-
   float fov = 45.0f, aspect_ratio = float(width) / float(height), near = 1.0f, far = 100000.0f;
   m_camera.set_projection_matrix(glm::radians(fov), aspect_ratio, near, far);
-  m_camera.set_local_position(glm::vec3(0.0f, 40.f, 0.0f));
+  m_camera.set_local_position(glm::vec3(0.0f, 5000.0f * m_terrain_renderer.scaling_factor(), 0.0f));
 }
 
 void Game::render(float dt)
@@ -54,7 +45,6 @@ void Game::render_terrain()
 
   if (m_terrain_renderer.intersect_terrain) {
     auto camera_direction = m_camera.transform_direction(glm::vec3(0.0f, 0.0f, -1.0f));
-    auto camera_target = camera_position + camera_direction * 1000.0f;
 
     float t;
     Plane plane(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 20.0f, 0.0f));

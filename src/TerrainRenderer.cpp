@@ -174,9 +174,9 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned num_zoom_leve
   float latitude = wms::tiley2lat(m_root_tile.y, m_root_tile.zoom);
   float tile_width = wms::tile_width(latitude, m_root_tile.zoom);
 
-  float terrain_scaling_factor = width / tile_width;
+  m_terrain_scaling_factor = width / tile_width;
 
-  m_height_scaling_factor = (max_elevation - min_elevation) * terrain_scaling_factor * 1.5f;
+  m_height_scaling_factor = (max_elevation - min_elevation) * m_terrain_scaling_factor * 1.5f;
 
   // request low zoom tiles as fallback
   for (auto& child : wms::child_tiles(m_root_tile)) {

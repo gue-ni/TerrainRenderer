@@ -20,14 +20,15 @@ class TerrainRenderer
 
   Bounds<glm::vec2> bounds() const { return m_bounds; }
 
-  // Get terrain elevation at point.
   float terrain_elevation(const glm::vec2& point);
 
-  bool wireframe{false};
-  bool intersect_terrain{false};
+  float scaling_factor() const { return m_terrain_scaling_factor; }
+
+  Coordinate point_coordinate(const glm::vec3& point) const;
 
   int zoom_levels;
-
+  bool wireframe{false};
+  bool intersect_terrain{false};
   float fog_far{2000.0f};
   float fog_density{0.25f};
 
@@ -39,6 +40,7 @@ class TerrainRenderer
   const Bounds<glm::vec2> m_bounds;
   TileCache m_tile_cache;
   float m_height_scaling_factor;
+  float m_terrain_scaling_factor;
 
   // convert from world coordinate in range m_bounds to [0, 1]
   glm::vec2 map_to_0_1(const glm::vec2& point) const;
