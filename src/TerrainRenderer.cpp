@@ -202,8 +202,8 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
   const glm::vec3 sky_color_1 = gfx::rgb(0xB8DEFD);
   const glm::vec3 sky_color_2 = gfx::rgb(0x6F93F2);
-  //m_shader->set_uniform("u_sky_color_1", sky_color_1);
-  //m_shader->set_uniform("u_sky_color_2", sky_color_2);
+  // m_shader->set_uniform("u_sky_color_1", sky_color_1);
+  // m_shader->set_uniform("u_sky_color_2", sky_color_2);
 
 #if ENABLE_FOG
   m_shader->set_uniform("u_fog_color", sky_color_1);

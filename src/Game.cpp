@@ -15,7 +15,7 @@ const TileId INNSBRUCK = wms::tile_id(47.2692f, 11.4041f, 9);
 const TileId VIENNA = wms::tile_id(48.2082f, 16.3719f, 9);
 
 Game::Game(size_t width, size_t height)
-    : Window(width, height), m_terrain_renderer(INNSBRUCK, 4, {glm::vec2(-500.0f), glm::vec2(500.0f)})
+    : Window(width, height), m_terrain_renderer(INNSBRUCK, 4, {glm::vec2(-1000.0f), glm::vec2(1000.0f)})
 {
   SDL_ShowCursor(SDL_FALSE);
   SDL_CaptureMouse(SDL_TRUE);
@@ -23,14 +23,14 @@ Game::Game(size_t width, size_t height)
 
   float fov = 45.0f, aspect_ratio = float(width) / float(height), near = 1.0f, far = 2000.0f;
   m_camera.set_projection_matrix(glm::radians(fov), aspect_ratio, near, far);
-  m_camera.set_local_position(glm::vec3(0.0f, 40.f, 0.0f));
+  m_camera.set_local_position(glm::vec3(0.0f, 100.f, 0.0f));
 }
 
 void Game::render(float dt)
 {
-  const glm::vec3 cc = gfx::rgb(0x7f99b2);
   glViewport(0, 0, static_cast<GLsizei>(m_width), static_cast<GLsizei>(m_height));
-  glClearColor(cc.r, cc.g, cc.b, 1.0f);
+  glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   auto camera_position = m_camera.local_position();
