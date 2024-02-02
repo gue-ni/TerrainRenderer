@@ -28,6 +28,9 @@ class TerrainRenderer
 
   int zoom_levels;
 
+  float fog_far{2000.0f};
+  float fog_density{0.25f};
+
  private:
   const std::unique_ptr<ShaderProgram> m_shader, m_sky_shader;
   const TileId m_root_tile;

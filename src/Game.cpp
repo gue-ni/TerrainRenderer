@@ -15,7 +15,7 @@ const TileId INNSBRUCK = wms::tile_id(47.2692f, 11.4041f, 9);
 const TileId VIENNA = wms::tile_id(48.2082f, 16.3719f, 9);
 
 Game::Game(size_t width, size_t height)
-    : Window(width, height), m_terrain_renderer(INNSBRUCK, 4, {glm::vec2(-1000.0f), glm::vec2(1000.0f)})
+    : Window(width, height), m_terrain_renderer(GROSS_GLOCKNER, 4, {glm::vec2(-1000.0f), glm::vec2(1000.0f)})
 {
   // SDL_ShowCursor(SDL_FALSE);
   // SDL_CaptureMouse(SDL_TRUE);
@@ -80,6 +80,8 @@ void Game::render_ui()
   ImGui::Checkbox("Wireframe", &m_terrain_renderer.wireframe);
   ImGui::Checkbox("Ray Intersect", &m_terrain_renderer.intersect_terrain);
   ImGui::SliderFloat("Camera Speed", &m_speed, 50.0f, 500.0f);
+  ImGui::SliderFloat("Fog Far", &m_terrain_renderer.fog_far, 100.0f, 10000.0f);
+  ImGui::SliderFloat("Fog Density", &m_terrain_renderer.fog_density, 0.0f, 10.0f);
   ImGui::End();
 
   ImGui::Render();
@@ -102,8 +104,8 @@ void Game::read_input(float dt)
 {
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
-    // Forward to Imgui
     ImGui_ImplSDL2_ProcessEvent(&event);
+
     if (event.type == SDL_QUIT || (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE &&
                                    event.window.windowID == SDL_GetWindowID(m_window))) {
       m_quit = true;

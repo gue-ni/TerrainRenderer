@@ -176,7 +176,7 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned num_zoom_leve
 
   float terrain_scaling_factor = width / tile_width;
 
-  m_height_scaling_factor = (max_elevation - min_elevation) * terrain_scaling_factor * 2;
+  m_height_scaling_factor = (max_elevation - min_elevation) * terrain_scaling_factor * 1.5f;
 
   // request low zoom tiles as fallback
   for (auto& child : wms::child_tiles(m_root_tile)) {
@@ -208,8 +208,8 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 #if ENABLE_FOG
   m_shader->set_uniform("u_fog_color", sky_color_1);
   m_shader->set_uniform("u_fog_near", 0.0f);
-  m_shader->set_uniform("u_fog_far", 2000.0f);
-  m_shader->set_uniform("u_fog_density", 0.15f);
+  m_shader->set_uniform("u_fog_far", fog_far);
+  m_shader->set_uniform("u_fog_density", fog_density);
 
   float sun_elevation = 25.61f;
   float sun_azimuth = 179.85f;
@@ -272,7 +272,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_sky_shader->set_uniform("u_proj", camera.projection_matrix());
   m_sky_shader->set_uniform("u_sky_color_1", sky_color_1);
   m_sky_shader->set_uniform("u_sky_color_2", sky_color_2);
-  m_sky_box.draw(m_sky_shader.get(), glm::vec3(0.0f, 0.0f, 0.0f), 10.0f);
+  m_sky_box.draw(m_sky_shader.get(), glm::vec3(0.0f, 0.0f, 0.0f), 1.0f);
 
   glDepthFunc(GL_LESS);
   glCullFace(GL_FRONT);
