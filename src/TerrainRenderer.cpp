@@ -3,14 +3,13 @@
 #include <cassert>
 #include <chrono>
 #include <iostream>
-#include <thread>
 
 #include "../gfx/gfx.h"
 #include "Common.h"
 
 #define ENABLE_FOG      1
 #define ENABLE_FALLBACK 1
-#define ENABLE_SKYBOX   0
+#define ENABLE_SKYBOX   1
 
 const std::string shader_vert = R"(
 #version 430
@@ -92,11 +91,12 @@ void main() {
     float dist_ratio = 4.0 * camera_dist / u_fog_far;
     float fog_factor = 1.0 - exp(-dist_ratio * u_fog_density);
 
-    vec3 sun_dir = normalize(vec3(2, 1, 2));
+    vec3 sun_dir = normalize(vec3(0, 1, 2));
     vec3 sun_color = vec3(1.0, 0.9, 0.7);
     float sun_factor = max(dot(camera_dir, sun_dir), 0.0);
 
-    vec3 fog_color  = mix(u_fog_color, sun_color, pow(sun_factor, 8.0));
+    //vec3 fog_color  = mix(u_fog_color, sun_color, pow(sun_factor, 8.0));
+    vec3 fog_color = u_fog_color;
 
     color = mix(color, fog_color, fog_factor);
   }
@@ -125,19 +125,35 @@ void main() {
 const std::string skybox_frag = R"(
 #version 430
 
-uniform vec3 u_fog_color;
-uniform float u_fog_near;
-uniform float u_fog_far;
-uniform float u_fog_density;
-uniform vec3 u_camera_position;
+uniform vec3 u_sky_color_1;
+uniform vec3 u_sky_color_2;
 
 out vec4 frag_color;
 in vec3 uv;
 
+#define sq(x) (x * x)
+
+vec3 map_cube_to_sphere(vec3 point_on_cube) {
+    float x = point_on_cube.x, y = point_on_cube.y, z = point_on_cube.z;
+
+    vec3 point_on_sphere;
+    point_on_sphere.x = x * sqrt(1.0f - (sq(y) / 2.0f) - (sq(z) / 2.0f) + ((sq(y) * sq(z)) / 3.0f));
+    point_on_sphere.y = y * sqrt(1.0f - (sq(z) / 2.0f) - (sq(x) / 2.0f) + ((sq(z) * sq(x)) / 3.0f));
+    point_on_sphere.z = z * sqrt(1.0f - (sq(x) / 2.0f) - (sq(y) / 2.0f) + ((sq(x) * sq(y)) / 3.0f));
+    return point_on_sphere;
+}
+
 void main() {
-  vec3 color_1 = vec3(1,0,0);
-  vec3 color_2 = vec3(0,0,1);
-  vec3 color = mix(color_1, color_2, uv.y);
+  vec3 spherical = map_cube_to_sphere(uv);
+
+  vec3 color = mix(u_sky_color_1, u_sky_color_2, spherical.y);
+
+  vec3 sun_dir = normalize(vec3(0, 1, 2));
+  vec3 sun_color = vec3(1.0, 0.9, 0.7);
+  float sun_factor = max(dot(spherical, sun_dir), 0.0);
+
+  //color  = mix(color, sun_color, pow(sun_factor, 8.0));
+
   frag_color = vec4(color, 1);
 }
 )";
@@ -184,12 +200,16 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_shader->set_uniform("u_camera_position", camera.world_position());
   m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
 
+  const glm::vec3 sky_color_1 = gfx::rgb(0xB8DEFD);
+  const glm::vec3 sky_color_2 = gfx::rgb(0x6F93F2);
+  //m_shader->set_uniform("u_sky_color_1", sky_color_1);
+  //m_shader->set_uniform("u_sky_color_2", sky_color_2);
+
 #if ENABLE_FOG
-  const glm::vec3 cc = gfx::rgb(0x7f99b2);
-  m_shader->set_uniform("u_fog_color", cc);
+  m_shader->set_uniform("u_fog_color", sky_color_1);
   m_shader->set_uniform("u_fog_near", 0.0f);
-  m_shader->set_uniform("u_fog_far", 1000.0f);
-  m_shader->set_uniform("u_fog_density", 0.25f);
+  m_shader->set_uniform("u_fog_far", 2000.0f);
+  m_shader->set_uniform("u_fog_density", 0.15f);
 
   float sun_elevation = 25.61f;
   float sun_azimuth = 179.85f;
@@ -250,6 +270,8 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   m_sky_shader->bind();
   m_sky_shader->set_uniform("u_view", glm::mat4(glm::mat3(camera.view_matrix())));
   m_sky_shader->set_uniform("u_proj", camera.projection_matrix());
+  m_sky_shader->set_uniform("u_sky_color_1", sky_color_1);
+  m_sky_shader->set_uniform("u_sky_color_2", sky_color_2);
   m_sky_box.draw(m_sky_shader.get(), glm::vec3(0.0f, 0.0f, 0.0f), 10.0f);
 
   glDepthFunc(GL_LESS);
