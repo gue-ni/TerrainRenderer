@@ -15,7 +15,8 @@ const TileId root = GROSS_GLOCKNER;
 const float terrain_width = wms::tile_width(wms::tiley2lat(root.y, root.zoom), root.zoom) * 0.01f;
 
 Game::Game(size_t width, size_t height)
-    : Window(width, height), m_terrain_renderer(root, 4, {glm::vec2(-terrain_width / 2.0f), glm::vec2(terrain_width / 2.0f)})
+    : Window(width, height),
+      m_terrain_renderer(root, 4, {glm::vec2(-terrain_width / 2.0f), glm::vec2(terrain_width / 2.0f)})
 {
   float fov = 45.0f, aspect_ratio = float(width) / float(height), near = 1.0f, far = 100000.0f;
   m_camera.set_projection_matrix(glm::radians(fov), aspect_ratio, near, far);
