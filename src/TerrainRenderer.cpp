@@ -10,7 +10,7 @@
 
 #define ENABLE_FOG      1
 #define ENABLE_FALLBACK 1
-#define ENABLE_SKYBOX   1
+#define ENABLE_SKYBOX   0
 
 const std::string shader_vert = R"(
 #version 430
@@ -113,11 +113,12 @@ uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_proj;
 
-out vec4 world_pos;
+out vec3 uv;
 
 void main() {
-  world_pos = u_model * vec4(a_pos, 1.0);
-  gl_Position = u_proj * u_view * world_pos;
+  uv = a_pos;
+  vec4 pos = u_proj * u_view * vec4(a_pos, 1.0);
+  gl_Position = pos.xyww;
 }
 )";
 
@@ -130,12 +131,14 @@ uniform float u_fog_far;
 uniform float u_fog_density;
 uniform vec3 u_camera_position;
 
-in vec4 world_pos;
-
 out vec4 frag_color;
+in vec3 uv;
 
 void main() {
-  frag_color = vec4(1, 0, 0, 1);
+  vec3 color_1 = vec3(1,0,0);
+  vec3 color_2 = vec3(0,0,1);
+  vec3 color = mix(color_1, color_2, uv.y);
+  frag_color = vec4(color, 1);
 }
 )";
 
@@ -240,10 +243,17 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
   std::for_each(nodes.begin(), nodes.end(), render_tile);
 
 #if ENABLE_SKYBOX
+
+  glCullFace(GL_BACK);
+  glDepthFunc(GL_LEQUAL);
+
   m_sky_shader->bind();
-  m_sky_shader->set_uniform("u_view", camera.view_matrix());
+  m_sky_shader->set_uniform("u_view", glm::mat4(glm::mat3(camera.view_matrix())));
   m_sky_shader->set_uniform("u_proj", camera.projection_matrix());
-  m_sky_box.draw(m_sky_shader.get(), glm::vec3(0.0f, 60.0f, 0.0f), 10.0f);
+  m_sky_box.draw(m_sky_shader.get(), glm::vec3(0.0f, 0.0f, 0.0f), 10.0f);
+
+  glDepthFunc(GL_LESS);
+  glCullFace(GL_FRONT);
 #endif
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
