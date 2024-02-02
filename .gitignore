@@ -9,3 +9,4 @@ tmp/
 terrain-renderer/
 Debug/
 *.ps1
+imgui.ini

@@ -46,6 +46,12 @@ jobs:
         tar -xf SDL2.zip
         move SDL2-2.26.4 libraries
 
+    - name: Download imgui
+      run: |
+        curl -L -o imgui.zip https://github.com/ocornut/imgui/archive/refs/tags/v1.90.1.zip
+        tar -xf imgui.zip
+        move imgui-1.90.1 libraries
+
     - name: Download & Build cpr
       run: |
         curl -L -o cpr.zip https://github.com/libcpr/cpr/archive/refs/tags/1.10.5.zip

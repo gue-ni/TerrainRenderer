@@ -158,14 +158,14 @@ void main() {
 }
 )";
 
-TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, const Bounds<glm::vec2>& bounds)
+TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned num_zoom_levels, const Bounds<glm::vec2>& bounds)
     : m_shader(std::make_unique<ShaderProgram>(shader_vert, shader_frag)),
       m_sky_shader(std::make_unique<ShaderProgram>(skybox_vert, skybox_frag)),
       m_root_tile(root_tile),
       m_chunk(32, 1.0f),
       m_bounds(bounds),
-      m_tile_cache(m_root_tile, m_root_tile.zoom + zoom_levels),
-      m_zoom_levels(zoom_levels)
+      m_tile_cache(m_root_tile, m_root_tile.zoom + num_zoom_levels),
+      zoom_levels(num_zoom_levels)
 {
   const float min_elevation = 0.0f, max_elevation = 8191.0f;
 
@@ -189,7 +189,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 {
   const auto terrain_center = clamp(center, m_bounds);
 
-  QuadTree quad_tree(m_bounds.min, m_bounds.max, m_zoom_levels);
+  QuadTree quad_tree(m_bounds.min, m_bounds.max, zoom_levels);
   quad_tree.insert(terrain_center);
 
   if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

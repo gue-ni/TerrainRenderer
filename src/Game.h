@@ -24,6 +24,8 @@ class Game : public Window
 
  private:
   bool m_quit{false};
+  bool m_mousedown{false};
+  float m_speed{100.0f};
   FirstPersonCamera m_camera;
   TerrainRenderer m_terrain_renderer;
   Clock m_clock;
@@ -31,4 +33,6 @@ class Game : public Window
   void read_input(float dt);
   void update(float dt);
   void render(float dt);
+  void render_terrain();
+  void render_ui();
 };

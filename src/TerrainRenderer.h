@@ -23,12 +23,10 @@ class TerrainRenderer
   // Get terrain elevation at point.
   float terrain_elevation(const glm::vec2& point);
 
-  inline unsigned zoom_levels() const { return m_zoom_levels; }
-
-  // Set range of zoom levels.
-  inline void set_zoom_levels(unsigned zoom_levels) { m_zoom_levels = std::clamp(zoom_levels, 1U, 7U); }
-
   bool wireframe{false};
+  bool intersect_terrain{false};
+
+  int zoom_levels;
 
  private:
   const std::unique_ptr<ShaderProgram> m_shader, m_sky_shader;
@@ -36,7 +34,6 @@ class TerrainRenderer
   const Chunk m_chunk;
   const Cube m_sky_box;
   const Bounds<glm::vec2> m_bounds;
-  unsigned m_zoom_levels;
   TileCache m_tile_cache;
   float m_height_scaling_factor;
 
