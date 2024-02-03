@@ -7,6 +7,7 @@
 
 #include "Common.h"
 
+// https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
 namespace wms
 {
 constexpr float PI = std::numbers::pi_v<float>;
@@ -15,14 +16,15 @@ constexpr float EARTH_RADIUS = 6378137.0f;
 
 constexpr float EQUATORIAL_CIRCUMFERENCE = 2.0f * PI * EARTH_RADIUS;
 
-inline unsigned num_tiles(unsigned zoom) { return (1 << zoom); }
-
-inline unsigned lon2tilex(float lon, unsigned zoom) { return (unsigned)(floor((lon + 180.0f) / 360.0f * (1 << zoom))); }
+inline unsigned lon2tilex(float lon, unsigned zoom)
+{
+  return (unsigned)(std::floor((lon + 180.0f) / 360.0f * (1 << zoom)));
+}
 
 inline unsigned lat2tiley(float lat, unsigned zoom)
 {
   float latrad = lat * PI / 180.0f;
-  return (unsigned)(floor((1.0f - asinh(tan(latrad)) / PI) / 2.0f * (1 << zoom)));
+  return (unsigned)(std::floor((1.0f - std::asinh(std::tan(latrad)) / PI) / 2.0f * (1 << zoom)));
 }
 
 inline float tilex2lon(unsigned x, unsigned zoom) { return x / (float)(1 << zoom) * 360.0f - 180.0f; }
@@ -30,7 +32,7 @@ inline float tilex2lon(unsigned x, unsigned zoom) { return x / (float)(1 << zoom
 inline float tiley2lat(unsigned y, unsigned zoom)
 {
   float n = PI - 2.0f * PI * y / (float)(1 << zoom);
-  return 180.0f / PI * atan(0.5f * (exp(n) - exp(-n)));
+  return 180.0f / PI * std::atan(0.5f * (std::exp(n) - std::exp(-n)));
 }
 
 // width of tile in meters
