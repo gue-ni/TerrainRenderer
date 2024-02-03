@@ -164,7 +164,7 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned num_zoom_leve
       m_chunk(32, 1.0f),
       m_bounds(bounds),
       m_tile_cache(m_root_tile, m_root_tile.zoom + num_zoom_levels),
-      zoom_levels(num_zoom_levels)
+      m_zoom_levels(num_zoom_levels)
 {
   const float min_elevation = 0.0f, max_elevation = 8191.0f;
 
@@ -189,27 +189,27 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
 
   int scaled_zoom_levels = 0;
 
-  float elevation = terrain_elevation(center) * m_terrain_scaling_factor;
+  float elevation = terrain_elevation(center) * scaling_factor();
 
 #if 1
 
   float root_width = m_bounds.size().x;
 
-  float altitude_over_terrain = glm::max(0.0f, altitude - elevation);
+  float altitude_ = glm::max(0.0f, altitude - elevation);
 
   for (scaled_zoom_levels = 0; scaled_zoom_levels <= m_max_zoom_levels; scaled_zoom_levels++) {
     float width = root_width / (1 << scaled_zoom_levels);
 
     float tmp = width * 0.1f;
 
-    if (tmp < altitude_over_terrain) break;
+    if (tmp < altitude_) break;
   }
 
 #endif
 
-  zoom_levels = 1 + scaled_zoom_levels;
+  m_zoom_levels = 1 + scaled_zoom_levels;
 
-  QuadTree quad_tree(m_bounds.min, m_bounds.max, zoom_levels);
+  QuadTree quad_tree(m_bounds.min, m_bounds.max, m_zoom_levels);
   quad_tree.insert(terrain_center);
 
   if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -276,6 +276,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
     }
   };
 
+  // m_tile_cache.clear_queue();
   auto nodes = quad_tree.nodes();
   std::sort(nodes.begin(), nodes.end(), [](Node* a, Node* b) { return a->depth < b->depth; });
   std::for_each(nodes.begin(), nodes.end(), render_tile);

@@ -14,7 +14,7 @@ using namespace gfx::gl;
 class TerrainRenderer
 {
  public:
-  TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, const Bounds<glm::vec2>& bounds);
+  TerrainRenderer(const TileId& root_tile, unsigned m_zoom_levels, const Bounds<glm::vec2>& bounds);
 
   void render(const Camera& camera, const glm::vec2& center, float altitude = 0.0f);
 
@@ -32,9 +32,10 @@ class TerrainRenderer
 
   inline TileId root_tile() const { return m_root_tile; }
 
+  inline int zoom_levels() const { return m_zoom_levels; }
+
   Coordinate point_coordinate(const glm::vec2&) const;
 
-  int zoom_levels;
   bool wireframe{false};
   bool intersect_terrain{false};
   float fog_far{2000.0f};
@@ -50,6 +51,7 @@ class TerrainRenderer
   TileCache m_tile_cache;
   float m_height_scaling_factor;
   float m_terrain_scaling_factor;
+  int m_zoom_levels;
 
   // convert from world coordinate in range m_bounds to [0, 1]
   glm::vec2 map_to_0_1(const glm::vec2& point) const;

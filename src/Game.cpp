@@ -87,7 +87,7 @@ void Game::render_ui()
   ImGui::Text("Terrain Elevation: %.2f", m_terrain_renderer.terrain_elevation(pos2));
   ImGui::Text("Altitude over terrain: %.2f", m_terrain_renderer.altitude_over_terrain(pos2, pos.y));
   ImGui::Text("Zoom Levels: [%d, %d]", m_terrain_renderer.root_tile().zoom,
-              m_terrain_renderer.root_tile().zoom + m_terrain_renderer.zoom_levels);
+              m_terrain_renderer.root_tile().zoom + m_terrain_renderer.zoom_levels());
   ImGui::Checkbox("Wireframe", &m_terrain_renderer.wireframe);
   ImGui::Checkbox("Ray Intersect", &m_terrain_renderer.intersect_terrain);
   ImGui::SliderFloat("Camera Speed", &m_speed, 50.0f, 5000.0f);
