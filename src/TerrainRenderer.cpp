@@ -178,15 +178,22 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned num_zoom_leve
   m_height_scaling_factor = (max_elevation - min_elevation) * m_terrain_scaling_factor * 1.5f;
 
   // request low zoom tiles as fallback
-  for (auto& child : wms::child_tiles(m_root_tile)) {
+  for (auto& child : m_root_tile.children()) {
     (void)m_tile_cache.tile_texture_sync(child, TileType::ORTHO);
     (void)m_tile_cache.tile_texture_sync(child, TileType::HEIGHT);
   }
 }
 
-void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
+void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, float altitude)
 {
   const auto terrain_center = clamp(center, m_bounds);
+
+#if 1
+  if (0.0f < altitude) {
+    float altitude_in_meters = altitude / scaling_factor();
+  }
+#else
+#endif
 
   QuadTree quad_tree(m_bounds.min, m_bounds.max, zoom_levels);
   quad_tree.insert(terrain_center);
@@ -324,7 +331,7 @@ Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::
 
   unsigned zoom_delta = tile_id.zoom - parent_tile_id.zoom;
   unsigned num_tiles = 1 << zoom_delta;
-  TileId scaled_root_tile = {tile_id.zoom, parent_tile_id.x * num_tiles, parent_tile_id.y * num_tiles};
+  TileId scaled_root_tile(tile_id.zoom, parent_tile_id.x * num_tiles, parent_tile_id.y * num_tiles);
   unsigned delta_x = tile_id.x - scaled_root_tile.x;
   unsigned delta_y = tile_id.y - scaled_root_tile.y;
   float factor = 1.0f / num_tiles;

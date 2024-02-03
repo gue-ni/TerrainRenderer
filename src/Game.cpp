@@ -4,11 +4,11 @@
 
 #define INTERSECT_PLANE 0
 
-const TileId GROSS_GLOCKNER = wms::tile_id(47.0742f, 12.6947f, 7);
+const TileId GROSS_GLOCKNER(47.0742f, 12.6947f, 7);
 
-const TileId SCHNEEBERG = wms::tile_id(47.7671f, 15.8056f, 7);
+const TileId SCHNEEBERG(47.7671f, 15.8056f, 7);
 
-const TileId INNSBRUCK = wms::tile_id(47.2692f, 11.4041f, 7);
+const TileId INNSBRUCK(47.2692f, 11.4041f, 7);
 
 const TileId root = INNSBRUCK;
 

@@ -16,13 +16,14 @@ class TerrainRenderer
  public:
   TerrainRenderer(const TileId& root_tile, unsigned zoom_levels, const Bounds<glm::vec2>& bounds);
 
-  void render(const Camera& camera, const glm::vec2& center);
-
-  Bounds<glm::vec2> bounds() const { return m_bounds; }
+  void render(const Camera& camera, const glm::vec2& center, float altitude = 0.0f);
 
   float terrain_elevation(const glm::vec2& point);
 
-  float scaling_factor() const { return m_terrain_scaling_factor; }
+  // relation of terrain unit to meters
+  inline float scaling_factor() const { return m_terrain_scaling_factor; }
+
+  inline Bounds<glm::vec2> bounds() const { return m_bounds; }
 
   Coordinate point_coordinate(const glm::vec3& point) const;
 
