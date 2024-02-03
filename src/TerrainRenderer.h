@@ -18,14 +18,21 @@ class TerrainRenderer
 
   void render(const Camera& camera, const glm::vec2& center, float altitude = 0.0f);
 
-  float terrain_elevation(const glm::vec2& point);
+  // get terrain elevation in meters
+  float terrain_elevation(const glm::vec2&);
+
+  float altitude_over_terrain(const glm::vec2&, float altitude);
 
   // relation of terrain unit to meters
+  // divide to go from game coordinates to meters
+  // multiply to go from meters to game
   inline float scaling_factor() const { return m_terrain_scaling_factor; }
 
   inline Bounds<glm::vec2> bounds() const { return m_bounds; }
 
-  Coordinate point_coordinate(const glm::vec3& point) const;
+  inline TileId root_tile() const { return m_root_tile; }
+
+  Coordinate point_coordinate(const glm::vec2&) const;
 
   int zoom_levels;
   bool wireframe{false};
@@ -39,6 +46,7 @@ class TerrainRenderer
   const Chunk m_chunk;
   const Cube m_sky_box;
   const Bounds<glm::vec2> m_bounds;
+  const int m_max_zoom_levels{7};
   TileCache m_tile_cache;
   float m_height_scaling_factor;
   float m_terrain_scaling_factor;

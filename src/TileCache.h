@@ -13,7 +13,8 @@
 #include <tuple>
 #include <unordered_map>
 
-#include "../gfx/gfx.h"
+#include "../gfx/gl.h"
+#include "../gfx/image.h"
 #include "QuadTree.h"
 #include "TileService.h"
 #include "TileUtils.h"
@@ -42,8 +43,6 @@ class TileCache
   Texture* tile_texture_cached(const TileId&, const TileType&);
 
   float terrain_elevation(const Coordinate&);
-
-  float terrain_elevation(const glm::vec2&);
 
   void invalidate_gpu_cache();
 

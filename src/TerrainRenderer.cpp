@@ -4,7 +4,6 @@
 #include <chrono>
 #include <iostream>
 
-#include "../gfx/gfx.h"
 #include "Common.h"
 
 #define ENABLE_FOG      1
@@ -175,7 +174,7 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned num_zoom_leve
 
   m_terrain_scaling_factor = width / tile_width;
 
-  m_height_scaling_factor = (max_elevation - min_elevation) * m_terrain_scaling_factor * 1.5f;
+  m_height_scaling_factor = (max_elevation - min_elevation);
 
   // request low zoom tiles as fallback
   for (auto& child : m_root_tile.children()) {
@@ -188,12 +187,27 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
 {
   const auto terrain_center = clamp(center, m_bounds);
 
+  int scaled_zoom_levels = 0;
+
+  float elevation = terrain_elevation(center) * m_terrain_scaling_factor;
+
 #if 1
-  if (0.0f < altitude) {
-    float altitude_in_meters = altitude / scaling_factor();
+
+  float root_width = m_bounds.size().x;
+
+  float altitude_over_terrain = glm::max(0.0f, altitude - elevation);
+
+  for (scaled_zoom_levels = 0; scaled_zoom_levels <= m_max_zoom_levels; scaled_zoom_levels++) {
+    float width = root_width / (1 << scaled_zoom_levels);
+
+    float tmp = width * 0.1f;
+
+    if (tmp < altitude_over_terrain) break;
   }
-#else
+
 #endif
+
+  zoom_levels = 1 + scaled_zoom_levels;
 
   QuadTree quad_tree(m_bounds.min, m_bounds.max, zoom_levels);
   quad_tree.insert(terrain_center);
@@ -204,7 +218,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
   m_shader->set_uniform("u_view", camera.view_matrix());
   m_shader->set_uniform("u_proj", camera.projection_matrix());
   m_shader->set_uniform("u_camera_position", camera.world_position());
-  m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
+  m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor * m_terrain_scaling_factor);
 
   const glm::vec3 sky_color_1 = gfx::rgb(0xB8DEFD);
   const glm::vec3 sky_color_2 = gfx::rgb(0x6F93F2);
@@ -287,16 +301,24 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
 
 float TerrainRenderer::terrain_elevation(const glm::vec2& point)
 {
-  assert(false);  // not implemented
-  return 0.0f;
+  Coordinate coord = point_coordinate(point);
+  return m_tile_cache.terrain_elevation(coord) * m_height_scaling_factor;
+}
+
+float TerrainRenderer::altitude_over_terrain(const glm::vec2& point, float altitude)
+{
+  float altitude_in_meters = altitude / scaling_factor();
+  float elevation = terrain_elevation(point);
+  return std::max(0.0f, altitude_in_meters - elevation);
 }
 
 glm::vec2 TerrainRenderer::map_to_0_1(const glm::vec2& point) const
 {
+  assert(contains(point, m_bounds));
   return map_range(point, m_bounds, Bounds(glm::vec2(0.0f), glm::vec2(1.0f)));
 }
 
-Coordinate TerrainRenderer::point_coordinate(const glm::vec3& point) const
+Coordinate TerrainRenderer::point_coordinate(const glm::vec2& point) const
 {
   return m_tile_cache.lat_lon(map_to_0_1(point));
 }

@@ -60,7 +60,7 @@ void Game::render_terrain()
     }
   }
 
-  m_terrain_renderer.render(m_camera, center);
+  m_terrain_renderer.render(m_camera, center, camera_position.y);
 }
 
 void Game::render_ui()
@@ -73,6 +73,7 @@ void Game::render_ui()
   ImGui::Begin("Config", nullptr, window_flags);
 
   glm::vec3 pos = m_camera.local_position();
+  glm::vec2 pos2 = {pos.x, pos.z};
 
   Coordinate coord = m_terrain_renderer.point_coordinate(pos);
 
@@ -83,7 +84,10 @@ void Game::render_ui()
   ImGui::Text("Camera Pos: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
   ImGui::Text("Lat: %.4f, Lon: %.4f", coord.lat, coord.lon);
   ImGui::Text("Heading %d", heading);
-  ImGui::SliderInt("Zoom Levels", &m_terrain_renderer.zoom_levels, 1, 7);
+  ImGui::Text("Terrain Elevation: %.2f", m_terrain_renderer.terrain_elevation(pos2));
+  ImGui::Text("Altitude over terrain: %.2f", m_terrain_renderer.altitude_over_terrain(pos2, pos.y));
+  ImGui::Text("Zoom Levels: [%d, %d]", m_terrain_renderer.root_tile().zoom,
+              m_terrain_renderer.root_tile().zoom + m_terrain_renderer.zoom_levels);
   ImGui::Checkbox("Wireframe", &m_terrain_renderer.wireframe);
   ImGui::Checkbox("Ray Intersect", &m_terrain_renderer.intersect_terrain);
   ImGui::SliderFloat("Camera Speed", &m_speed, 50.0f, 5000.0f);

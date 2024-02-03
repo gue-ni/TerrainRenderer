@@ -4,6 +4,7 @@
 #include <format>
 #include <iostream>
 
+#include "../gfx/util.h"
 #include "Common.h"
 
 TileCache::TileCache(const TileId& root_tile, unsigned max_zoom_level)
@@ -138,10 +139,14 @@ Image* TileCache::request_image(const TileId& tile, const TileType& tile_type)
 Coordinate TileCache::lat_lon(const glm::vec2& point) const
 {
   // point is in range [0, 1]
-  assert(glm::all(glm::lessThanEqual(glm::vec2(0.0f), point)) && glm::all(glm::lessThanEqual(point, glm::vec2(1.0f))));
+  assert(contains(point, {glm::vec2(0.0f), glm::vec2(1.0f)}));
+#if 0
   float lat = glm::mix(m_min_coord.lat, m_max_coord.lat, point.y);
   float lon = glm::mix(m_min_coord.lon, m_max_coord.lon, point.x);
   return {lat, lon};
+#else
+  return map_range(point, glm::vec2(0.0f), glm::vec2(1.0f), m_min_coord.to_vec2(), m_max_coord.to_vec2());
+#endif
 }
 
 TileId TileCache::tile_id(const Coordinate& coord, unsigned lod_offset_from_root) const
@@ -151,17 +156,22 @@ TileId TileCache::tile_id(const Coordinate& coord, unsigned lod_offset_from_root
 
 float TileCache::terrain_elevation(const Coordinate& coord)
 {
-  TileId id = tile_id(coord, m_max_zoom_level);
+  TileId tile(coord, m_root_tile.zoom + 1);  // probably not the best, as this is very low res
 
-  Image* image = m_height_service.get_tile(id);
+  Bounds<Coordinate> bounds = tile.bounds();
 
-  // Bounds<Coordinate> bounds = wms::tile_bounds(id);
+  Image* image = m_height_service.get_tile(tile);
+  assert(image);
 
-  return 0;
-}
+  auto val = coord.to_vec2();
+  auto min = bounds.min.to_vec2();
+  auto max = bounds.max.to_vec2();
 
-float TileCache::terrain_elevation(const glm::vec2& point)
-{
-  Coordinate coord = lat_lon(point);
-  return terrain_elevation(coord);
+  glm::vec2 uv = map_range(val, min, max, glm::vec2(0.0f), glm::vec2(1.0f));
+
+  glm::u8vec4 pixel = image->sample(uv);
+
+  glm::vec3 sample = gfx::rgb(pixel.r, pixel.g, pixel.b);
+
+  return sample.r + (sample.b / 255.0f);
 }

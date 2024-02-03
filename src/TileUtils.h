@@ -59,6 +59,8 @@ inline float geographical_distance_to_horizon(float altitude)
 struct Coordinate {
   float lat, lon;
   Coordinate(float lat_, float lon_) : lat(lat_), lon(lon_) {}
+  Coordinate(const glm::vec2& lat_lon) : Coordinate(lat_lon.y, lat_lon.x) {}
+  glm::vec2 to_vec2() const { return {lon, lat}; }
 };
 
 struct TileId {
@@ -79,6 +81,13 @@ struct TileId {
 
   inline std::string to_string() const { return std::format("{}/{}/{}", zoom, x, y); }
 
+  inline Bounds<Coordinate> bounds() const
+  {
+    Coordinate min(wms::tiley2lat(y + 0U, zoom), wms::tilex2lon(x + 0U, zoom));
+    Coordinate max(wms::tiley2lat(y + 1U, zoom), wms::tilex2lon(x + 1U, zoom));
+    return {min, max};
+  }
+
   inline TileId parent() const { return TileId(zoom - 1U, x / 2U, y / 2U); }
 
   inline std::array<TileId, 4> children() const
@@ -90,13 +99,6 @@ struct TileId {
         TileId(child_zoom, 2U * x + 0U, 2U * y + 1U),
         TileId(child_zoom, 2U * x + 1U, 2U * y + 1U),
     });
-  }
-
-  inline Bounds<Coordinate> bounds() const
-  {
-    Coordinate min(wms::tiley2lat(y + 0U, zoom), wms::tilex2lon(x + 0U, zoom));
-    Coordinate max(wms::tiley2lat(y + 1U, zoom), wms::tilex2lon(x + 1U, zoom));
-    return {min, max};
   }
 };
 
