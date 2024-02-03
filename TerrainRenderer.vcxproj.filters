@@ -126,6 +126,9 @@
     <ClInclude Include="src/Cube.h">
       <Filter>src\terrain</Filter>
     </ClInclude>
+    <ClInclude Include="src/Threading.h">
+      <Filter>src\terrain</Filter>
+    </ClInclude>
     <ClInclude Include="libraries\imgui-1.90.1\imconfig.h">
       <Filter>imgui</Filter>
     </ClInclude>

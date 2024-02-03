@@ -183,6 +183,7 @@
     <ClInclude Include="src/TileUtils.h" />
     <ClInclude Include="src/Collision.h" />
     <ClInclude Include="src/Cube.h" />
+    <ClInclude Include="src/Threading.h" />
     <ClInclude Include="gfx/gfx.h" />
     <ClInclude Include="gfx/gl.h" />
     <ClInclude Include="gfx/image.h" />
