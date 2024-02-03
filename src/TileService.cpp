@@ -5,7 +5,7 @@
 #define LOG 0
 
 TileService::TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype)
-    : m_url(url), m_url_pattern(url_pattern), m_filetype(filetype), m_thread_pool(2)
+    : m_url(url), m_url_pattern(url_pattern), m_filetype(filetype), m_thread_pool(3)
 {
 }
 
@@ -46,6 +46,10 @@ Image* TileService::get_tile(const TileId& tile_id)
 
 Image* TileService::get_tile_sync(const TileId& tile_id)
 {
+  if (m_ram_cache.contains(tile_id)) {
+    return m_ram_cache[tile_id].get();
+  }
+
   auto image = download_tile(tile_id);
 
   if (!image) {
@@ -62,10 +66,7 @@ void TileService::request_tile(const TileId& tile_id)
 
   m_thread_pool.assign_work([this, tile_id]() {
     auto image = download_tile(tile_id);
-
-    if (image) {
-      m_ram_cache[tile_id] = std::move(image);
-    }
+    if (image) m_ram_cache[tile_id] = std::move(image);
   });
 }
 

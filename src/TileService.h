@@ -58,6 +58,13 @@ class ThreadedQueue
     return true;
   }
 
+  void clear()
+  {
+    std::unique_lock lock(m_mutex);
+    m_queue = {};
+    m_condition.notify_all();
+  }
+
   size_t size() const
   {
     std::unique_lock lock(m_mutex);
@@ -100,14 +107,10 @@ class ThreadPool
         while (true) {
           Work work{};
 
-          // std::cout << "Waiting for work...\n";
-          m_queue.pop(work);
+          bool success = m_queue.pop(work);
 
-          if (!work) {
-            break;
-          }
+          if (!(work && success)) break;
 
-          // std::cout << "Do some work...\n";
           work();
         }
       };
@@ -129,6 +132,8 @@ class ThreadPool
 
   void assign_work(Work work) { m_queue.push(std::move(work)); }
 
+  void clear_queue() { m_queue.clear(); }
+
  private:
   ThreadedQueue<Work> m_queue;
   std::vector<std::thread> m_threads;
@@ -146,11 +151,17 @@ class TileService
  public:
   TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype = "png");
 
-  // If tile in cache, return tile. If not, request it for download and return nullptr
+  // If tile in cache, return tile. If not, request it for download and return nullptr.
   Image* get_tile(const TileId&);
 
-  // get image sync
+  // Download tile and return it.
   Image* get_tile_sync(const TileId&);
+
+  inline void clear_pending_downloads()
+  {
+    m_already_requested = {};
+    m_thread_pool.clear_queue();
+  }
 
  private:
   const UrlPattern m_url_pattern;
@@ -164,4 +175,6 @@ class TileService
   std::unique_ptr<Image> download_tile(const TileId&);
 
   std::string tile_url(const TileId&) const;
+
+  void save_local_copy(const TileId&) const;
 };

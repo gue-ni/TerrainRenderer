@@ -17,14 +17,25 @@ Window::Window(size_t width, size_t height, const std::string& name) : m_width(w
   glewExperimental = GL_TRUE;
   glewInit();
 
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+
+  ImGui_ImplSDL2_InitForOpenGL(m_window, m_context);
+  ImGui_ImplOpenGL3_Init();
+
   GL_CALL(glEnable(GL_DEPTH_TEST));
 
   glEnable(GL_CULL_FACE);
   glCullFace(GL_FRONT);
+
+  glViewport(0, 0, static_cast<GLsizei>(m_width), static_cast<GLsizei>(m_height));
 }
 
 Window::~Window()
 {
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplSDL2_Shutdown();
+  ImGui::DestroyContext();
   SDL_GL_DeleteContext(m_context);
   SDL_DestroyWindow(m_window);
   SDL_Quit();

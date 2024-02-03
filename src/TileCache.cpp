@@ -4,14 +4,17 @@
 #include <format>
 #include <iostream>
 
+#include "../gfx/util.h"
 #include "Common.h"
 
-TileCache::TileCache(const TileId& root_tile, unsigned max_zoom_level)
+TileCache::TileCache(const TileId& root_tile)
     : m_root_tile(root_tile),
-      m_max_zoom_level(max_zoom_level),
-      m_min_coord(wms::tiley2lat(root_tile.y + 0, root_tile.zoom), wms::tilex2lon(m_root_tile.x + 0, m_root_tile.zoom)),
-      m_max_coord(wms::tiley2lat(root_tile.y + 1, root_tile.zoom), wms::tilex2lon(m_root_tile.x + 1, m_root_tile.zoom)),
+#if 0
       m_ortho_service("https://gataki.cg.tuwien.ac.at/raw/basemap/tiles", UrlPattern::ZYX_Y_SOUTH, ".jpeg"),
+#else
+      m_ortho_service("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile",
+                      UrlPattern::ZYX_Y_SOUTH, ""),
+#endif
       m_height_service("https://alpinemaps.cg.tuwien.ac.at/tiles/alpine_png", UrlPattern::ZXY_Y_NORTH, ".png")
 
 {
@@ -130,33 +133,31 @@ Image* TileCache::request_image(const TileId& tile, const TileType& tile_type)
   }
 }
 
-Coordinate TileCache::lat_lon(const glm::vec2& point) const
-{
-  // point is in range [0, 1]
-  assert(glm::all(glm::lessThanEqual(glm::vec2(0.0f), point)) && glm::all(glm::lessThanEqual(point, glm::vec2(1.0f))));
-  float lat = glm::mix(m_min_coord.lat, m_max_coord.lat, point.y);
-  float lon = glm::mix(m_min_coord.lon, m_max_coord.lon, point.x);
-  return {lat, lon};
-}
-
 TileId TileCache::tile_id(const Coordinate& coord, unsigned lod_offset_from_root) const
 {
-  return wms::tile_id(coord.lat, coord.lon, m_root_tile.zoom + lod_offset_from_root);
+  return TileId(coord, m_root_tile.zoom + lod_offset_from_root);
 }
 
 float TileCache::terrain_elevation(const Coordinate& coord)
 {
-  TileId id = tile_id(coord, m_max_zoom_level);
+  TileId tile(coord, m_root_tile.zoom + 1);  // probably not the best, as this is very low res
 
-  Image* image = m_height_service.get_tile(id);
+  Bounds<Coordinate> bounds = tile.bounds();
 
-  Bounds<Coordinate> bounds = wms::tile_bounds(id);
+  Image* image = m_height_service.get_tile(tile);
+  if (!image) return 0.0f;
 
-  return 0;
-}
+  assert(image);
 
-float TileCache::terrain_elevation(const glm::vec2& point)
-{
-  Coordinate coord = lat_lon(point);
-  return terrain_elevation(coord);
+  auto val = coord.to_vec2();
+  auto min = bounds.min.to_vec2();
+  auto max = bounds.max.to_vec2();
+
+  glm::vec2 uv = map_range(val, min, max, glm::vec2(0.0f), glm::vec2(1.0f));
+
+  glm::u8vec4 pixel = image->sample(uv);
+
+  glm::vec3 sample = gfx::rgb(pixel.r, pixel.g, pixel.b);
+
+  return sample.r + (sample.b / 255.0f);
 }

@@ -18,12 +18,12 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: 'true'
 
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v2
 
     - name: Create libraries
       run: mkdir libraries
@@ -45,6 +45,12 @@ jobs:
         curl -L -o SDL2.zip https://github.com/libsdl-org/SDL/releases/download/release-2.26.4/SDL2-devel-2.26.4-VC.zip
         tar -xf SDL2.zip
         move SDL2-2.26.4 libraries
+
+    - name: Download imgui
+      run: |
+        curl -L -o imgui.zip https://github.com/ocornut/imgui/archive/refs/tags/v1.90.1.zip
+        tar -xf imgui.zip
+        move imgui-1.90.1 libraries
 
     - name: Download & Build cpr
       run: |

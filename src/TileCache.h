@@ -13,7 +13,8 @@
 #include <tuple>
 #include <unordered_map>
 
-#include "../gfx/gfx.h"
+#include "../gfx/gl.h"
+#include "../gfx/image.h"
 #include "QuadTree.h"
 #include "TileService.h"
 #include "TileUtils.h"
@@ -33,7 +34,7 @@ struct CacheInfo {
 class TileCache
 {
  public:
-  TileCache(const TileId& root_tile, unsigned max_zoom_level);
+  TileCache(const TileId& root_tile);
 
   Texture* tile_texture(const TileId&, const TileType&);
 
@@ -43,19 +44,18 @@ class TileCache
 
   float terrain_elevation(const Coordinate&);
 
-  float terrain_elevation(const glm::vec2&);
-
   void invalidate_gpu_cache();
-
-  Coordinate lat_lon(const glm::vec2& point) const;
 
   TileId tile_id(const Coordinate& coord, unsigned lod_offset_from_root) const;
 
+  void clear_pending()
+  {
+    m_ortho_service.clear_pending_downloads();
+    m_height_service.clear_pending_downloads();
+  }
+
  private:
   const TileId m_root_tile;
-  const unsigned m_max_zoom_level;
-  const Coordinate m_min_coord, m_max_coord;
-  std::unique_ptr<Texture> m_debug_texture{nullptr};
   std::unordered_map<std::string, std::unique_ptr<Texture>> m_gpu_cache;
   TileService m_ortho_service;
   TileService m_height_service;

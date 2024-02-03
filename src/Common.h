@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/glm.hpp>
+
 template <typename T>
 struct Bounds {
   T min, max;
@@ -28,5 +30,11 @@ inline T clamp(const T& value, const Bounds<T>& range)
 
 inline glm::vec3 vector_from_spherical(float pitch, float yaw)
 {
-  return {std::cos(yaw) * std::sin(pitch), std::cos(pitch), std::sin(yaw) * std::sin(pitch)};
+  return {std::cos(yaw) * std::cos(pitch), std::sin(pitch), std::sin(yaw) * std::cos(pitch)};
+}
+
+template <typename glm_vec>
+inline bool contains(const glm_vec& value, const Bounds<glm_vec>& bounds)
+{
+  return glm::all(glm::lessThanEqual(bounds.min, value)) && glm::all(glm::lessThanEqual(value, bounds.max));
 }

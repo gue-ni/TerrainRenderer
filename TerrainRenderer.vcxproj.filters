@@ -43,6 +43,30 @@
     <ClCompile Include="src/TileService.cpp">
       <Filter>src\terrain</Filter>
     </ClCompile>
+    <ClCompile Include="src/Cube.cpp">
+      <Filter>src\terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\imgui-1.90.1\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\imgui-1.90.1\imgui_demo.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\imgui-1.90.1\imgui_draw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\imgui-1.90.1\backends\imgui_impl_opengl3.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\imgui-1.90.1\backends\imgui_impl_sdl2.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\imgui-1.90.1\imgui_tables.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\imgui-1.90.1\imgui_widgets.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="gfx/camera.h">
@@ -99,6 +123,33 @@
     <ClInclude Include="src/TileService.h">
       <Filter>src\terrain</Filter>
     </ClInclude>
+    <ClInclude Include="src/Cube.h">
+      <Filter>src\terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\imgui-1.90.1\imconfig.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\imgui-1.90.1\imgui.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\imgui-1.90.1\backends\imgui_impl_opengl3.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\imgui-1.90.1\backends\imgui_impl_sdl2.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\imgui-1.90.1\imgui_internal.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\imgui-1.90.1\imstb_rectpack.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\imgui-1.90.1\imstb_textedit.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\imgui-1.90.1\imstb_truetype.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -112,6 +163,9 @@
     </Filter>
     <Filter Include="dll">
       <UniqueIdentifier>{dc39c35d-eef5-499e-8b62-8fa81ecf9049}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{50d8b72c-2c64-484a-a325-1b7429271172}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -142,5 +196,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
+    <None Include=".github\workflows\msbuild.yml" />
   </ItemGroup>
 </Project>

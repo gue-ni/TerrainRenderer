@@ -108,7 +108,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)\libraries\cpr-1.10.5\build\cpr_generated_includes;$(ProjectDir)\libraries\cpr-1.10.5\build\_deps\curl-src\include;$(ProjectDir)\libraries\cpr-1.10.5\include;$(ProjectDir)\libraries\glew-2.2.0\include;$(ProjectDir)\libraries\SDL2-2.26.4\include;$(ProjectDir)\libraries\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\libraries\imgui-1.90.1;$(ProjectDir)\libraries\cpr-1.10.5\build\cpr_generated_includes;$(ProjectDir)\libraries\cpr-1.10.5\build\_deps\curl-src\include;$(ProjectDir)\libraries\cpr-1.10.5\include;$(ProjectDir)\libraries\glew-2.2.0\include;$(ProjectDir)\libraries\SDL2-2.26.4\include;$(ProjectDir)\libraries\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -126,7 +126,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)\libraries\cpr-1.10.5\build\cpr_generated_includes;$(ProjectDir)\libraries\cpr-1.10.5\build\_deps\curl-src\include;$(ProjectDir)\libraries\cpr-1.10.5\include;$(ProjectDir)\libraries\glew-2.2.0\include;$(ProjectDir)\libraries\SDL2-2.26.4\include;$(ProjectDir)\libraries\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\libraries\imgui-1.90.1;$(ProjectDir)\libraries\cpr-1.10.5\build\cpr_generated_includes;$(ProjectDir)\libraries\cpr-1.10.5\build\_deps\curl-src\include;$(ProjectDir)\libraries\cpr-1.10.5\include;$(ProjectDir)\libraries\glew-2.2.0\include;$(ProjectDir)\libraries\SDL2-2.26.4\include;$(ProjectDir)\libraries\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -139,6 +139,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="libraries\imgui-1.90.1\backends\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="libraries\imgui-1.90.1\backends\imgui_impl_sdl2.cpp" />
+    <ClCompile Include="libraries\imgui-1.90.1\imgui.cpp" />
+    <ClCompile Include="libraries\imgui-1.90.1\imgui_demo.cpp" />
+    <ClCompile Include="libraries\imgui-1.90.1\imgui_draw.cpp" />
+    <ClCompile Include="libraries\imgui-1.90.1\imgui_tables.cpp" />
+    <ClCompile Include="libraries\imgui-1.90.1\imgui_widgets.cpp" />
     <ClCompile Include="src/Clock.cpp" />
     <ClCompile Include="src/QuadTree.cpp" />
     <ClCompile Include="src/Chunk.cpp" />
@@ -149,12 +156,21 @@
     <ClCompile Include="src/Window.cpp" />
     <ClCompile Include="src/TileService.cpp" />
     <ClCompile Include="src/Collision.cpp" />
+    <ClCompile Include="src/Cube.cpp" />
     <ClCompile Include="gfx/gl.cpp" />
     <ClCompile Include="gfx/image.cpp" />
     <ClCompile Include="gfx/transform.cpp" />
     <ClCompile Include="gfx/camera.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="libraries\imgui-1.90.1\backends\imgui_impl_opengl3.h" />
+    <ClInclude Include="libraries\imgui-1.90.1\backends\imgui_impl_sdl2.h" />
+    <ClInclude Include="libraries\imgui-1.90.1\imconfig.h" />
+    <ClInclude Include="libraries\imgui-1.90.1\imgui.h" />
+    <ClInclude Include="libraries\imgui-1.90.1\imgui_internal.h" />
+    <ClInclude Include="libraries\imgui-1.90.1\imstb_rectpack.h" />
+    <ClInclude Include="libraries\imgui-1.90.1\imstb_textedit.h" />
+    <ClInclude Include="libraries\imgui-1.90.1\imstb_truetype.h" />
     <ClInclude Include="src/Clock.h" />
     <ClInclude Include="src/QuadTree.h" />
     <ClInclude Include="src/Chunk.h" />
@@ -166,6 +182,7 @@
     <ClInclude Include="src/TileService.h" />
     <ClInclude Include="src/TileUtils.h" />
     <ClInclude Include="src/Collision.h" />
+    <ClInclude Include="src/Cube.h" />
     <ClInclude Include="gfx/gfx.h" />
     <ClInclude Include="gfx/gl.h" />
     <ClInclude Include="gfx/image.h" />
@@ -213,6 +230,7 @@
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
+    <None Include=".github\workflows\msbuild.yml" />
     <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
