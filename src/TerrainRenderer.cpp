@@ -183,6 +183,73 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned num_zoom_leve
     (void)m_tile_cache.tile_texture_sync(child, TileType::HEIGHT);
   }
 }
+float TerrainRenderer::terrain_elevation(const glm::vec2& point)
+{
+  Coordinate coord = point_to_coordinate(point);
+  return m_tile_cache.terrain_elevation(coord) * m_height_scaling_factor;
+}
+
+float TerrainRenderer::altitude_over_terrain(const glm::vec2& point, float altitude)
+{
+  float altitude_in_meters = altitude / scaling_factor();
+  float elevation = terrain_elevation(point);
+  return std::max(0.0f, altitude_in_meters - elevation);
+}
+
+Coordinate TerrainRenderer::point_to_coordinate(const glm::vec2& point) const
+{
+  auto coord_min = m_coord_bounds.min.to_vec2();
+  auto coord_max = m_coord_bounds.max.to_vec2();
+  return map_range(point, m_bounds.min, m_bounds.max, coord_min, coord_max);
+}
+
+glm::vec2 TerrainRenderer::coordinate_to_point(const Coordinate& coord) const
+{
+  auto coord_min = m_coord_bounds.min.to_vec2();
+  auto coord_max = m_coord_bounds.max.to_vec2();
+  return map_range(coord.to_vec2(), coord_min, coord_max, m_bounds.min, m_bounds.max);
+}
+
+TileId TerrainRenderer::tile_id_from_node(Node* node) const
+{
+  Coordinate coord = point_to_coordinate(node->center());
+  return TileId(coord, m_root_tile.zoom + node->depth);
+}
+
+Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::vec2>& uv, const TileType& type)
+{
+  Texture* parent_texture = nullptr;
+  TileId tile_id = tile_id_from_node(node);
+
+  Node* parent = node->parent;
+  TileId parent_tile_id;
+
+  while (parent != nullptr) {
+    parent_tile_id = tile_id_from_node(parent);
+    parent_texture = m_tile_cache.tile_texture_cached(parent_tile_id, type);
+    if (parent_texture) break;
+    parent = parent->parent;
+  }
+
+  if (!parent_texture) {
+    parent_tile_id = m_root_tile;
+    parent_texture = m_tile_cache.tile_texture_cached(m_root_tile, type);
+  }
+
+  assert(parent_texture);
+
+  unsigned zoom_delta = tile_id.zoom - parent_tile_id.zoom;
+  unsigned num_tiles = 1 << zoom_delta;
+  TileId scaled_root_tile(tile_id.zoom, parent_tile_id.x * num_tiles, parent_tile_id.y * num_tiles);
+  unsigned delta_x = tile_id.x - scaled_root_tile.x;
+  unsigned delta_y = tile_id.y - scaled_root_tile.y;
+  float factor = 1.0f / num_tiles;
+
+  uv.min = glm::vec2((delta_x + 0) * factor, (delta_y + 0) * factor);
+  uv.max = glm::vec2((delta_x + 1) * factor, (delta_y + 1) * factor);
+
+  return parent_texture;
+}
 
 void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, float altitude)
 {
@@ -302,78 +369,4 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
 #endif
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-}
-
-float TerrainRenderer::terrain_elevation(const glm::vec2& point)
-{
-  Coordinate coord = point_to_coordinate(point);
-  return m_tile_cache.terrain_elevation(coord) * m_height_scaling_factor;
-}
-
-float TerrainRenderer::altitude_over_terrain(const glm::vec2& point, float altitude)
-{
-  float altitude_in_meters = altitude / scaling_factor();
-  float elevation = terrain_elevation(point);
-  return std::max(0.0f, altitude_in_meters - elevation);
-}
-
-glm::vec2 TerrainRenderer::map_to_0_1(const glm::vec2& point) const
-{
-  assert(contains(point, m_bounds));
-  return map_range(point, m_bounds, Bounds(glm::vec2(0.0f), glm::vec2(1.0f)));
-}
-
-Coordinate TerrainRenderer::point_to_coordinate(const glm::vec2& point) const
-{
-  auto coord_min = m_coord_bounds.min.to_vec2();
-  auto coord_max = m_coord_bounds.max.to_vec2();
-  return map_range(point, m_bounds.min, m_bounds.max, coord_min, coord_max);
-}
-
-glm::vec2 TerrainRenderer::coordinate_to_point(const Coordinate& coord) const
-{
-  auto coord_min = m_coord_bounds.min.to_vec2();
-  auto coord_max = m_coord_bounds.max.to_vec2();
-  return map_range(coord.to_vec2(), coord_min, coord_max, m_bounds.min, m_bounds.max);
-}
-
-TileId TerrainRenderer::tile_id_from_node(Node* node) const
-{
-  Coordinate coord = point_to_coordinate(node->center());
-  return TileId(coord, m_root_tile.zoom + node->depth);
-}
-
-Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::vec2>& uv, const TileType& type)
-{
-  Texture* parent_texture = nullptr;
-  TileId tile_id = tile_id_from_node(node);
-
-  Node* parent = node->parent;
-  TileId parent_tile_id;
-
-  while (parent != nullptr) {
-    parent_tile_id = tile_id_from_node(parent);
-    parent_texture = m_tile_cache.tile_texture_cached(parent_tile_id, type);
-    if (parent_texture) break;
-    parent = parent->parent;
-  }
-
-  if (!parent_texture) {
-    parent_tile_id = m_root_tile;
-    parent_texture = m_tile_cache.tile_texture_cached(m_root_tile, type);
-  }
-
-  assert(parent_texture);
-
-  unsigned zoom_delta = tile_id.zoom - parent_tile_id.zoom;
-  unsigned num_tiles = 1 << zoom_delta;
-  TileId scaled_root_tile(tile_id.zoom, parent_tile_id.x * num_tiles, parent_tile_id.y * num_tiles);
-  unsigned delta_x = tile_id.x - scaled_root_tile.x;
-  unsigned delta_y = tile_id.y - scaled_root_tile.y;
-  float factor = 1.0f / num_tiles;
-
-  uv.min = glm::vec2((delta_x + 0) * factor, (delta_y + 0) * factor);
-  uv.max = glm::vec2((delta_x + 1) * factor, (delta_y + 1) * factor);
-
-  return parent_texture;
 }
