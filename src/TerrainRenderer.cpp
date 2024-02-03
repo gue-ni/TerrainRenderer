@@ -171,8 +171,7 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned num_zoom_leve
 
   float width = m_bounds.size().x;
 
-  float latitude = wms::tiley2lat(m_root_tile.y, m_root_tile.zoom);
-  float tile_width = wms::tile_width(latitude, m_root_tile.zoom);
+  float tile_width = wms::tile_width(wms::tiley2lat(m_root_tile.y, m_root_tile.zoom), m_root_tile.zoom);
 
   m_terrain_scaling_factor = width / tile_width;
 
@@ -202,8 +201,6 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center)
 
   const glm::vec3 sky_color_1 = gfx::rgb(0xB8DEFD);
   const glm::vec3 sky_color_2 = gfx::rgb(0x6F93F2);
-  // m_shader->set_uniform("u_sky_color_1", sky_color_1);
-  // m_shader->set_uniform("u_sky_color_2", sky_color_2);
 
 #if ENABLE_FOG
   m_shader->set_uniform("u_fog_color", sky_color_1);
@@ -290,6 +287,11 @@ float TerrainRenderer::terrain_elevation(const glm::vec2& point)
 glm::vec2 TerrainRenderer::map_to_0_1(const glm::vec2& point) const
 {
   return map_range(point, m_bounds, Bounds(glm::vec2(0.0f), glm::vec2(1.0f)));
+}
+
+Coordinate TerrainRenderer::point_coordinate(const glm::vec3& point) const
+{
+  return m_tile_cache.lat_lon(map_to_0_1(point));
 }
 
 TileId TerrainRenderer::tile_id_from_node(Node* node) const

@@ -79,7 +79,7 @@ std::unique_ptr<Image> TileService::download_tile(const TileId& tile_id)
     return nullptr;
   }
 
-  std::cout << "GET " << std::quoted(url) << std::endl;
+  // std::cout << "GET " << std::quoted(url) << std::endl;
 
   auto image = std::make_unique<Image>();
   image->read_from_buffer(reinterpret_cast<unsigned char*>(r.text.data()), int(r.text.size()));

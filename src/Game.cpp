@@ -4,13 +4,13 @@
 
 #define INTERSECT_PLANE 0
 
-const TileId GROSS_GLOCKNER = wms::tile_id(47.0742f, 12.6947f, 8);
+const TileId GROSS_GLOCKNER = wms::tile_id(47.0742f, 12.6947f, 7);
 
-const TileId SCHNEEBERG = wms::tile_id(47.7671f, 15.8056f, 7);
+const TileId SCHNEEBERG = wms::tile_id(47.7671f, 15.8056f, 8);
 
 const TileId INNSBRUCK = wms::tile_id(47.2692f, 11.4041f, 7);
 
-const TileId root = GROSS_GLOCKNER;
+const TileId root = SCHNEEBERG;
 
 const float terrain_width = wms::tile_width(wms::tiley2lat(root.y, root.zoom), root.zoom) * 0.01f;
 
@@ -21,6 +21,7 @@ Game::Game(size_t width, size_t height)
   float fov = 45.0f, aspect_ratio = float(width) / float(height), near = 1.0f, far = 100000.0f;
   m_camera.set_projection_matrix(glm::radians(fov), aspect_ratio, near, far);
   m_camera.set_local_position(glm::vec3(0.0f, 5000.0f * m_terrain_renderer.scaling_factor(), 0.0f));
+  std::cout << "width " << terrain_width / 0.01f << std::endl;
 }
 
 void Game::render(float dt)
@@ -70,8 +71,11 @@ void Game::render_ui()
   ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiCond_FirstUseEver);
   ImGui::Begin("Config", nullptr, window_flags);
 
-  auto pos = m_camera.local_position();
+  glm::vec3 pos = m_camera.local_position();
+  Coordinate coord = m_terrain_renderer.point_coordinate(pos);
+
   ImGui::Text("Camera Pos: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
+  ImGui::Text("Lat %.4f, Lon: %.4f", coord.lat, coord.lon);
   ImGui::SliderInt("Zoom Levels", &m_terrain_renderer.zoom_levels, 1, 7);
   ImGui::Checkbox("Wireframe", &m_terrain_renderer.wireframe);
   ImGui::Checkbox("Ray Intersect", &m_terrain_renderer.intersect_terrain);
