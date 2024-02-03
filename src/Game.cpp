@@ -10,6 +10,8 @@ const Coordinate SCHNEEBERG(47.7671f, 15.8056f);
 
 const Coordinate INNSBRUCK(47.2692f, 11.4041f);
 
+const Coordinate BLUDENZ(47.1599f, 9.8082f);
+
 const Coordinate root = INNSBRUCK;
 
 const unsigned zoom = 7;
@@ -75,7 +77,7 @@ void Game::render_ui()
   glm::vec3 pos = m_camera.local_position();
   glm::vec2 pos2 = {pos.x, pos.z};
 
-  Coordinate coord = m_terrain_renderer.point_coordinate(pos);
+  Coordinate coord = m_terrain_renderer.point_to_coordinate(pos);
 
   glm::vec3 forward = -m_camera.local_z_axis();
   int angle = static_cast<int>(glm::degrees(std::atan2(forward.x, forward.z)));
@@ -90,7 +92,7 @@ void Game::render_ui()
               m_terrain_renderer.root_tile().zoom + m_terrain_renderer.zoom_levels());
   ImGui::Checkbox("Wireframe", &m_terrain_renderer.wireframe);
   ImGui::Checkbox("Ray Intersect", &m_terrain_renderer.intersect_terrain);
-  ImGui::SliderFloat("Camera Speed", &m_speed, 50.0f, 5000.0f);
+  ImGui::SliderFloat("Camera Speed", &m_speed, 10.0f, 5000.0f);
   ImGui::SliderFloat("Fog Far", &m_terrain_renderer.fog_far, 100.0f, 100000.0f);
   ImGui::SliderFloat("Fog Density", &m_terrain_renderer.fog_density, 0.0f, 10.0f);
   ImGui::End();

@@ -50,6 +50,12 @@ class TileCache
 
   TileId tile_id(const Coordinate& coord, unsigned lod_offset_from_root) const;
 
+  void clear_pending()
+  {
+    m_ortho_service.clear_pending_downloads();
+    m_height_service.clear_pending_downloads();
+  }
+
  private:
   const TileId m_root_tile;
   const unsigned m_max_zoom_level;

@@ -163,6 +163,7 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned num_zoom_leve
       m_root_tile(root_tile),
       m_chunk(32, 1.0f),
       m_bounds(bounds),
+      m_coord_bounds(root_tile.bounds()),
       m_tile_cache(m_root_tile, m_root_tile.zoom + num_zoom_levels),
       m_zoom_levels(num_zoom_levels)
 {
@@ -200,7 +201,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
   for (scaled_zoom_levels = 0; scaled_zoom_levels <= m_max_zoom_levels; scaled_zoom_levels++) {
     float width = root_width / (1 << scaled_zoom_levels);
 
-    float tmp = width * 0.1f;
+    float tmp = width * 0.05f;
 
     if (tmp < altitude_) break;
   }
@@ -276,9 +277,12 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
     }
   };
 
-  // m_tile_cache.clear_queue();
+#if 0
+  m_tile_cache.clear_pending();
+#endif
+
   auto nodes = quad_tree.nodes();
-  std::sort(nodes.begin(), nodes.end(), [](Node* a, Node* b) { return a->depth < b->depth; });
+  std::sort(nodes.begin(), nodes.end(), [](Node* a, Node* b) { return a->depth > b->depth; });
   std::for_each(nodes.begin(), nodes.end(), render_tile);
 
 #if ENABLE_SKYBOX
@@ -302,7 +306,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
 
 float TerrainRenderer::terrain_elevation(const glm::vec2& point)
 {
-  Coordinate coord = point_coordinate(point);
+  Coordinate coord = point_to_coordinate(point);
   return m_tile_cache.terrain_elevation(coord) * m_height_scaling_factor;
 }
 
@@ -319,9 +323,20 @@ glm::vec2 TerrainRenderer::map_to_0_1(const glm::vec2& point) const
   return map_range(point, m_bounds, Bounds(glm::vec2(0.0f), glm::vec2(1.0f)));
 }
 
-Coordinate TerrainRenderer::point_coordinate(const glm::vec2& point) const
+Coordinate TerrainRenderer::point_to_coordinate(const glm::vec2& point) const
 {
+#if 0
   return m_tile_cache.lat_lon(map_to_0_1(point));
+#else
+  return map_range(point, m_bounds.min, m_bounds.max, m_coord_bounds.min.to_vec2(), m_coord_bounds.max.to_vec2());
+
+#endif
+}
+
+glm::vec2 TerrainRenderer::coordinate_to_point(const Coordinate& coord) const
+{
+  return map_range(coord.to_vec2(), m_coord_bounds.min.to_vec2(), m_coord_bounds.max.to_vec2(), m_bounds.min,
+                   m_bounds.max);
 }
 
 TileId TerrainRenderer::tile_id_from_node(Node* node) const

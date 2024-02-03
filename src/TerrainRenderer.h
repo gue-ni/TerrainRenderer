@@ -34,7 +34,9 @@ class TerrainRenderer
 
   inline int zoom_levels() const { return m_zoom_levels; }
 
-  Coordinate point_coordinate(const glm::vec2&) const;
+  Coordinate point_to_coordinate(const glm::vec2&) const;
+
+  glm::vec2 coordinate_to_point(const Coordinate&) const;
 
   bool wireframe{false};
   bool intersect_terrain{false};
@@ -47,6 +49,7 @@ class TerrainRenderer
   const Chunk m_chunk;
   const Cube m_sky_box;
   const Bounds<glm::vec2> m_bounds;
+  const Bounds<Coordinate> m_coord_bounds;
   const int m_max_zoom_levels{7};
   TileCache m_tile_cache;
   float m_height_scaling_factor;

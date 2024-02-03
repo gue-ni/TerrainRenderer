@@ -66,10 +66,7 @@ void TileService::request_tile(const TileId& tile_id)
 
   m_thread_pool.assign_work([this, tile_id]() {
     auto image = download_tile(tile_id);
-
-    if (image) {
-      m_ram_cache[tile_id] = std::move(image);
-    }
+    if (image) m_ram_cache[tile_id] = std::move(image);
   });
 }
 
