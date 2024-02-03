@@ -6,11 +6,11 @@
 
 const TileId GROSS_GLOCKNER = wms::tile_id(47.0742f, 12.6947f, 7);
 
-const TileId SCHNEEBERG = wms::tile_id(47.7671f, 15.8056f, 8);
+const TileId SCHNEEBERG = wms::tile_id(47.7671f, 15.8056f, 7);
 
 const TileId INNSBRUCK = wms::tile_id(47.2692f, 11.4041f, 7);
 
-const TileId root = SCHNEEBERG;
+const TileId root = INNSBRUCK;
 
 const float terrain_width = wms::tile_width(wms::tiley2lat(root.y, root.zoom), root.zoom) * 0.01f;
 
@@ -21,7 +21,6 @@ Game::Game(size_t width, size_t height)
   float fov = 45.0f, aspect_ratio = float(width) / float(height), near = 1.0f, far = 100000.0f;
   m_camera.set_projection_matrix(glm::radians(fov), aspect_ratio, near, far);
   m_camera.set_local_position(glm::vec3(0.0f, 5000.0f * m_terrain_renderer.scaling_factor(), 0.0f));
-  std::cout << "width " << terrain_width / 0.01f << std::endl;
 }
 
 void Game::render(float dt)
@@ -42,19 +41,19 @@ void Game::render(float dt)
 
 void Game::render_terrain()
 {
-  auto camera_position = m_camera.local_position();
-  auto center = glm::vec2(camera_position.x, camera_position.z);
+  glm::vec3 camera_position = m_camera.local_position();
+  glm::vec2 center = {camera_position.x, camera_position.z};
 
   if (m_terrain_renderer.intersect_terrain) {
-    auto camera_direction = m_camera.transform_direction(glm::vec3(0.0f, 0.0f, -1.0f));
+    glm::vec3 camera_direction = m_camera.transform_direction(glm::vec3(0.0f, 0.0f, -1.0f));
 
     float t;
-    Plane plane(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 20.0f, 0.0f));
     Ray ray{camera_position, camera_direction};
+    Plane plane(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 30.0f, 0.0f));
 
     if (ray_vs_plane(ray, plane, t)) {
       glm::vec3 point = ray.point_at(t);
-      auto clamped_point = clamp(glm::vec2(point.x, point.z), m_terrain_renderer.bounds());
+      glm::vec2 clamped_point = clamp(glm::vec2(point.x, point.z), m_terrain_renderer.bounds());
       center = glm::mix(center, clamped_point, 0.5);
     }
   }
@@ -72,10 +71,16 @@ void Game::render_ui()
   ImGui::Begin("Config", nullptr, window_flags);
 
   glm::vec3 pos = m_camera.local_position();
+
   Coordinate coord = m_terrain_renderer.point_coordinate(pos);
 
+  glm::vec3 forward = -m_camera.local_z_axis();
+  int angle = static_cast<int>(glm::degrees(std::atan2(forward.x, forward.z)));
+  int heading = (360 + angle) % 360;
+
   ImGui::Text("Camera Pos: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
-  ImGui::Text("Lat %.4f, Lon: %.4f", coord.lat, coord.lon);
+  ImGui::Text("Lat: %.4f, Lon: %.4f", coord.lat, coord.lon);
+  ImGui::Text("Heading %d", heading);
   ImGui::SliderInt("Zoom Levels", &m_terrain_renderer.zoom_levels, 1, 7);
   ImGui::Checkbox("Wireframe", &m_terrain_renderer.wireframe);
   ImGui::Checkbox("Ray Intersect", &m_terrain_renderer.intersect_terrain);
