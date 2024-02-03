@@ -164,7 +164,7 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned num_zoom_leve
       m_chunk(32, 1.0f),
       m_bounds(bounds),
       m_coord_bounds(root_tile.bounds()),
-      m_tile_cache(m_root_tile, m_root_tile.zoom + num_zoom_levels),
+      m_tile_cache(m_root_tile),
       m_zoom_levels(num_zoom_levels)
 {
   const float min_elevation = 0.0f, max_elevation = 8191.0f;
@@ -325,12 +325,7 @@ glm::vec2 TerrainRenderer::map_to_0_1(const glm::vec2& point) const
 
 Coordinate TerrainRenderer::point_to_coordinate(const glm::vec2& point) const
 {
-#if 0
-  return m_tile_cache.lat_lon(map_to_0_1(point));
-#else
   return map_range(point, m_bounds.min, m_bounds.max, m_coord_bounds.min.to_vec2(), m_coord_bounds.max.to_vec2());
-
-#endif
 }
 
 glm::vec2 TerrainRenderer::coordinate_to_point(const Coordinate& coord) const
@@ -341,7 +336,7 @@ glm::vec2 TerrainRenderer::coordinate_to_point(const Coordinate& coord) const
 
 TileId TerrainRenderer::tile_id_from_node(Node* node) const
 {
-  Coordinate coord = m_tile_cache.lat_lon(map_to_0_1(node->center()));
+  Coordinate coord = point_to_coordinate(node->center());
   return m_tile_cache.tile_id(coord, node->depth);
 }
 
