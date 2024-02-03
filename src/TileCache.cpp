@@ -133,11 +133,6 @@ Image* TileCache::request_image(const TileId& tile, const TileType& tile_type)
   }
 }
 
-TileId TileCache::tile_id(const Coordinate& coord, unsigned lod_offset_from_root) const
-{
-  return TileId(coord, m_root_tile.zoom + lod_offset_from_root);
-}
-
 float TileCache::terrain_elevation(const Coordinate& coord)
 {
   TileId tile(coord, m_root_tile.zoom + 1);  // probably not the best, as this is very low res

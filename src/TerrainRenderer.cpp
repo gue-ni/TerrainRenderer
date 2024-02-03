@@ -325,19 +325,22 @@ glm::vec2 TerrainRenderer::map_to_0_1(const glm::vec2& point) const
 
 Coordinate TerrainRenderer::point_to_coordinate(const glm::vec2& point) const
 {
-  return map_range(point, m_bounds.min, m_bounds.max, m_coord_bounds.min.to_vec2(), m_coord_bounds.max.to_vec2());
+  auto coord_min = m_coord_bounds.min.to_vec2();
+  auto coord_max = m_coord_bounds.max.to_vec2();
+  return map_range(point, m_bounds.min, m_bounds.max, coord_min, coord_max);
 }
 
 glm::vec2 TerrainRenderer::coordinate_to_point(const Coordinate& coord) const
 {
-  return map_range(coord.to_vec2(), m_coord_bounds.min.to_vec2(), m_coord_bounds.max.to_vec2(), m_bounds.min,
-                   m_bounds.max);
+  auto coord_min = m_coord_bounds.min.to_vec2();
+  auto coord_max = m_coord_bounds.max.to_vec2();
+  return map_range(coord.to_vec2(), coord_min, coord_max, m_bounds.min, m_bounds.max);
 }
 
 TileId TerrainRenderer::tile_id_from_node(Node* node) const
 {
   Coordinate coord = point_to_coordinate(node->center());
-  return m_tile_cache.tile_id(coord, node->depth);
+  return TileId(coord, m_root_tile.zoom + node->depth);
 }
 
 Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::vec2>& uv, const TileType& type)

@@ -46,8 +46,6 @@ class TileCache
 
   void invalidate_gpu_cache();
 
-  TileId tile_id(const Coordinate& coord, unsigned lod_offset_from_root) const;
-
   void clear_pending()
   {
     m_ortho_service.clear_pending_downloads();
