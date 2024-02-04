@@ -33,7 +33,4 @@ bool point_vs_plane(const Point& point, const Plane& plane)
 }
 
 // stolen from https://github.dev/recp/cglm
-bool aabb_vs_frustum(const AABB& aabb, const Frustum& frustum)
-{
-  return true;
-}
+bool aabb_vs_frustum(const AABB& aabb, const Frustum& frustum) { return true; }
