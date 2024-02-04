@@ -36,8 +36,8 @@ void Node::split()
   auto middle = center();
 
   is_leaf = false;
-  children[Dir::NE] = std::make_unique<Node>(middle, max, child_depth, this);
-  children[Dir::NW] = std::make_unique<Node>(glm::vec2(min.x, middle.y), glm::vec2(middle.x, max.y), child_depth, this);
-  children[Dir::SW] = std::make_unique<Node>(min, middle, child_depth, this);
-  children[Dir::SE] = std::make_unique<Node>(glm::vec2{middle.x, min.y}, glm::vec2{max.x, middle.y}, child_depth, this);
+  children[NE] = std::make_unique<Node>(middle, max, child_depth, this);
+  children[NW] = std::make_unique<Node>(glm::vec2(min.x, middle.y), glm::vec2(middle.x, max.y), child_depth, this);
+  children[SW] = std::make_unique<Node>(min, middle, child_depth, this);
+  children[SE] = std::make_unique<Node>(glm::vec2{middle.x, min.y}, glm::vec2{max.x, middle.y}, child_depth, this);
 }

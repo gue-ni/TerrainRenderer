@@ -25,14 +25,15 @@ struct Sphere {
 struct Plane {
   glm::vec3 normal;
   float distance;
-  Plane() : normal({0.0f, 1.0f, 0.0f}), distance(0.0f) {}
-  Plane(const glm::vec3 &plane_normal, const glm::vec3 &point_on_plane)
-      : normal(plane_normal), distance(glm::dot(plane_normal, point_on_plane))
-  {
-  }
+  Plane();
+  Plane(const glm::vec4 &vec);
+  Plane(const glm::vec3 &plane_normal, float distance_from_origin);
+  Plane(const glm::vec3 &plane_normal, const glm::vec3 &point_on_plane);
+  void normalize();
 };
 
 struct Frustum {
+  enum : std::size_t { TOP = 0, BOTTOM, LEFT, RIGHT, NEAR, FAR };
   std::array<Plane, 6> planes;
   Frustum(const glm::mat4 &view_projection_matrix);
 };

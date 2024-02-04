@@ -280,7 +280,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
 
   float factor = std::clamp(1.0f - normalized_height, 0.0f, 1.0f);
 
-  const int max_possible_zoom = 18;
+  const int max_possible_zoom = 16;
 
   int max_zoom_level = static_cast<int>(max_possible_zoom * factor);
 #else
@@ -338,8 +338,8 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
     Texture* heightmap = m_tile_cache.tile_texture(tile_id, TileType::HEIGHT);
 
     // Render only part of tile if we fallback to lower resolution.
-    Bounds<glm::vec2> albedo_uv = {glm::vec2(0.0f), glm::vec2(1.0f)};
-    Bounds<glm::vec2> height_uv = {glm::vec2(0.0f), glm::vec2(1.0f)};
+    Bounds<glm::vec2> albedo_uv(glm::vec2(0.0f), glm::vec2(1.0f));
+    Bounds<glm::vec2> height_uv(glm::vec2(0.0f), glm::vec2(1.0f));
 
 #if ENABLE_FALLBACK
     if (!albedo) {
