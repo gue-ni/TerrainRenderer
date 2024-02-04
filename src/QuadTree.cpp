@@ -1,15 +1,11 @@
 #include "QuadTree.h"
 
-
-
 QuadTree::QuadTree(const glm::vec2& point, const glm::vec2& min, const glm::vec2& max, unsigned m_max_depth)
     : m_root(std::make_unique<Node>(min, max, 0, nullptr)), m_max_depth(m_max_depth)
 {
   assert(m_root->contains(point));
   insert(m_root, point);
 }
-
-
 
 std::vector<Node*> QuadTree::nodes()
 {
