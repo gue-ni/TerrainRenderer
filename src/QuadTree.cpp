@@ -18,7 +18,7 @@ void QuadTree::insert(std::unique_ptr<Node>& node, const glm::vec2& point)
 {
   float width = node->size().x;
   float distance = glm::distance(node->center(), point);
-  float factor = 0.5f;
+  float factor = 0.75f;
 
   if ((distance * factor) < width && node->depth < m_max_depth) {
     node->split();

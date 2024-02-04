@@ -21,27 +21,29 @@ struct Sphere {
   float radius;
 };
 
+// A plane is defined by a normal and a distance from the origin.
 struct Plane {
-  glm::vec3 normal;  // plane normal
-  float distance;    // distance from origin
-  Plane(const glm::vec3 &normal_, const glm::vec3 &point_) : normal(normal_), distance(glm::dot(normal_, point_)) {}
-};
-
-// A segment is a part of a straigt line bounded by two end points.
-struct Segment {
-  glm::vec3 a, b;
-  inline glm::vec3 point_at(float t) const { return a + (b - a) * t; }
+  glm::vec3 normal;
+  float distance;
+  Plane() : normal({0.0f, 1.0f, 0.0f}), distance(0.0f) {}
+  Plane(const glm::vec3 &plane_normal, const glm::vec3 &point_on_plane)
+      : normal(plane_normal), distance(glm::dot(plane_normal, point_on_plane))
+  {
+  }
 };
 
 struct Frustum {
   std::array<Plane, 6> planes;
+  Frustum(const glm::mat4 &view_projection_matrix);
 };
 
-// Real Time Collison Detection - Christer Ericson, Page
-bool segment_vs_plane(const Segment &segment, const Plane &plane, float &t);
+bool ray_vs_plane(const Ray &, const Plane &, float &t);
 
-bool ray_vs_plane(const Ray &ray, const Plane &plane, float &t);
+bool ray_vs_sphere(const Ray &, const Sphere &, float &t);
 
-bool ray_vs_sphere(const Ray &ray, const Sphere &sphere, float &t);
+// Return true if point is behind plane.
+bool point_vs_plane(const Point &, const Plane &);
 
-bool point_vs_plane(const Point &point, const Plane &plane);
+bool aabb_vs_plane(const AABB &, const Plane &);
+
+bool aabb_vs_frustum(const AABB &, const Frustum &);
