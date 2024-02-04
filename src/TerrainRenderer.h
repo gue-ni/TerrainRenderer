@@ -56,9 +56,6 @@ class TerrainRenderer
   float m_terrain_scaling_factor;
   int m_zoom_levels;
 
-  // convert from world coordinate in range m_bounds to [0, 1]
-  glm::vec2 map_to_0_1(const glm::vec2& point) const;
-
   TileId tile_id_from_node(Node*) const;
 
   Texture* find_cached_lower_zoom_parent(Node* node, Bounds<glm::vec2>& uv, const TileType&);

@@ -14,7 +14,7 @@
 class Window
 {
  public:
-  Window(size_t width, size_t height, const std::string& name = "SDL2/OpenGL Window");
+  Window(size_t width, size_t height, const std::string& name = "TerrainRenderer");
   ~Window();
 
  protected:

@@ -10,12 +10,12 @@
 TileCache::TileCache(const TileId& root_tile)
     : m_root_tile(root_tile),
 #if 0
-      m_ortho_service("https://gataki.cg.tuwien.ac.at/raw/basemap/tiles", UrlPattern::ZYX_Y_SOUTH, ".jpeg"),
+      m_ortho_service("https://gataki.cg.tuwien.ac.at/raw/basemap/tiles", UrlPattern::ZYX_Y_SOUTH, ".jpeg", "ortho_1"),
 #else
       m_ortho_service("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile",
-                      UrlPattern::ZYX_Y_SOUTH, ""),
+                      UrlPattern::ZYX_Y_SOUTH, "", "ortho_2"),
 #endif
-      m_height_service("https://alpinemaps.cg.tuwien.ac.at/tiles/alpine_png", UrlPattern::ZXY_Y_NORTH, ".png")
+      m_height_service("https://alpinemaps.cg.tuwien.ac.at/tiles/alpine_png", UrlPattern::ZXY_Y_NORTH, ".png", "height")
 
 {
 }
@@ -47,24 +47,25 @@ Texture* TileCache::tile_texture_sync(const TileId& tile, const TileType& tile_t
 
   if (m_gpu_cache.contains(name)) {
     return m_gpu_cache[name].get();
-  } else {
-    switch (tile_type) {
-      case TileType::ORTHO:
-        image = m_ortho_service.get_tile_sync(tile);
-        break;
-      case TileType::HEIGHT:
-        image = m_height_service.get_tile_sync(tile);
-        break;
-      default:
-        assert(false);
-    }
-
-    auto texture = create_texture(*image);
-    m_gpu_cache[name] = std::move(texture);
-    return m_gpu_cache[name].get();
   }
 
-  return nullptr;
+  switch (tile_type) {
+    case TileType::ORTHO:
+      image = m_ortho_service.get_tile_sync(tile);
+      break;
+    case TileType::HEIGHT:
+      image = m_height_service.get_tile_sync(tile);
+      break;
+    default:
+      assert(false);
+  }
+
+  assert(image);
+  if (!image) return nullptr;
+
+  auto texture = create_texture(*image);
+  m_gpu_cache[name] = std::move(texture);
+  return m_gpu_cache[name].get();
 }
 
 Texture* TileCache::tile_texture_cached(const TileId& tile, const TileType& tile_type)
@@ -131,11 +132,6 @@ Image* TileCache::request_image(const TileId& tile, const TileType& tile_type)
       assert(false);
       return nullptr;
   }
-}
-
-TileId TileCache::tile_id(const Coordinate& coord, unsigned lod_offset_from_root) const
-{
-  return TileId(coord, m_root_tile.zoom + lod_offset_from_root);
 }
 
 float TileCache::terrain_elevation(const Coordinate& coord)
