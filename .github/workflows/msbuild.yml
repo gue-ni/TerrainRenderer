@@ -22,7 +22,7 @@ jobs:
       with:
         submodules: 'true'
 
-    - name: Add MSBuild to PATH
+    - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
     - name: Create libraries
