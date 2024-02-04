@@ -1,15 +1,15 @@
 #include "QuadTree.h"
 
-QuadTree::QuadTree(const glm::vec2& min, const glm::vec2& max, unsigned m_max_depth)
-    : m_root(std::make_unique<Node>(min, max, 0, nullptr)), m_max_depth(m_max_depth)
-{
-}
 
-void QuadTree::insert(const glm::vec2& point)
+
+QuadTree::QuadTree(const glm::vec2& point, const glm::vec2& min, const glm::vec2& max, unsigned m_max_depth)
+    : m_root(std::make_unique<Node>(min, max, 0, nullptr)), m_max_depth(m_max_depth)
 {
   assert(m_root->contains(point));
   insert(m_root, point);
 }
+
+
 
 std::vector<Node*> QuadTree::nodes()
 {
@@ -22,7 +22,7 @@ void QuadTree::insert(std::unique_ptr<Node>& node, const glm::vec2& point)
 {
   float width = node->size().x;
   float distance = glm::distance(node->center(), point);
-  float factor = .75f;
+  float factor = 0.5f;
 
   if ((distance * factor) < width && node->depth < m_max_depth) {
     node->split();

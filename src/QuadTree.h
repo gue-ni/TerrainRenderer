@@ -46,9 +46,7 @@ struct Node {
 class QuadTree
 {
  public:
-  QuadTree(const glm::vec2& min, const glm::vec2& max, unsigned m_max_depth);
-
-  void insert(const glm::vec2& point);
+  QuadTree(const glm::vec2& point, const glm::vec2& min, const glm::vec2& max, unsigned m_max_depth);
 
   std::vector<Node*> nodes();
 
