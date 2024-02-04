@@ -2,11 +2,18 @@
 
 #include <cpr/cpr.h>
 
-#define LOG 0
+#include <filesystem>
 
-TileService::TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype)
-    : m_url(url), m_url_pattern(url_pattern), m_filetype(filetype), m_thread_pool(3)
+#define LOG             0
+#define SAVE_LOCAL_COPY 1
+
+TileService::TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype,
+                         const std::string& dir)
+    : m_url(url), m_url_pattern(url_pattern), m_filetype(filetype), m_thread_pool(3), m_dir(dir)
 {
+  if (!std::filesystem::exists(m_dir)) {
+    std::filesystem::create_directory(m_dir);
+  }
 }
 
 std::string TileService::tile_url(const TileId& tile) const
@@ -90,7 +97,16 @@ std::unique_ptr<Image> TileService::download_tile(const TileId& tile)
     return nullptr;
   }
 
+#if SAVE_LOCAL_COPY
+  save_local_copy(tile, image.get());
+#endif
+
   return image;
 }
 
-void TileService::save_local_copy(const TileId& tile) const {}
+void TileService::save_local_copy(const TileId& tile, const Image* image) const
+{
+  assert(image);
+  std::string filename = std::format("{}/{}.png", m_dir, tile.to_string());
+  image->write(filename);
+}

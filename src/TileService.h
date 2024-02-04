@@ -22,7 +22,8 @@ enum UrlPattern {
 class TileService
 {
  public:
-  TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype = "png");
+  TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype = "png",
+              const std::string& dir = "");
 
   // If tile in cache, return tile. If not, request it for download and return nullptr.
   Image* get_tile(const TileId&);
@@ -38,7 +39,7 @@ class TileService
 
  private:
   const UrlPattern m_url_pattern;
-  const std::string m_url, m_filetype;
+  const std::string m_url, m_filetype, m_dir;
   ThreadPool m_thread_pool;
   std::set<TileId> m_already_requested;
   std::unordered_map<TileId, std::unique_ptr<Image>> m_ram_cache;
@@ -49,5 +50,5 @@ class TileService
 
   std::string tile_url(const TileId&) const;
 
-  void save_local_copy(const TileId&) const;
+  void save_local_copy(const TileId&, const Image*) const;
 };

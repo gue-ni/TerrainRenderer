@@ -79,7 +79,7 @@ struct TileId {
 
   auto operator<=>(const TileId&) const = default;
 
-  inline std::string to_string() const { return std::format("{}/{}/{}", zoom, x, y); }
+  inline std::string to_string() const { return std::format("{}-{}-{}", zoom, x, y); }
 
   inline Bounds<Coordinate> bounds() const
   {
