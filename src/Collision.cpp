@@ -16,7 +16,12 @@ Plane::Plane(const glm::vec3& plane_normal, const glm::vec3& point_on_plane)
 {
 }
 
-void Plane::normalize() { normal = glm::normalize(normal); }
+void Plane::normalize() 
+{ 
+    float length = glm::length(normal);
+    normal /= length;
+    distance /= length;
+}
 
 Frustum::Frustum(const glm::mat4& view_projection_matrix)
 {
