@@ -31,7 +31,7 @@ struct Plane {
   Plane(const glm::vec3 &plane_normal, float distance_from_origin);
   Plane(const glm::vec3 &plane_normal, const glm::vec3 &point_on_plane);
   void normalize();
-  float distance_from_plane(const Point&);
+  float distance_from_plane(const Point &) const;
 };
 
 struct Frustum {

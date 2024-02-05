@@ -2,19 +2,14 @@
 
 #include <cassert>
 
-
-std::array<glm::vec3, 8> AABB::corners() const 
+std::array<glm::vec3, 8> AABB::corners() const
 {
   return {
-    glm::vec3(min.x, min.y, min.z),
-    glm::vec3(max.x, min.y, min.z),
-    glm::vec3(min.z, min.y, max.z),
-    glm::vec3(max.x, min.y, max.z),
+      glm::vec3(min.x, min.y, min.z), glm::vec3(max.x, min.y, min.z),
+      glm::vec3(min.z, min.y, max.z), glm::vec3(max.x, min.y, max.z),
 
-    glm::vec3(min.x, max.y, min.z),
-    glm::vec3(max.x, max.y, min.z),
-    glm::vec3(min.z, max.y, max.z),
-    glm::vec3(max.x, max.y, max.z),
+      glm::vec3(min.x, max.y, min.z), glm::vec3(max.x, max.y, min.z),
+      glm::vec3(min.z, max.y, max.z), glm::vec3(max.x, max.y, max.z),
   };
 }
 
@@ -32,18 +27,14 @@ Plane::Plane(const glm::vec3& plane_normal, const glm::vec3& point_on_plane)
 {
 }
 
-void Plane::normalize() 
-{ 
-    float length = glm::length(normal);
-    normal /= length;
-    distance /= length;
-}
-
-
-float Plane::distance_from_plane(const Point& point) 
+void Plane::normalize()
 {
-  return glm::dot(point, plane.normal);
+  float length = glm::length(normal);
+  normal /= length;
+  distance /= length;
 }
+
+float Plane::distance_from_plane(const Point& point) const { return glm::dot(point, normal); }
 
 Frustum::Frustum(const glm::mat4& view_projection_matrix)
 {
@@ -82,41 +73,41 @@ bool ray_vs_sphere(const Ray& ray, const Sphere& sphere, float& t)
 bool point_vs_plane(const Point& point, const Plane& plane)
 {
   if (0.0f < (plane.distance_from_plane(point) - plane.distance)) {
-    return false; // point is in front
+    return false;  // point is in front
   } else {
-    return true; // point is on or behind plane
+    return true;  // point is on or behind plane
   }
 }
 
-
-bool point_vs_frustum(const Point &point, const Frustum &frustum)
+bool point_vs_frustum(const Point& point, const Frustum& frustum)
 {
   for (const Plane& plane : frustum.planes) {
     if (point_vs_plane(point, plane)) {
-      return true
+      return true;
     }
   }
   return false;
 }
 
-bool sphere_vs_sphere(const Sphere &a, const Sphere &b) { 
-  return glm::distance(a.center, b.center) <= (a.radius + b.radius); 
+bool sphere_vs_sphere(const Sphere& a, const Sphere& b)
+{
+  return glm::distance(a.center, b.center) <= (a.radius + b.radius);
 }
 
-bool aabb_vs_aabb(const AABB& a, const AABB& b) {
-   return (a.min.x <= b.max.x && a.max.x >= b.min.x) &&
-          (a.min.y <= b.max.y && a.max.y >= b.min.y) &&
-          (a.min.z <= b.max.z && a.max.z >= b.min.z);
+bool aabb_vs_aabb(const AABB& a, const AABB& b)
+{
+  return (a.min.x <= b.max.x && a.max.x >= b.min.x) && (a.min.y <= b.max.y && a.max.y >= b.min.y) &&
+         (a.min.z <= b.max.z && a.max.z >= b.min.z);
 }
 
-bool aabb_vs_plane(const AABB &aabb, const Plane &plane) 
-{ 
+bool aabb_vs_plane(const AABB& aabb, const Plane& plane)
+{
   for (auto& corner : aabb.corners()) {
     if (point_vs_plane(corner, plane)) {
       return true;
     }
   }
-  return false; 
+  return false;
 }
 
 // https://github.dev/recp/cglm
