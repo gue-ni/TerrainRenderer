@@ -47,9 +47,13 @@ bool ray_vs_sphere(const Ray &, const Sphere &, float &t);
 // Return true if point is behind plane.
 bool point_vs_plane(const Point &, const Plane &);
 
-// Return true if point 
+// Return true if point is inside frustum.
 bool point_vs_frustum(const Point &, const Frustum &);
 
+bool sphere_vs_sphere(const Sphere &, const Sphere &);
+
 bool aabb_vs_plane(const AABB &, const Plane &);
+
+bool aabb_vs_aabb(const AABB &, const AABB &);
 
 bool aabb_vs_frustum(const AABB &, const Frustum &);

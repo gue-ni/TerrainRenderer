@@ -84,6 +84,18 @@ bool point_vs_frustum(const Point &point, const Frustum &frustum)
   return false;
 }
 
+bool sphere_vs_sphere(const Sphere &a, const Sphere &b) { 
+  return glm::distance(a.center, b.center) <= (a.radius + b.radius); 
+}
+
+bool aabb_vs_aabb(const AABB& a, const AABB& b) {
+   return (a.min.x <= b.max.x && a.max.x >= b.min.x) &&
+          (a.min.y <= b.max.y && a.max.y >= b.min.y) &&
+          (a.min.z <= b.max.z && a.max.z >= b.min.z);
+}
+
+bool aabb_vs_plane(const AABB &, const Plane &) { return false; }
+
 // https://github.dev/recp/cglm
 // https://cgvr.cs.uni-bremen.de/teaching/cg_literatur/lighthouse3d_view_frustum_culling/index.html
 bool aabb_vs_frustum(const AABB& aabb, const Frustum& frustum)
