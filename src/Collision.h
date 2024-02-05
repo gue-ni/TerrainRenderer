@@ -9,6 +9,7 @@ struct AABB {
   glm::vec3 min, max;
   inline glm::vec3 size() const { return max - min; }
   inline glm::vec3 center() const { return min + size() / 2.0f; }
+  std::array<glm::vec3, 8> corners() const;
 };
 
 struct Ray {
@@ -30,10 +31,11 @@ struct Plane {
   Plane(const glm::vec3 &plane_normal, float distance_from_origin);
   Plane(const glm::vec3 &plane_normal, const glm::vec3 &point_on_plane);
   void normalize();
+  float distance_from_plane(const Point&);
 };
 
 struct Frustum {
-  enum : std::size_t { TOP = 0, BOTTOM, LEFT, RIGHT, NEAR, FAR };
+  enum : std::size_t { NEAR = 0, FAR, TOP, BOTTOM, LEFT, RIGHT };
   std::array<Plane, 6> planes;
   Frustum(const glm::mat4 &view_projection_matrix);
 };
@@ -44,6 +46,9 @@ bool ray_vs_sphere(const Ray &, const Sphere &, float &t);
 
 // Return true if point is behind plane.
 bool point_vs_plane(const Point &, const Plane &);
+
+// Return true if point 
+bool point_vs_frustum(const Point &, const Frustum &);
 
 bool aabb_vs_plane(const AABB &, const Plane &);
 

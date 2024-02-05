@@ -23,6 +23,12 @@ void Plane::normalize()
     distance /= length;
 }
 
+
+float Plane::distance_from_plane(const Point& point) 
+{
+  return glm::dot(point, plane.normal);
+}
+
 Frustum::Frustum(const glm::mat4& view_projection_matrix)
 {
   glm::mat4 transposed = glm::transpose(view_projection_matrix);
@@ -59,7 +65,23 @@ bool ray_vs_sphere(const Ray& ray, const Sphere& sphere, float& t)
 
 bool point_vs_plane(const Point& point, const Plane& plane)
 {
-  return 0.0f > glm::dot(point, plane.normal) - plane.distance;
+  if (0.0f < (plane.distance_from_plane(point) - plane.distance)) {
+    return false; // point is in front
+  } else {
+    return true; // point is on or behind plane
+  }
+}
+
+
+bool point_vs_frustum(const Point &point, const Frustum &frustum)
+{
+  for (const Plane& plane : frustum.planes) {
+    if (point_vs_plane(point, plane)) {
+      return true
+    }
+  }
+
+  return false;
 }
 
 // https://github.dev/recp/cglm
