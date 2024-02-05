@@ -6,15 +6,15 @@
 std::array<glm::vec3, 8> AABB::corners() const 
 {
   return {
-    glm::vec3(),
-    glm::vec3(),
-    glm::vec3(),
-    glm::vec3(),
+    glm::vec3(min.x, min.y, min.z),
+    glm::vec3(max.x, min.y, min.z),
+    glm::vec3(min.z, min.y, max.z),
+    glm::vec3(max.x, min.y, max.z),
 
-    glm::vec3(),
-    glm::vec3(),
-    glm::vec3(),
-    glm::vec3()
+    glm::vec3(min.x, max.y, min.z),
+    glm::vec3(max.x, max.y, min.z),
+    glm::vec3(min.z, max.y, max.z),
+    glm::vec3(max.x, max.y, max.z),
   };
 }
 
