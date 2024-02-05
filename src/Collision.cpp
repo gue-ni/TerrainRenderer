@@ -2,6 +2,22 @@
 
 #include <cassert>
 
+
+std::array<glm::vec3, 8> AABB::corners() const 
+{
+  return {
+    glm::vec3(),
+    glm::vec3(),
+    glm::vec3(),
+    glm::vec3(),
+
+    glm::vec3(),
+    glm::vec3(),
+    glm::vec3(),
+    glm::vec3()
+  };
+}
+
 Plane::Plane() : normal({0.0f, 1.0f, 0.0f}), distance(0.0f) {}
 
 Plane::Plane(const glm::vec4& vec) : normal(glm::vec3(vec)), distance(vec.w) {}
@@ -80,7 +96,6 @@ bool point_vs_frustum(const Point &point, const Frustum &frustum)
       return true
     }
   }
-
   return false;
 }
 
@@ -94,12 +109,24 @@ bool aabb_vs_aabb(const AABB& a, const AABB& b) {
           (a.min.z <= b.max.z && a.max.z >= b.min.z);
 }
 
-bool aabb_vs_plane(const AABB &, const Plane &) { return false; }
+bool aabb_vs_plane(const AABB &aabb, const Plane &plane) 
+{ 
+  for (auto& corner : aabb.corners()) {
+    if (point_vs_plane(corner, plane)) {
+      return true;
+    }
+  }
+  return false; 
+}
 
 // https://github.dev/recp/cglm
 // https://cgvr.cs.uni-bremen.de/teaching/cg_literatur/lighthouse3d_view_frustum_culling/index.html
 bool aabb_vs_frustum(const AABB& aabb, const Frustum& frustum)
 {
-  // TODO
-  return true;
+  for (auto& plane : frustum.planes) {
+    if (aabb_vs_plane(aabb, plane)) {
+      return true;
+    }
+  }
+  return false;
 }
