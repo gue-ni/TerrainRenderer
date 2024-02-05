@@ -2,6 +2,18 @@
 
 #include <cassert>
 
+AABB::AABB(const glm::vec3& min_, const glm::vec3& max_) : min(min_), max(max_) {}
+
+AABB AABB::from_center_and_size(const glm::vec3& center, const glm::vec3& size)
+{
+  glm::vec3 half_size = size / 2.0f;
+  return AABB(center - half_size, center + half_size);
+}
+
+Ray::Ray(const glm::vec3& origin_, const glm::vec3& direction_) : origin(origin_), direction(direction_) {}
+
+Sphere::Sphere(const glm::vec3& center_, float radius_) : center(center_), radius(radius_) {}
+
 std::array<glm::vec3, 8> AABB::corners() const
 {
   return {

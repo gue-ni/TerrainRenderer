@@ -7,19 +7,23 @@ using Point = glm::vec3;
 
 struct AABB {
   glm::vec3 min, max;
+  AABB(const glm::vec3 &min_, const glm::vec3 &max_);
   inline glm::vec3 size() const { return max - min; }
   inline glm::vec3 center() const { return min + size() / 2.0f; }
   std::array<glm::vec3, 8> corners() const;
+  static AABB from_center_and_size(const glm::vec3 &center, const glm::vec3 &size);
 };
 
 struct Ray {
   glm::vec3 origin, direction;
+  Ray(const glm::vec3 &origin_, const glm::vec3 &direction_);
   inline glm::vec3 point_at(float t) const { return origin + direction * t; }
 };
 
 struct Sphere {
   glm::vec3 center;
   float radius;
+  Sphere(const glm::vec3 &center_, float radius_);
 };
 
 // A plane is defined by a normal and a distance from the origin.
