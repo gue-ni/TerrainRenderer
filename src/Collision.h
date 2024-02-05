@@ -2,6 +2,9 @@
 
 #include <array>
 #include <glm/glm.hpp>
+#include <iostream>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/io.hpp>
 
 using Point = glm::vec3;
 
@@ -35,8 +38,10 @@ struct Plane {
   Plane(const glm::vec3 &plane_normal, float distance_from_origin);
   Plane(const glm::vec3 &plane_normal, const glm::vec3 &point_on_plane);
   void normalize();
-  float distance_from_plane(const Point &) const;
+  float signed_distance(const Point &) const;
 };
+
+inline std::ostream &operator<<(std::ostream &os, const Plane &p) { return os << p.normal << ", " << p.distance; }
 
 struct Frustum {
   enum : std::size_t { NEAR = 0, FAR, TOP, BOTTOM, LEFT, RIGHT };

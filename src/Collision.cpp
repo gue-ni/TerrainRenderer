@@ -46,7 +46,7 @@ void Plane::normalize()
   distance /= length;
 }
 
-float Plane::distance_from_plane(const Point& point) const { return glm::dot(point, normal); }
+float Plane::signed_distance(const Point& point) const { return glm::dot(point, normal) - distance; }
 
 Frustum::Frustum(const glm::mat4& view_projection_matrix)
 {
@@ -84,10 +84,10 @@ bool ray_vs_sphere(const Ray& ray, const Sphere& sphere, float& t)
 
 bool point_vs_plane(const Point& point, const Plane& plane)
 {
-  if (0.0f < (plane.distance_from_plane(point) - plane.distance)) {
-    return false;  // point is in front
+  if (0.0f <= plane.signed_distance(point)) {
+    return false;  // point is on or in front
   } else {
-    return true;  // point is on or behind plane
+    return true;  // point is behind plane -> intersection
   }
 }
 
@@ -122,14 +122,25 @@ bool aabb_vs_plane(const AABB& aabb, const Plane& plane)
   return false;
 }
 
-// https://github.dev/recp/cglm
 // https://cgvr.cs.uni-bremen.de/teaching/cg_literatur/lighthouse3d_view_frustum_culling/index.html
 bool aabb_vs_frustum(const AABB& aabb, const Frustum& frustum)
 {
+  auto vertices = aabb.corners();
+
   for (auto& plane : frustum.planes) {
-    if (aabb_vs_plane(aabb, plane)) {
-      return true;
+    int in = 0, out = 0;
+
+    for (int k = 0; k < 8 && (in == 0 || out == 0); k++) {
+      if (plane.signed_distance(vertices[k]) < 0.0f) {
+        out++;
+      } else {
+        in++;
+      }
+    }
+
+    if (in == 0) {
+      return false;  // all corners are outside
     }
   }
-  return false;
+  return true;
 }
