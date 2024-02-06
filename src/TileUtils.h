@@ -63,8 +63,12 @@ struct Coordinate {
   glm::vec2 to_vec2() const { return {lon, lat}; }
 };
 
+// y-axis points south, so y=0 is the northern most tile.
 struct TileId {
   unsigned zoom, x, y;
+  static const unsigned MAX_ZOOM{20U};
+  static const unsigned MAX_X{1 << MAX_ZOOM};
+  static const unsigned MAX_Y{1 << MAX_ZOOM};
 
   TileId() : TileId(0U, 0U, 0U) {}
 

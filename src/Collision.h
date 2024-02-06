@@ -68,7 +68,7 @@ bool point_vs_frustum(const Point &, const Frustum &);
 // Return true if spheres intersect.
 bool sphere_vs_sphere(const Sphere &, const Sphere &);
 
-// Return true if aabb is (even partly) behind plane.
+// Return true if any corner is in front of plane.
 bool aabb_vs_plane(const AABB &, const Plane &);
 
 // Return true if AABBs intersect.

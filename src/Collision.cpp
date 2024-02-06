@@ -52,8 +52,8 @@ Frustum::Frustum(const glm::mat4& view_projection_matrix)
 
   planes[LEFT] = Plane(transposed[3] + transposed[0]);
   planes[RIGHT] = Plane(transposed[3] - transposed[0]);
-  planes[BOTTOM] = Plane(transposed[3] - transposed[1]);
   planes[TOP] = Plane(transposed[3] + transposed[1]);
+  planes[BOTTOM] = Plane(transposed[3] - transposed[1]);
   planes[NEAR] = Plane(transposed[3] + transposed[2]);
   planes[FAR] = Plane(transposed[3] - transposed[2]);
 
@@ -85,11 +85,12 @@ bool point_vs_plane(const Point& point, const Plane& plane) { return plane.signe
 bool point_vs_frustum(const Point& point, const Frustum& frustum)
 {
   for (const Plane& plane : frustum.planes) {
-    if (point_vs_plane(point, plane)) {
-      return true;
+    // point is behind plane
+    if (!point_vs_plane(point, plane)) {
+      return false;
     }
   }
-  return false;
+  return true;
 }
 
 bool sphere_vs_sphere(const Sphere& a, const Sphere& b)
@@ -104,8 +105,8 @@ bool aabb_vs_aabb(const AABB& a, const AABB& b)
 
 bool aabb_vs_plane(const AABB& aabb, const Plane& plane)
 {
-  for (auto& corner : aabb.corners()) {
-    if (point_vs_plane(corner, plane)) {
+  for (const glm::vec3& corner : aabb.corners()) {
+    if (0.0f <= plane.signed_distance(corner)) {
       return true;
     }
   }
@@ -116,7 +117,7 @@ bool aabb_vs_plane(const AABB& aabb, const Plane& plane)
 bool aabb_vs_frustum(const AABB& aabb, const Frustum& frustum)
 {
   auto vertices = aabb.corners();
-
+#if 0
   for (auto& plane : frustum.planes) {
     int front = 0, behind = 0;
 
@@ -133,4 +134,13 @@ bool aabb_vs_frustum(const AABB& aabb, const Frustum& frustum)
     }
   }
   return true;
+#else
+
+  for (const Plane& plane : frustum.planes) {
+    if (!aabb_vs_plane(aabb, plane)) {
+      return false;
+    }
+  }
+  return true;
+#endif
 }

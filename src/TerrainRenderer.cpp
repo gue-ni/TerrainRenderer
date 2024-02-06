@@ -321,17 +321,6 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
 
   // This render function is executed on all quadtree nodes.
   auto render_tile = [&, this](Node* node) {
-    // Only leafs are rendered.
-    if (!node->is_leaf) {
-      return;
-    }
-
-    // We only care about tiles that are visible, ie inside the frustum.
-    AABB aabb = aabb_from_node(node);
-    if (aabb_vs_frustum(aabb, frustum) == false) {
-      return;
-    }
-
     TileId tile_id = tile_id_from_node(node);
 
     Texture* albedo = m_tile_cache.tile_texture(tile_id, TileType::ORTHO);
@@ -369,6 +358,14 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
     }
   };
 
+  auto is_visible = [&](Node* node) {
+    AABB aabb = aabb_from_node(node);
+    Plane near = frustum.planes[Frustum::NEAR];
+
+    // TODO: check agains other planes, not just near
+    return aabb_vs_plane(aabb, near);
+  };
+
 #if 0
   // Not sure if this is really a good idea. 
   // The idea would be to clear requests that are no longer needed and that 
@@ -378,9 +375,24 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
 #endif
 
   auto nodes = quad_tree.nodes();
+
   // Sort nodes so biggest zoom level is rendered and requested first
   std::sort(nodes.begin(), nodes.end(), [](Node* a, Node* b) { return a->depth > b->depth; });
-  std::for_each(nodes.begin(), nodes.end(), render_tile);
+
+#if 0
+  int leafs = std::count_if(nodes.begin(), nodes.end(), [](Node* node) { return node->is_leaf; });
+
+  int culled =
+      std::count_if(nodes.begin(), nodes.end(), [&](Node* node) { return node->is_leaf && !is_visible(node); });
+
+  std::cout << "total: " << leafs << ", culled: " << culled << std::endl;
+#endif
+
+  std::for_each(nodes.begin(), nodes.end(), [&](Node* node) {
+    if (node->is_leaf && is_visible(node)) {
+      render_tile(node);
+    }
+  });
 
 #if ENABLE_SKYBOX
   glCullFace(GL_BACK);

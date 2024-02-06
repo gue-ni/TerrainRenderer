@@ -8,9 +8,9 @@ A simple OpenGL Terrain Renderer.
 
 ## Features
 
-- [x] Real-world height and texture data 
+- [x] Real-world height and texture data
 - [x] Multithreaded terrain tile loading
-- [X] Quadtree level-of-detail 
+- [X] Quadtree level-of-detail
 - [ ] Frustum Culling
 
 ## Build Instructions

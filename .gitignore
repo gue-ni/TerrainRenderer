@@ -2,12 +2,3 @@
 libraries/
 x64/
 *.user
-*.mp4
-cache/*
-tmp/
-*.zip
-terrain-renderer/
-Debug/
-*.ps1
-imgui.ini
-*.png
