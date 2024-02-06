@@ -1,7 +1,5 @@
 #include "Collision.h"
 
-#include <cassert>
-
 AABB::AABB(const glm::vec3& min_, const glm::vec3& max_) : min(min_), max(max_) {}
 
 AABB AABB::from_center_and_size(const glm::vec3& center, const glm::vec3& size)
@@ -82,14 +80,7 @@ bool ray_vs_sphere(const Ray& ray, const Sphere& sphere, float& t)
   return false;
 }
 
-bool point_vs_plane(const Point& point, const Plane& plane)
-{
-  if (0.0f <= plane.signed_distance(point)) {
-    return false;  // point is on or in front
-  } else {
-    return true;  // point is behind plane -> intersection
-  }
-}
+bool point_vs_plane(const Point& point, const Plane& plane) { return plane.signed_distance(point) < 0.0f; }
 
 bool point_vs_frustum(const Point& point, const Frustum& frustum)
 {
@@ -108,8 +99,7 @@ bool sphere_vs_sphere(const Sphere& a, const Sphere& b)
 
 bool aabb_vs_aabb(const AABB& a, const AABB& b)
 {
-  return (a.min.x <= b.max.x && a.max.x >= b.min.x) && (a.min.y <= b.max.y && a.max.y >= b.min.y) &&
-         (a.min.z <= b.max.z && a.max.z >= b.min.z);
+  return glm::all(glm::greaterThanEqual(a.min, b.max)) && glm::all(glm::greaterThanEqual(b.min, a.max));
 }
 
 bool aabb_vs_plane(const AABB& aabb, const Plane& plane)
@@ -128,17 +118,17 @@ bool aabb_vs_frustum(const AABB& aabb, const Frustum& frustum)
   auto vertices = aabb.corners();
 
   for (auto& plane : frustum.planes) {
-    int in = 0, out = 0;
+    int front = 0, behind = 0;
 
-    for (int k = 0; k < 8 && (in == 0 || out == 0); k++) {
+    for (int k = 0; k < 8 && (front == 0 || behind == 0); k++) {
       if (plane.signed_distance(vertices[k]) < 0.0f) {
-        out++;
+        behind++;
       } else {
-        in++;
+        front++;
       }
     }
 
-    if (in == 0) {
+    if (front == 0) {
       return false;  // all corners are outside
     }
   }

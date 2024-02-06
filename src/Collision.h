@@ -59,7 +59,7 @@ bool ray_vs_plane(const Ray &, const Plane &, float &t);
 // Return true if ray intersects sphere.
 bool ray_vs_sphere(const Ray &, const Sphere &, float &t);
 
-// Return true if point is behind plane.
+// Return true if point is behind plane (signed distance is < 0).
 bool point_vs_plane(const Point &, const Plane &);
 
 // Return true if point is inside frustum.
