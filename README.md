@@ -19,7 +19,6 @@ This project depends on SDL2, GLM, GLEW and libcpr. You should be able to build 
 windows by following the steps in the [msbuild.yml](./.github/workflows/msbuild.yml).
 
 ```
-cmake -DCMAKE_INSTALL_PREFIX:PATH="C:\Users\jakob\Documents\Projects\TerrainRenderer\bin" -DCMAKE_BUILD_TYPE=Release -B build
+cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build --config Release --parallel
-cmake --install build
 ```

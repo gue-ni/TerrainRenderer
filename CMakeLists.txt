@@ -22,12 +22,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(imgui)
 
-
 file(GLOB EXTERNAL_SOURCE
     ${imgui_SOURCE_DIR}/*.cpp
     ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl2.cpp
     ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
 )
+
+include_directories(${imgui_SOURCE_DIR})
+
+add_subdirectory(collision)
 
 if(WIN32)
     FetchContent_Declare(
@@ -46,8 +49,6 @@ if(WIN32)
     list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/build/_deps/glew-src")
 endif(WIN32)
 
-project(renderer LANGUAGES CXX)
-
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
 
@@ -56,13 +57,16 @@ include_directories(${GLEW_INCLUDE_DIRS})
 
 find_package(OpenGL REQUIRED)
 
-include_directories(${imgui_SOURCE_DIR})
-
 add_executable(app
     src/main.cpp
     src/Window.cpp
     src/Game.cpp
     src/Clock.cpp
+
+    gfx/gl.cpp
+    gfx/image.cpp
+    gfx/transform.cpp
+    gfx/camera.cpp
 
     src/TileService.cpp
     src/TileCache.cpp
@@ -70,17 +74,12 @@ add_executable(app
     src/QuadTree.cpp
     src/Cube.cpp
     src/Chunk.cpp
-    src/Collision.cpp
-
-    gfx/gl.cpp
-    gfx/image.cpp
-    gfx/transform.cpp
-    gfx/camera.cpp
 
     ${EXTERNAL_SOURCE}
 )
 
-target_link_libraries(app PRIVATE glm ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} cpr::cpr)
+target_link_libraries(app PRIVATE collision ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} cpr::cpr)
+target_include_directories(app PRIVATE "${CMAKE_SOURCE_DIR}/build/_deps/glm-src")
 
 if(WIN32)
     add_custom_command(TARGET app POST_BUILD
