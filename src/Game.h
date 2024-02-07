@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include "../gfx/gfx.h"
 #include "Clock.h"
 #include "TerrainRenderer.h"

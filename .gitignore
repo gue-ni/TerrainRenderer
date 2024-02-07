@@ -1,4 +1,5 @@
 .vs/
 libraries/
 x64/
+build/
 *.user
