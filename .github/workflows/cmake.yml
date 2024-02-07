@@ -26,7 +26,7 @@ jobs:
             generator: Ninja
           - os: ubuntu-latest
             c_compiler: gcc
-            cpp_compiler: g++13
+            cpp_compiler: g++-13
             release_name: linux-app
             generator: "Unix Makefiles"
         exclude:
@@ -42,7 +42,7 @@ jobs:
 
     - name: Install Dependencies
       if: matrix.os == 'ubuntu-latest'
-      run: sudo apt install libsdl2-dev libglew-dev libgle3-dev g++13
+      run: sudo apt install libsdl2-dev libglew-dev libgle3-dev g++-13
 
     - name: Setup Ninja
       uses: ashutoshvarma/setup-ninja@master
