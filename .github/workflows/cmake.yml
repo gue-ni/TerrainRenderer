@@ -23,12 +23,10 @@ jobs:
             c_compiler: cl
             cpp_compiler: cl
             release_name: windows-app
-            generator: Ninja
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++-13
             release_name: linux-app
-            generator: "Unix Makefiles"
         exclude:
           - os: windows-latest
             c_compiler: gcc
@@ -44,11 +42,6 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: sudo apt install libsdl2-dev libglew-dev libgle3-dev g++-13
 
-    - name: Setup Ninja
-      uses: ashutoshvarma/setup-ninja@master
-      with:
-        version: 1.10.0
-
     - name: Configure
       run: >
         cmake -B '${{ github.workspace }}/build'
@@ -57,7 +50,7 @@ jobs:
         -S ${{ github.workspace }}
 
     - name: Build
-      run: cmake --build '${{ github.workspace }}/build' --config ${{ matrix.build_type }}
+      run: cmake --build '${{ github.workspace }}/build' --config ${{ matrix.build_type }} --parallel
 
 
 

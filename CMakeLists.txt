@@ -82,14 +82,16 @@ add_executable(app
 
 target_link_libraries(app PRIVATE glm ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} cpr::cpr)
 
-add_custom_command(TARGET app POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:app> $<TARGET_FILE_DIR:app>
-  COMMAND_EXPAND_LISTS
-  COMMENT "Copy dll to output dir"
-)
+if(WIN32)
+    add_custom_command(TARGET app POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:app> $<TARGET_FILE_DIR:app>
+        COMMAND_EXPAND_LISTS
+        COMMENT "Copy dll to output dir"
+    )
 
-add_custom_command(TARGET app POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/build/_deps/glew-src/bin/Release/x64/glew32.dll" $<TARGET_FILE_DIR:app>
-  COMMENT "Copy glew32.dll"
-)
+    add_custom_command(TARGET app POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/build/_deps/glew-src/bin/Release/x64/glew32.dll" $<TARGET_FILE_DIR:app>
+        COMMENT "Copy glew32.dll"
+    )
+endif(WIN32)
 
