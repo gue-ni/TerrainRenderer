@@ -3,6 +3,7 @@
 #include <cassert>
 #include <chrono>
 #include <iostream>
+#include <algorithm>
 
 #include "Collision.h"
 #include "Common.h"
