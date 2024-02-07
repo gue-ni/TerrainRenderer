@@ -57,7 +57,7 @@ void Game::render_terrain()
 
     if (ray_vs_plane(ray, plane, t)) {
       glm::vec3 point = ray.point_at(t);
-      glm::vec2 clamped_point = clamp(glm::vec2(point.x, point.z), m_terrain_renderer.bounds());
+      glm::vec2 clamped_point = clamp_range(glm::vec2(point.x, point.z), m_terrain_renderer.bounds());
       center = glm::mix(center, clamped_point, 0.5);
     }
   }

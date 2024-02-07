@@ -28,12 +28,12 @@ uniform uint u_zoom;
 out vec2 uv;
 out vec4 world_pos;
 
-float altitude_from_color(vec4 color) { 
-  return (color.r + color.g / 255.0); 
+float altitude_from_color(vec4 color) {
+  return (color.r + color.g / 255.0);
 }
 
-vec2 map_range(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) { 
-  return out_min + (value - in_min) * (out_max - out_min) / (in_max - in_min); 
+vec2 map_range(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) {
+  return out_min + (value - in_min) * (out_max - out_min) / (in_max - in_min);
 }
 
 void main() {
@@ -78,8 +78,8 @@ uniform uint u_zoom;
 uniform uint u_max_zoom;
 uniform bool u_debug_view;
 
-vec2 map_range(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) { 
-  return out_min + (value - in_min) * (out_max - out_min) / (in_max - in_min); 
+vec2 map_range(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) {
+  return out_min + (value - in_min) * (out_max - out_min) / (in_max - in_min);
 }
 
 void main() {
@@ -270,7 +270,7 @@ Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::
 
 void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, float altitude)
 {
-  const glm::vec2 terrain_center = clamp(center, m_bounds);
+  const glm::vec2 terrain_center = clamp_range(center, m_bounds);
 
 #if 1
   float alt = altitude_over_terrain(center, altitude);
@@ -367,8 +367,8 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
   };
 
 #if 0
-  // Not sure if this is really a good idea. 
-  // The idea would be to clear requests that are no longer needed and that 
+  // Not sure if this is really a good idea.
+  // The idea would be to clear requests that are no longer needed and that
   // are just filling up our queue. They could be no longer needed because
   // we quickly overflew the area or something.
   m_tile_cache.clear_pending();

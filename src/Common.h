@@ -23,7 +23,7 @@ inline T map_range(const T& value, const Bounds<T>& in, const Bounds<T>& out)
 }
 
 template <typename T>
-inline T clamp(const T& value, const Bounds<T>& range)
+inline T clamp_range(const T& value, const Bounds<T>& range)
 {
   return max(range.min, min(value, range.max));
 }
