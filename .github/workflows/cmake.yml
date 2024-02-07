@@ -52,6 +52,17 @@ jobs:
     - name: Build
       run: cmake --build '${{ github.workspace }}/build' --config ${{ matrix.build_type }} --parallel
 
+    - name: Upload Artifact
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v3
+      with:
+        name: terrain-renderer
+        path: |
+          ${{github.workspace}}/x64/${{matrix.build_type}}/*.exe
+          ${{github.workspace}}/x64/${{matrix.build_type}}/*.dll
+
+
+
 
 
 
