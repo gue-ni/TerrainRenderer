@@ -4,7 +4,7 @@
 
 #include <filesystem>
 
-#define LOG             0
+#define LOG_REQUESTS    1
 #define SAVE_LOCAL_COPY 1
 
 TileService::TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype,
@@ -12,7 +12,7 @@ TileService::TileService(const std::string& url, const UrlPattern& url_pattern, 
     : m_url(url), m_url_pattern(url_pattern), m_filetype(filetype), m_thread_pool(3), m_dir(dir)
 {
   if (!std::filesystem::exists(m_dir)) {
-    std::filesystem::create_directory(m_dir);
+    std::filesystem::create_directories(m_dir);
   }
 }
 
@@ -71,10 +71,12 @@ void TileService::request_tile(const TileId& tile)
 {
   m_already_requested.insert(tile);
 
-  m_thread_pool.assign_work([this, tile]() {
+  auto tile_request = [this, tile]() {
     auto image = download_tile(tile);
     if (image) m_ram_cache[tile] = std::move(image);
-  });
+  };
+
+  m_thread_pool.assign_work(tile_request);
 }
 
 std::unique_ptr<Image> TileService::download_tile(const TileId& tile)
@@ -87,7 +89,10 @@ std::unique_ptr<Image> TileService::download_tile(const TileId& tile)
     return nullptr;
   }
 
-  std::cout << "GET " << std::quoted(url) << std::endl;
+#if LOG_REQUESTS
+  // std::cout << "GET " << std::quoted(url) << std::endl;
+  // std::cout << "GET " << tile << std::endl;
+#endif
 
   auto image = std::make_unique<Image>();
   image->read_from_buffer(reinterpret_cast<unsigned char*>(r.text.data()), int(r.text.size()));
