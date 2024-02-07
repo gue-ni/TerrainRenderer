@@ -1,9 +1,9 @@
 #include "TerrainRenderer.h"
 
+#include <algorithm>
 #include <cassert>
 #include <chrono>
 #include <iostream>
-#include <algorithm>
 
 #include "Collision.h"
 #include "Common.h"
@@ -279,7 +279,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
 
   float normalized_height = alt / (max_alt - min_alt);
 
-  float factor = std::clamp(1.0f - normalized_height, 0.0f, 1.0f);
+  float factor = glm::clamp(1.0f - normalized_height, 0.0f, 1.0f);
 
   const int max_possible_zoom = 16;
 

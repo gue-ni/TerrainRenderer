@@ -144,7 +144,7 @@ void Game::read_input(float dt)
 
           m_camera.yaw += delta_yaw;
           m_camera.pitch -= delta_pitch;
-          m_camera.pitch = std::clamp(m_camera.pitch, -89.0f, 89.0f);
+          m_camera.pitch = glm::clamp(m_camera.pitch, -89.0f, 89.0f);
 
           glm::vec3 front = vector_from_spherical(glm::radians(m_camera.pitch), glm::radians(m_camera.yaw));
 
