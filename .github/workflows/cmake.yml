@@ -52,9 +52,7 @@ jobs:
     - name: Configure
       run: >
         cmake -B '${{ github.workspace }}/build'
-        -G '${{ matrix.generator }}'
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -S ${{ github.workspace }}
 
