@@ -76,10 +76,10 @@ Chunk::Chunk(unsigned vertex_count, float size)
   m_vao->bind();
 
   m_vbo->bind();
-  m_vbo->buffer_data(gfx::span(vertices));
+  m_vbo->buffer_data(std::span(vertices));
 
   m_ebo->bind();
-  m_ebo->buffer_data(gfx::span(vertices));
+  m_ebo->buffer_data(std::span(vertices));
 
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, pos)));
   glEnableVertexAttribArray(0);
