@@ -7,5 +7,4 @@ FetchContent_MakeAvailable(glm)
 
 add_library(collision STATIC Collision.cpp Collision.h)
 
-target_include_directories(collision PUBLIC "${CMAKE_SOURCE_DIR}/build/_deps/glm-src" ".")
-# target_include_directories(collision PUBLIC .)
+target_include_directories(collision PUBLIC "${glm_SOURCE_DIR}" ".")
