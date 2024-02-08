@@ -1,9 +1,10 @@
 /*  */
 #pragma once
 
-#include "../gfx/gl.h"
+#include "../gfx.h"
 #include "Common.h"
 
+using namespace gfx;
 using namespace gfx::gl;
 
 class Chunk
