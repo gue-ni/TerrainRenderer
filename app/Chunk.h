@@ -1,7 +1,7 @@
 /*  */
 #pragma once
 
-#include "../gfx.h"
+#include "../gfx/gfx.h"
 #include "Common.h"
 
 using namespace gfx;
