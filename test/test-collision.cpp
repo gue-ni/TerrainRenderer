@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>
 #include <glm/gtx/io.hpp>
 
 #include "Collision.h"
