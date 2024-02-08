@@ -37,16 +37,10 @@ add_executable(app
     Window.cpp
     Game.cpp
     Clock.cpp
-    TileService.cpp
-    TileCache.cpp
-    TerrainRenderer.cpp
-    QuadTree.cpp
-    Cube.cpp
-    Chunk.cpp
     ${imgui_SOURCE}
 )
 
-target_link_libraries(app PRIVATE collision gfx cpr::cpr fmt::fmt)
+target_link_libraries(app PRIVATE terrain)
 
 target_include_directories(app PRIVATE
     "${glm_SOURCE_DIR}"
