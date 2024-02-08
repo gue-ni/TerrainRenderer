@@ -6,7 +6,10 @@
 
 #include "Collision.h"
 
-TEST_CASE("AABB corners") { AABB aabb(glm::vec3(0.0f), glm::vec3(1.0f)); }
+TEST_CASE("AABB corners") {
+  AABB aabb(glm::vec3(0.0f), glm::vec3(1.0f));
+  auto corners = aabb.corners();
+}
 
 TEST_CASE("Point vs Plane")
 {
