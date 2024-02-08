@@ -19,6 +19,7 @@ This project depends on SDL2, GLM, GLEW and libcpr. You should be able to build 
 windows by following the steps in the [msbuild.yml](./.github/workflows/msbuild.yml).
 
 ```
+git clone --recursive git@github.com:gue-ni/TerrainRenderer.git
 cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build --config Release --parallel
 ```
