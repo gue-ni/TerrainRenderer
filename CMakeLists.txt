@@ -9,4 +9,5 @@ add_subdirectory(gfx)
 add_subdirectory(collision)
 add_subdirectory(app)
 add_subdirectory(test)
+add_subdirectory(terrain)
 
