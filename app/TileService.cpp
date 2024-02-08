@@ -22,16 +22,16 @@ std::string TileService::tile_url(const TileId& tile) const
 
   switch (m_url_pattern) {
     case ZXY_Y_NORTH: {
-      return std::format("{}/{}/{}/{}{}", m_url, tile.zoom, tile.x, (num_y_tiles - tile.y - 1), m_filetype);
+      return fmt::format("{}/{}/{}/{}{}", m_url, tile.zoom, tile.x, (num_y_tiles - tile.y - 1), m_filetype);
     }
     case ZYX_Y_NORTH: {
-      return std::format("{}/{}/{}/{}{}", m_url, tile.zoom, (num_y_tiles - tile.y - 1), tile.x, m_filetype);
+      return fmt::format("{}/{}/{}/{}{}", m_url, tile.zoom, (num_y_tiles - tile.y - 1), tile.x, m_filetype);
     }
     case ZYX_Y_SOUTH: {
-      return std::format("{}/{}/{}/{}{}", m_url, tile.zoom, tile.y, tile.x, m_filetype);
+      return fmt::format("{}/{}/{}/{}{}", m_url, tile.zoom, tile.y, tile.x, m_filetype);
     }
     case ZXY_Y_SOUTH: {
-      return std::format("{}/{}/{}/{}{}", m_url, tile.zoom, tile.x, tile.y, m_filetype);
+      return fmt::format("{}/{}/{}/{}{}", m_url, tile.zoom, tile.x, tile.y, m_filetype);
     }
     default:
       assert(false);
@@ -112,6 +112,6 @@ std::unique_ptr<Image> TileService::download_tile(const TileId& tile)
 void TileService::save_local_copy(const TileId& tile, const Image* image) const
 {
   assert(image);
-  std::string filename = std::format("{}/{}.png", m_dir, tile.to_string());
+  std::string filename = fmt::format("{}/{}.png", m_dir, tile.to_string());
   image->write(filename);
 }

@@ -7,6 +7,18 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(cpr)
 
 FetchContent_Declare(
+    cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git
+    GIT_TAG 3b15fa82ea74739b574d705fea44959b58142eb8
+)
+FetchContent_MakeAvailable(cpr)
+
+FetchContent_Declare(fmt
+    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(fmt)
+
+FetchContent_Declare(
     imgui GIT_REPOSITORY https://github.com/ocornut/imgui.git
     GIT_TAG master
 )
@@ -34,7 +46,7 @@ add_executable(app
     ${imgui_SOURCE}
 )
 
-target_link_libraries(app PRIVATE collision gfx cpr::cpr)
+target_link_libraries(app PRIVATE collision gfx cpr::cpr fmt::fmt)
 
 target_include_directories(app PRIVATE
     "${glm_SOURCE_DIR}"
