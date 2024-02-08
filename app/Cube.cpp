@@ -15,7 +15,7 @@ Cube::Cube() : m_vao(std::make_unique<VertexArrayObject>()), m_vbo(std::make_uni
   m_vao->bind();
 
   m_vbo->bind();
-  m_vbo->buffer_data(std::span(vertices));
+  m_vbo->buffer_data(vertices.data(), vertices.size_bytes());
 
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
   glEnableVertexAttribArray(0);
