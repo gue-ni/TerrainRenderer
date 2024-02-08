@@ -35,7 +35,11 @@ add_executable(app
 )
 
 target_link_libraries(app PRIVATE collision gfx cpr::cpr)
-target_include_directories(app PRIVATE "${CMAKE_SOURCE_DIR}/build/_deps/glm-src")
+
+target_include_directories(app PRIVATE
+    "${CMAKE_SOURCE_DIR}/build/_deps/glm-src"
+    "${SDL2_INCLUDE_DIRS}"
+)
 
 if(WIN32)
     add_custom_command(TARGET app POST_BUILD
