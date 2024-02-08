@@ -1,7 +1,8 @@
 #include "TileCache.h"
 
-#include <cassert>
 #include <fmt/core.h>
+
+#include <cassert>
 #include <iostream>
 
 #include "../gfx/util.h"

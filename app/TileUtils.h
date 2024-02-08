@@ -1,7 +1,8 @@
 #pragma once
 
-#include <array>
 #include <fmt/core.h>
+
+#include <array>
 #include <numbers>
 #include <string>
 
