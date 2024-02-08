@@ -8,4 +8,5 @@ include(FetchContent)
 add_subdirectory(gfx)
 add_subdirectory(collision)
 add_subdirectory(src)
+add_subdirectory(test)
 
