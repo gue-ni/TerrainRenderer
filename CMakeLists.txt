@@ -7,6 +7,6 @@ include(FetchContent)
 
 add_subdirectory(gfx)
 add_subdirectory(collision)
-add_subdirectory(src)
+add_subdirectory(app)
 add_subdirectory(test)
 
