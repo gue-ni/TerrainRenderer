@@ -5,8 +5,6 @@
 */
 #pragma once
 
-#include <fmt/core.h>
-
 #include <chrono>
 #include <memory>
 #include <numbers>
