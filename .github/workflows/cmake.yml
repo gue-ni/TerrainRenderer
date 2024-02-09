@@ -58,8 +58,8 @@ jobs:
       with:
         name: terrain-renderer
         path: |
-          ${{github.workspace}}/x64/${{matrix.build_type}}/*.exe
-          ${{github.workspace}}/x64/${{matrix.build_type}}/*.dll
+          ${{github.workspace}}/build/app/${{matrix.build_type}}/*.exe
+          ${{github.workspace}}/build/app/${{matrix.build_type}}/*.dll
 
 
 
