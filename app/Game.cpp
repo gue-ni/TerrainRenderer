@@ -1,9 +1,5 @@
 #include "Game.h"
 
-#include "Collision.h"
-
-#define INTERSECT_PLANE 0
-
 const Coordinate GROSS_GLOCKNER(47.0742f, 12.6947f);
 
 const Coordinate SCHNEEBERG(47.7671f, 15.8056f);
@@ -49,21 +45,6 @@ void Game::render_terrain()
 {
   glm::vec3 camera_position = m_camera.local_position();
   glm::vec2 center = {camera_position.x, camera_position.z};
-#if 0
-  if (m_terrain.intersect_terrain) {
-    glm::vec3 camera_direction = m_camera.transform_direction(glm::vec3(0.0f, 0.0f, -1.0f));
-
-    float t;
-    Ray ray{camera_position, camera_direction};
-    Plane plane(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 30.0f, 0.0f));
-
-    if (ray_vs_plane(ray, plane, t)) {
-      glm::vec3 point = ray.point_at(t);
-      glm::vec2 clamped_point = clamp_range(glm::vec2(point.x, point.z), m_terrain.bounds());
-      center = glm::mix(center, clamped_point, 0.5);
-    }
-  }
-#endif
   m_terrain.render(m_camera, center, camera_position.y);
 }
 

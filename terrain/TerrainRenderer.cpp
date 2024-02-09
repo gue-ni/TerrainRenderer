@@ -267,21 +267,36 @@ void TerrainRenderer::calculate_zoom_levels(const glm::vec2& center, float altit
 
 glm::vec2 TerrainRenderer::calculate_lod_center(const Camera& camera)
 {
-  // we don't want the lod center the be right below the camera. Depending
-  // on the altitude it should be in front of the camera.
-
   glm::vec3 position3 = camera.local_position();
   glm::vec2 position = {position3.x, position3.z};
-
   glm::vec3 forward = -camera.local_z_axis();
-  glm::vec2 view_direction = glm::normalize(glm::vec2(forward.x, forward.z));
 
-  float alt = position3.y / scaling_factor();
-  float min_alt = 0, max_alt = 20000;
+  if (intersect_terrain) {
+    // the terrain we are looking at should be the highest lod
 
-  float horizon = map_range(alt, min_alt, max_alt, 0.0f, max_horizon);
+    float t;
+    Ray ray(position3, forward);
+    Plane plane(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 30.0f, 0.0f));
 
-  return position + view_direction * horizon;
+    if (ray_vs_plane(ray, plane, t)) {
+      glm::vec3 point = ray.point_at(t);
+      return {point.x, point.z};
+    } else {
+      return position;
+    }
+  } else {
+    // we don't want the lod center the be right below the camera. Depending
+    // on the altitude it should be in front of the camera.
+
+    glm::vec2 view_direction = glm::normalize(glm::vec2(forward.x, forward.z));
+
+    float alt = position3.y / scaling_factor();
+    float min_alt = 0, max_alt = 20000;
+
+    float horizon = map_range(alt, min_alt, max_alt, 0.0f, max_horizon);
+
+    return position + view_direction * horizon;
+  }
 }
 
 Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::vec2>& uv, const TileType& type)
@@ -323,7 +338,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
 {
   auto terrain_center = calculate_lod_center(camera);
 
-  //terrain_center = clamp_range(center, m_bounds);
+  // terrain_center = clamp_range(center, m_bounds);
 
   if (!manual_zoom) {
     calculate_zoom_levels(center, altitude);
