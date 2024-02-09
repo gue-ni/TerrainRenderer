@@ -196,17 +196,16 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned max_zoom_leve
       m_coord_bounds(root_tile.bounds()),
       m_tile_cache(m_root_tile),
       m_max_zoom_level_range(max_zoom_level_range),
-      m_min_zoom(root_tile.zoom),
-      m_max_zoom(root_tile.zoom + m_max_zoom_level_range)
+      min_zoom(root_tile.zoom),
+      max_zoom(root_tile.zoom + max_zoom_level_range)
 {
-  const float min_elevation = 0.0f, max_elevation = 8191.0f;
-
+  // the rendered terrain does not necessarily match with it's size in meters
   float width = m_bounds.size().x;
-
   float tile_width = wms::tile_width(wms::tiley2lat(m_root_tile.y, m_root_tile.zoom), m_root_tile.zoom);
-
   m_terrain_scaling_factor = width / tile_width;
 
+  // for decoding the height map
+  const float min_elevation = 0.0f, max_elevation = 8191.0f;
   m_height_scaling_factor = (max_elevation - min_elevation);
 
   // request low zoom tiles as fallback
@@ -258,12 +257,12 @@ void TerrainRenderer::calculate_zoom_levels(const glm::vec2& center, float altit
   float normalized_height = alt / (max_alt - min_alt);
   float factor = glm::clamp(1.0f - normalized_height, 0.0f, 1.0f);
 
-  m_max_zoom = std::max(int(TileId::MAX_ZOOM * factor), int(m_root_tile.zoom) + 1);
+  max_zoom = std::max(int(TileId::MAX_ZOOM * factor), int(m_root_tile.zoom + 1U));
 
-  int requested_zoom_range = m_max_zoom - m_root_tile.zoom;
+  int requested_zoom_range = max_zoom - m_root_tile.zoom;
   int zoom_range = glm::clamp(requested_zoom_range, 1, m_max_zoom_level_range);
 
-  m_min_zoom = m_max_zoom - zoom_range;
+  min_zoom = max_zoom - zoom_range;
 }
 
 Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::vec2>& uv, const TileType& type)
@@ -305,19 +304,11 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
 {
   const glm::vec2 terrain_center = clamp_range(center, m_bounds);
 
-#if 0
-  // TODO: improve this
-  float alt = altitude_over_terrain(center, altitude);
-  float min_alt = 0, max_alt = 15000;
-  float normalized_height = alt / (max_alt - min_alt);
-  float factor = glm::clamp(1.0f - normalized_height, 0.0f, 1.0f);
-  const int max_possible_zoom = 16;
-  int max_zoom_level = static_cast<int>(max_possible_zoom * factor);
-#else
-  calculate_zoom_levels(center, altitude);
-#endif
+  if (!manual_zoom) {
+    calculate_zoom_levels(center, altitude);
+  }
 
-  QuadTree quad_tree(terrain_center, m_bounds.min, m_bounds.max, zoom_levels());
+  QuadTree quad_tree(terrain_center, m_bounds.min, m_bounds.max, max_zoom - m_root_tile.zoom);
 
   if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -389,6 +380,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
   std::sort(nodes.begin(), nodes.end(), [](Node* a, Node* b) { return a->depth > b->depth; });
 
 #if 0
+  // TODO: implement frustum culling
   Frustum frustum(camera.view_projection_matrix());
 
   auto is_visible = [&](Node* node) {
@@ -403,7 +395,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
 #endif
 
   std::for_each(nodes.begin(), nodes.end(), [&](Node* node) {
-    if (min_zoom_level() <= (m_root_tile.zoom + node->depth)) {
+    if (min_zoom <= (m_root_tile.zoom + node->depth)) {
       render_tile(node);
     }
   });

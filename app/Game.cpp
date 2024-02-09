@@ -16,11 +16,13 @@ const Coordinate root = INNSBRUCK;
 
 const unsigned zoom = 7;
 
+const int zoom_range = 5;
+
 const float terrain_width = wms::tile_width(root.lat, zoom) * 0.01f;
 
 Game::Game(size_t width, size_t height)
     : Window(width, height),
-      m_terrain(TileId(root, zoom), 5, {glm::vec2(-terrain_width / 2.0f), glm::vec2(terrain_width / 2.0f)})
+      m_terrain(TileId(root, zoom), zoom_range, {glm::vec2(-terrain_width / 2.0f), glm::vec2(terrain_width / 2.0f)})
 {
   float fov = 45.0f, aspect_ratio = float(width) / float(height), near = 1.0f, far = 100000.0f;
   m_camera.set_attributes(glm::radians(fov), aspect_ratio, near, far);
@@ -88,14 +90,19 @@ void Game::render_ui()
   ImGui::Text("Heading %d", heading);
   ImGui::Text("Terrain Elevation: %.2f", m_terrain.terrain_elevation(pos2));
   ImGui::Text("Altitude over terrain: %.2f", m_terrain.altitude_over_terrain(pos2, pos.y));
-  ImGui::Text("Zoom Level Range: [%d, %d] (%d)", m_terrain.min_zoom_level(), m_terrain.max_zoom_level(),
-              m_terrain.zoom_levels());
+  ImGui::Text("Zoom Level Range: [%d, %d] (%d)", m_terrain.min_zoom, m_terrain.max_zoom,
+              m_terrain.max_zoom - m_terrain.min_zoom);
   ImGui::Checkbox("Wireframe", &m_terrain.wireframe);
   ImGui::Checkbox("Ray Intersect", &m_terrain.intersect_terrain);
   ImGui::Checkbox("Debug View", &m_terrain.debug_view);
   ImGui::SliderFloat("Camera Speed", &m_speed, 10.0f, 5000.0f);
   ImGui::SliderFloat("Fog Far", &m_terrain.fog_far, 100.0f, 100000.0f);
   ImGui::SliderFloat("Fog Density", &m_terrain.fog_density, 0.0f, 10.0f);
+  ImGui::Checkbox("Manual Zoom", &m_terrain.manual_zoom);
+  if (m_terrain.manual_zoom) {
+    ImGui::SliderInt("Min Zoom", &m_terrain.min_zoom, zoom, 16);
+    ImGui::SliderInt("Max Zoom", &m_terrain.max_zoom, zoom, 16);
+  }
   ImGui::End();
 
   ImGui::Render();

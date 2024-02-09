@@ -32,12 +32,6 @@ class TerrainRenderer
 
   inline TileId root_tile() const { return m_root_tile; }
 
-  inline int zoom_levels() const { return max_zoom_level() - min_zoom_level(); }
-
-  inline int min_zoom_level() const { return m_min_zoom; }
-
-  inline int max_zoom_level() const { return m_max_zoom; }
-
   Coordinate point_to_coordinate(const glm::vec2&) const;
 
   glm::vec2 coordinate_to_point(const Coordinate&) const;
@@ -45,8 +39,10 @@ class TerrainRenderer
   bool wireframe{false};
   bool intersect_terrain{false};
   bool debug_view{false};
+  bool manual_zoom{false};
   float fog_far{2000.0f};
   float fog_density{0.25f};
+  int min_zoom, max_zoom;
 
  private:
   const std::unique_ptr<ShaderProgram> m_shader, m_sky_shader;
@@ -55,13 +51,10 @@ class TerrainRenderer
   const Cube m_sky_box;
   const Bounds<glm::vec2> m_bounds;
   const Bounds<Coordinate> m_coord_bounds;
-
-  // maximum number of zoom levels rendered at the same time
   const int m_max_zoom_level_range;
   TileCache m_tile_cache;
   float m_height_scaling_factor;
   float m_terrain_scaling_factor;
-  int m_min_zoom, m_max_zoom;
 
   void calculate_zoom_levels(const glm::vec2& center, float altitude);
 
