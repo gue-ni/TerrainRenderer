@@ -43,6 +43,7 @@ class TerrainRenderer
   float fog_far{2000.0f};
   float fog_density{0.25f};
   int min_zoom, max_zoom;
+  float max_horizon{500.0f};
 
  private:
   const std::unique_ptr<ShaderProgram> m_shader, m_sky_shader;
@@ -57,6 +58,8 @@ class TerrainRenderer
   float m_terrain_scaling_factor;
 
   void calculate_zoom_levels(const glm::vec2& center, float altitude);
+
+  glm::vec2 calculate_lod_center(const Camera& camera);
 
   TileId tile_id_from_node(Node*) const;
 

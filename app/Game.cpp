@@ -49,7 +49,7 @@ void Game::render_terrain()
 {
   glm::vec3 camera_position = m_camera.local_position();
   glm::vec2 center = {camera_position.x, camera_position.z};
-
+#if 0
   if (m_terrain.intersect_terrain) {
     glm::vec3 camera_direction = m_camera.transform_direction(glm::vec3(0.0f, 0.0f, -1.0f));
 
@@ -63,7 +63,7 @@ void Game::render_terrain()
       center = glm::mix(center, clamped_point, 0.5);
     }
   }
-
+#endif
   m_terrain.render(m_camera, center, camera_position.y);
 }
 
@@ -98,6 +98,7 @@ void Game::render_ui()
   ImGui::SliderFloat("Camera Speed", &m_speed, 10.0f, 5000.0f);
   ImGui::SliderFloat("Fog Far", &m_terrain.fog_far, 100.0f, 100000.0f);
   ImGui::SliderFloat("Fog Density", &m_terrain.fog_density, 0.0f, 10.0f);
+  ImGui::SliderFloat("Horizon", &m_terrain.max_horizon, 0.0f, 5000.0f);
   ImGui::Checkbox("Manual Zoom", &m_terrain.manual_zoom);
   if (m_terrain.manual_zoom) {
     ImGui::SliderInt("Min Zoom", &m_terrain.min_zoom, zoom, 16);

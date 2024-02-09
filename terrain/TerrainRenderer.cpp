@@ -265,6 +265,25 @@ void TerrainRenderer::calculate_zoom_levels(const glm::vec2& center, float altit
   min_zoom = max_zoom - zoom_range;
 }
 
+glm::vec2 TerrainRenderer::calculate_lod_center(const Camera& camera)
+{
+  // we don't want the lod center the be right below the camera. Depending
+  // on the altitude it should be in front of the camera.
+
+  glm::vec3 position3 = camera.local_position();
+  glm::vec2 position = {position3.x, position3.z};
+
+  glm::vec3 forward = -camera.local_z_axis();
+  glm::vec2 view_direction = glm::normalize(glm::vec2(forward.x, forward.z));
+
+  float alt = position3.y / scaling_factor();
+  float min_alt = 0, max_alt = 20000;
+
+  float horizon = map_range(alt, min_alt, max_alt, 0.0f, max_horizon);
+
+  return position + view_direction * horizon;
+}
+
 Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::vec2>& uv, const TileType& type)
 {
   Texture* parent_texture = nullptr;
@@ -302,7 +321,9 @@ Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::
 
 void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, float altitude)
 {
-  const glm::vec2 terrain_center = clamp_range(center, m_bounds);
+  auto terrain_center = calculate_lod_center(camera);
+
+  //terrain_center = clamp_range(center, m_bounds);
 
   if (!manual_zoom) {
     calculate_zoom_levels(center, altitude);
