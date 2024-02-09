@@ -1,9 +1,5 @@
 #include "Game.h"
 
-#include "Collision.h"
-
-#define INTERSECT_PLANE 0
-
 const Coordinate GROSS_GLOCKNER(47.0742f, 12.6947f);
 
 const Coordinate SCHNEEBERG(47.7671f, 15.8056f);
@@ -16,15 +12,17 @@ const Coordinate root = INNSBRUCK;
 
 const unsigned zoom = 7;
 
+const int zoom_range = 5;
+
 const float terrain_width = wms::tile_width(root.lat, zoom) * 0.01f;
 
 Game::Game(size_t width, size_t height)
     : Window(width, height),
-      m_terrain_renderer(TileId(root, zoom), 4, {glm::vec2(-terrain_width / 2.0f), glm::vec2(terrain_width / 2.0f)})
+      m_terrain(TileId(root, zoom), zoom_range, {glm::vec2(-terrain_width / 2.0f), glm::vec2(terrain_width / 2.0f)})
 {
   float fov = 45.0f, aspect_ratio = float(width) / float(height), near = 1.0f, far = 100000.0f;
-  m_camera.set_projection_matrix(glm::radians(fov), aspect_ratio, near, far);
-  m_camera.set_local_position(glm::vec3(0.0f, 5000.0f * m_terrain_renderer.scaling_factor(), 0.0f));
+  m_camera.set_attributes(glm::radians(fov), aspect_ratio, near, far);
+  m_camera.set_local_position(glm::vec3(0.0f, 5000.0f * m_terrain.scaling_factor(), 0.0f));
 }
 
 void Game::render(float dt)
@@ -47,22 +45,7 @@ void Game::render_terrain()
 {
   glm::vec3 camera_position = m_camera.local_position();
   glm::vec2 center = {camera_position.x, camera_position.z};
-
-  if (m_terrain_renderer.intersect_terrain) {
-    glm::vec3 camera_direction = m_camera.transform_direction(glm::vec3(0.0f, 0.0f, -1.0f));
-
-    float t;
-    Ray ray{camera_position, camera_direction};
-    Plane plane(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 30.0f, 0.0f));
-
-    if (ray_vs_plane(ray, plane, t)) {
-      glm::vec3 point = ray.point_at(t);
-      glm::vec2 clamped_point = clamp_range(glm::vec2(point.x, point.z), m_terrain_renderer.bounds());
-      center = glm::mix(center, clamped_point, 0.5);
-    }
-  }
-
-  m_terrain_renderer.render(m_camera, center, camera_position.y);
+  m_terrain.render(m_camera, center, camera_position.y);
 }
 
 void Game::render_ui()
@@ -77,7 +60,7 @@ void Game::render_ui()
   glm::vec3 pos = m_camera.local_position();
   glm::vec2 pos2 = {pos.x, pos.z};
 
-  Coordinate coord = m_terrain_renderer.point_to_coordinate(pos);
+  Coordinate coord = m_terrain.point_to_coordinate(pos);
 
   glm::vec3 forward = -m_camera.local_z_axis();
   int angle = static_cast<int>(glm::degrees(std::atan2(forward.x, forward.z)));
@@ -86,15 +69,22 @@ void Game::render_ui()
   ImGui::Text("Camera Pos: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
   ImGui::Text("Lat: %.4f, Lon: %.4f", coord.lat, coord.lon);
   ImGui::Text("Heading %d", heading);
-  ImGui::Text("Terrain Elevation: %.2f", m_terrain_renderer.terrain_elevation(pos2));
-  ImGui::Text("Altitude over terrain: %.2f", m_terrain_renderer.altitude_over_terrain(pos2, pos.y));
-  ImGui::Text("Zoom Levels: [%d, %d]", m_terrain_renderer.min_zoom_level(), m_terrain_renderer.max_zoom_level());
-  ImGui::Checkbox("Wireframe", &m_terrain_renderer.wireframe);
-  ImGui::Checkbox("Ray Intersect", &m_terrain_renderer.intersect_terrain);
-  ImGui::Checkbox("Debug View", &m_terrain_renderer.debug_view);
+  ImGui::Text("Terrain Elevation: %.2f", m_terrain.terrain_elevation(pos2));
+  ImGui::Text("Altitude over terrain: %.2f", m_terrain.altitude_over_terrain(pos2, pos.y));
+  ImGui::Text("Zoom Level Range: [%d, %d] (%d)", m_terrain.min_zoom, m_terrain.max_zoom,
+              m_terrain.max_zoom - m_terrain.min_zoom);
+  ImGui::Checkbox("Wireframe", &m_terrain.wireframe);
+  ImGui::Checkbox("Ray Intersect", &m_terrain.intersect_terrain);
+  ImGui::Checkbox("Debug View", &m_terrain.debug_view);
   ImGui::SliderFloat("Camera Speed", &m_speed, 10.0f, 5000.0f);
-  ImGui::SliderFloat("Fog Far", &m_terrain_renderer.fog_far, 100.0f, 100000.0f);
-  ImGui::SliderFloat("Fog Density", &m_terrain_renderer.fog_density, 0.0f, 10.0f);
+  ImGui::SliderFloat("Fog Far", &m_terrain.fog_far, 100.0f, 100000.0f);
+  ImGui::SliderFloat("Fog Density", &m_terrain.fog_density, 0.0f, 10.0f);
+  ImGui::SliderFloat("Horizon", &m_terrain.max_horizon, 0.0f, 5000.0f);
+  ImGui::Checkbox("Manual Zoom", &m_terrain.manual_zoom);
+  if (m_terrain.manual_zoom) {
+    ImGui::SliderInt("Min Zoom", &m_terrain.min_zoom, zoom, 16);
+    ImGui::SliderInt("Max Zoom", &m_terrain.max_zoom, zoom, 16);
+  }
   ImGui::End();
 
   ImGui::Render();
@@ -119,12 +109,18 @@ void Game::read_input(float dt)
   while (SDL_PollEvent(&event)) {
     ImGui_ImplSDL2_ProcessEvent(&event);
 
-    if (event.type == SDL_QUIT || (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE &&
-                                   event.window.windowID == SDL_GetWindowID(m_window))) {
-      m_quit = true;
-    }
-
     switch (event.type) {
+      case SDL_QUIT:
+        m_quit = true;
+        break;
+
+      case SDL_WINDOWEVENT:
+        if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+          resize(event.window.data1, event.window.data2);
+          m_camera.set_aspect_ratio(aspect_ratio());
+        }
+        break;
+
       case SDL_MOUSEBUTTONDOWN:
         if (event.button.button == SDL_BUTTON_LEFT) m_mousedown = true;
         break;

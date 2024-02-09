@@ -5,8 +5,6 @@
 */
 #pragma once
 
-#include <fmt/core.h>
-
 #include <chrono>
 #include <memory>
 #include <numbers>
@@ -46,12 +44,6 @@ class TileCache
   float terrain_elevation(const Coordinate&);
 
   void invalidate_gpu_cache();
-
-  void clear_pending()
-  {
-    m_ortho_service.clear_pending_downloads();
-    m_height_service.clear_pending_downloads();
-  }
 
  private:
   const TileId m_root_tile;

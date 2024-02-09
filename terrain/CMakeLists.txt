@@ -13,7 +13,6 @@ target_link_libraries(terrain PUBLIC
   collision
   gfx
   cpr::cpr
-  fmt::fmt
 )
 
 target_include_directories(terrain PUBLIC

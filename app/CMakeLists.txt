@@ -12,12 +12,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(cpr)
 
-FetchContent_Declare(fmt
-    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-    GIT_TAG master
-)
-FetchContent_MakeAvailable(fmt)
-
 FetchContent_Declare(
     imgui GIT_REPOSITORY https://github.com/ocornut/imgui.git
     GIT_TAG master

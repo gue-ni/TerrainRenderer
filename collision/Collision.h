@@ -23,6 +23,7 @@ struct Ray {
   glm::vec3 origin, direction;
   Ray(const glm::vec3 &origin_, const glm::vec3 &direction_);
   inline glm::vec3 point_at(float t) const { return origin + direction * t; }
+  static Ray between_points(const glm::vec3 &source, const glm::vec3 &target);
 };
 
 // A sphere is defined by a center and a radius.

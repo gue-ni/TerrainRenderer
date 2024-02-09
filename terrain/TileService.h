@@ -1,7 +1,5 @@
 #pragma once
 
-#include <fmt/core.h>
-
 #include <iostream>
 #include <set>
 #include <string>
@@ -24,7 +22,7 @@ class TileService
 {
  public:
   TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype = "png",
-              const std::string& dir = "");
+              const std::string& cache_dir = "");
 
   // If tile in cache, return tile. If not, request it for download and return nullptr.
   Image* get_tile(const TileId&);
@@ -32,15 +30,9 @@ class TileService
   // Download tile and return it.
   Image* get_tile_sync(const TileId&);
 
-  inline void clear_pending_downloads()
-  {
-    m_already_requested = {};
-    m_thread_pool.clear_queue();
-  }
-
  private:
   const UrlPattern m_url_pattern;
-  const std::string m_url, m_filetype, m_dir;
+  const std::string m_url, m_filetype, m_cache_dir;
   ThreadPool m_thread_pool;
   std::set<TileId> m_already_requested;
   std::unordered_map<TileId, std::unique_ptr<Image>> m_ram_cache;
@@ -51,5 +43,11 @@ class TileService
 
   std::string tile_url(const TileId&) const;
 
-  void save_local_copy(const TileId&, const Image*) const;
+  std::string tile_filename(const TileId&) const;
+
+  void save_to_disk(const TileId&, const Image*) const;
+
+  std::unique_ptr<Image> load_from_disk(const TileId&) const;
+
+  bool is_saved_on_disk(const TileId&) const;
 };

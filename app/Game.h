@@ -28,7 +28,7 @@ class Game : public Window
   bool m_mousedown{false};
   float m_speed{100.0f};
   FirstPersonCamera m_camera;
-  TerrainRenderer m_terrain_renderer;
+  TerrainRenderer m_terrain;
   Clock m_clock;
 
   void read_input(float dt);

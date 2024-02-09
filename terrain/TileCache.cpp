@@ -1,7 +1,5 @@
 #include "TileCache.h"
 
-#include <fmt/core.h>
-
 #include <cassert>
 #include <iostream>
 
