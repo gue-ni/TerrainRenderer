@@ -39,7 +39,6 @@ void QuadTree::insert(std::unique_ptr<Node>& node, const glm::vec2& point)
   };
 
   if (split_heuristic(point, node.get(), m_max_depth)) {
-
     node->split();
     for (auto& child : node->children) {
       insert(child, point);

@@ -55,7 +55,7 @@ if(WIN32)
     )
 
     add_custom_command(TARGET app POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/build/_deps/glew-src/bin/Release/x64/glew32.dll" $<TARGET_FILE_DIR:app>
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_BINARY_DIR}/_deps/glew-src/bin/Release/x64/glew32.dll" $<TARGET_FILE_DIR:app>
         COMMENT "Copy glew32.dll"
     )
 endif(WIN32)

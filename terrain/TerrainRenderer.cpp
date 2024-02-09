@@ -359,41 +359,27 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
     }
   };
 
-  auto is_visible = [&](Node* node) {
-    AABB aabb = aabb_from_node(node);
-    Plane near = frustum.planes[Frustum::NEAR];
-
-    // TODO: check agains other planes, not just near
-    return aabb_vs_plane(aabb, near);
-  };
-
-#if 0
-  // Not sure if this is really a good idea.
-  // The idea would be to clear requests that are no longer needed and that
-  // are just filling up our queue. They could be no longer needed because
-  // we quickly overflew the area or something.
-  m_tile_cache.clear_pending();
-#endif
-
-  auto nodes = quad_tree.nodes();
+  // only leaves are rendered
+  auto nodes = quad_tree.leaves();
 
   // Sort nodes so biggest zoom level is rendered and requested first
   std::sort(nodes.begin(), nodes.end(), [](Node* a, Node* b) { return a->depth > b->depth; });
 
 #if 0
-  int leafs = std::count_if(nodes.begin(), nodes.end(), [](Node* node) { return node->is_leaf; });
 
-  int culled =
-      std::count_if(nodes.begin(), nodes.end(), [&](Node* node) { return node->is_leaf && !is_visible(node); });
+  auto is_visible = [&](Node* node) {
+    AABB aabb = aabb_from_node(node);
+    Plane near = frustum.planes[Frustum::NEAR];
+    // TODO: check agains other planes, not just near
+    return aabb_vs_plane(aabb, near);
+  };
 
-  std::cout << "total: " << leafs << ", culled: " << culled << std::endl;
+  int culled = std::count_if(nodes.begin(), nodes.end(), [&](Node* node) { return !is_visible(node); });
+
+  std::cout << "total: " << nodes.size() << ", culled: " << culled << std::endl;
 #endif
 
-  std::for_each(nodes.begin(), nodes.end(), [&](Node* node) {
-    if (node->is_leaf && is_visible(node)) {
-      render_tile(node);
-    }
-  });
+  std::for_each(nodes.begin(), nodes.end(), render_tile);
 
 #if ENABLE_SKYBOX
   glCullFace(GL_BACK);

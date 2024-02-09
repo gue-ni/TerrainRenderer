@@ -25,7 +25,7 @@ if(WIN32)
     )
 
     add_custom_command(TARGET tests POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/build/_deps/glew-src/bin/Release/x64/glew32.dll" $<TARGET_FILE_DIR:tests>
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_BINARY_DIR}/_deps/glew-src/bin/Release/x64/glew32.dll" $<TARGET_FILE_DIR:tests>
         COMMENT "Copy glew32.dll"
     )
 endif(WIN32)
