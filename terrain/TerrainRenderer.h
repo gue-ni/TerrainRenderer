@@ -32,7 +32,7 @@ class TerrainRenderer
 
   inline TileId root_tile() const { return m_root_tile; }
 
-  inline int zoom_levels() const { return std::max(1, max_zoom_level() - min_zoom_level()) ; }
+  inline int zoom_levels() const { return max_zoom_level() - min_zoom_level(); }
 
   inline int min_zoom_level() const { return m_min_zoom; }
 
