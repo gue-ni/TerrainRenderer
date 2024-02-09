@@ -23,7 +23,7 @@ Game::Game(size_t width, size_t height)
       m_terrain_renderer(TileId(root, zoom), 4, {glm::vec2(-terrain_width / 2.0f), glm::vec2(terrain_width / 2.0f)})
 {
   float fov = 45.0f, aspect_ratio = float(width) / float(height), near = 1.0f, far = 100000.0f;
-  m_camera.set_projection_matrix(glm::radians(fov), aspect_ratio, near, far);
+  m_camera.set_attributes(glm::radians(fov), aspect_ratio, near, far);
   m_camera.set_local_position(glm::vec3(0.0f, 5000.0f * m_terrain_renderer.scaling_factor(), 0.0f));
 }
 
@@ -119,12 +119,18 @@ void Game::read_input(float dt)
   while (SDL_PollEvent(&event)) {
     ImGui_ImplSDL2_ProcessEvent(&event);
 
-    if (event.type == SDL_QUIT || (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE &&
-                                   event.window.windowID == SDL_GetWindowID(m_window))) {
-      m_quit = true;
-    }
-
     switch (event.type) {
+      case SDL_QUIT:
+        m_quit = true;
+        break;
+
+      case SDL_WINDOWEVENT:
+        if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+          resize(event.window.data1, event.window.data2);
+          m_camera.set_aspect_ratio(aspect_ratio());
+        }
+        break;
+
       case SDL_MOUSEBUTTONDOWN:
         if (event.button.button == SDL_BUTTON_LEFT) m_mousedown = true;
         break;

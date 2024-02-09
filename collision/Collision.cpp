@@ -10,6 +10,11 @@ AABB AABB::from_center_and_size(const glm::vec3& center, const glm::vec3& size)
 
 Ray::Ray(const glm::vec3& origin_, const glm::vec3& direction_) : origin(origin_), direction(direction_) {}
 
+Ray Ray::between_points(const glm::vec3& source, const glm::vec3& target)
+{
+  return Ray(source, glm::normalize(target - source));
+}
+
 Sphere::Sphere(const glm::vec3& center_, float radius_) : center(center_), radius(radius_) {}
 
 std::array<glm::vec3, 8> AABB::corners() const

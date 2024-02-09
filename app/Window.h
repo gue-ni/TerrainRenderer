@@ -16,6 +16,8 @@ class Window
  public:
   Window(size_t width, size_t height, const std::string& name = "TerrainRenderer");
   ~Window();
+  float aspect_ratio() const;
+  void resize(size_t width, size_t height);
 
  protected:
   size_t m_width, m_height;

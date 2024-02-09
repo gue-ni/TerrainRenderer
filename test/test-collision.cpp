@@ -6,10 +6,44 @@
 
 #include "Collision.h"
 
-TEST_CASE("AABB corners")
+TEST_CASE("Ray vs Plane")
 {
-  AABB aabb(glm::vec3(0.0f), glm::vec3(1.0f));
-  auto corners = aabb.corners();
+  Plane plane(glm::vec3(0.0f, 1.0f, 0.0f), 0.0f);
+
+  SECTION("parallel to plane")
+  {
+    float t;
+    Ray ray(glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    REQUIRE(ray_vs_plane(ray, plane, t) == false);
+  }
+
+  SECTION("above plane, looking down")
+  {
+    float t;
+    Ray ray = Ray::between_points(glm::vec3(0.0f, 3.0f, 1.0f), glm::vec3(2.0f, -1.0f, 4.0f));
+    REQUIRE(ray_vs_plane(ray, plane, t) == true);
+  }
+
+  SECTION("above plane, looking up")
+  {
+    float t;
+    Ray ray = Ray::between_points(glm::vec3(0.0f, 3.0f, 1.0f), glm::vec3(2.0f, 10.0f, 4.0f));
+    REQUIRE(ray_vs_plane(ray, plane, t) == false);
+  }
+
+  SECTION("below plane, looking up")
+  {
+    float t;
+    Ray ray = Ray::between_points(glm::vec3(0.0f, -3.0f, 1.0f), glm::vec3(2.0f, 10.0f, 4.0f));
+    REQUIRE(ray_vs_plane(ray, plane, t) == false);
+  }
+
+  SECTION("below plane, looking down")
+  {
+    float t;
+    Ray ray = Ray::between_points(glm::vec3(0.0f, -3.0f, 1.0f), glm::vec3(2.0f, -10.0f, 4.0f));
+    REQUIRE(ray_vs_plane(ray, plane, t) == false);
+  }
 }
 
 TEST_CASE("Point vs Plane")
@@ -18,19 +52,19 @@ TEST_CASE("Point vs Plane")
 
   SECTION("point in front of plane")
   {
-    Point point(0.0f, 2.0f, 0.0f);
+    Point point(-5.0f, 2.0f, 1.0f);
     REQUIRE(point_vs_plane(point, plane) == true);
   }
 
   SECTION("point on plane")
   {
-    Point point(0.0f, 0.0f, 0.0f);
+    Point point(2.0f, 0.0f, -1.0f);
     REQUIRE(point_vs_plane(point, plane) == true);
   }
 
   SECTION("point behind plane")
   {
-    Point point(0.0f, -2.0f, 0.0f);
+    Point point(1.5f, -2.0f, 6.0f);
     REQUIRE(point_vs_plane(point, plane) == false);
   }
 }
