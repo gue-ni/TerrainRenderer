@@ -10,5 +10,25 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
-add_executable(tests test-collision.cpp)
-target_link_libraries(tests PRIVATE Catch2::Catch2WithMain collision)
+add_executable(tests
+  test-collision.cpp
+  test-quadtree.cpp
+)
+
+target_link_libraries(tests PRIVATE Catch2::Catch2WithMain collision terrain)
+
+if(WIN32)
+    add_custom_command(TARGET tests POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:tests> $<TARGET_FILE_DIR:tests>
+        COMMAND_EXPAND_LISTS
+        COMMENT "Copy *.dll"
+    )
+
+    add_custom_command(TARGET tests POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/build/_deps/glew-src/bin/Release/x64/glew32.dll" $<TARGET_FILE_DIR:tests>
+        COMMENT "Copy glew32.dll"
+    )
+endif(WIN32)
+
+
+

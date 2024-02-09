@@ -39,7 +39,11 @@ class QuadTree
 
   std::vector<Node*> nodes();
 
+  std::vector<Node*> leaves();
+
   Node* root() const { return m_root.get(); }
+
+  unsigned max_depth() const { return m_max_depth; }
 
   template <typename Visitor>
   void visit(Visitor visitor) const

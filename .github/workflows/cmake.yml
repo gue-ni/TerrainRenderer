@@ -52,6 +52,10 @@ jobs:
     - name: Build
       run: cmake --build '${{ github.workspace }}/build' --config ${{ matrix.build_type }} --parallel
 
+    - name: Run Tests
+      if: matrix.os == 'windows-latest'
+      run: ${{ github.workspace}}/build/test/${{matrix.build_type}}/tests.exe
+
     - name: Upload Artifact
       if: matrix.os == 'windows-latest'
       uses: actions/upload-artifact@v3

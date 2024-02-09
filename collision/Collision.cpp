@@ -80,7 +80,7 @@ bool ray_vs_sphere(const Ray& ray, const Sphere& sphere, float& t)
   return false;
 }
 
-bool point_vs_plane(const Point& point, const Plane& plane) { return plane.signed_distance(point) < 0.0f; }
+bool point_vs_plane(const Point& point, const Plane& plane) { return 0.0f <= plane.signed_distance(point); }
 
 bool point_vs_frustum(const Point& point, const Frustum& frustum)
 {

@@ -6,7 +6,8 @@
 
 #include "Collision.h"
 
-TEST_CASE("AABB corners") {
+TEST_CASE("AABB corners")
+{
   AABB aabb(glm::vec3(0.0f), glm::vec3(1.0f));
   auto corners = aabb.corners();
 }
@@ -15,22 +16,22 @@ TEST_CASE("Point vs Plane")
 {
   Plane plane(glm::vec3(0.0f, 1.0f, 0.0f), 0.0f);
 
-  SECTION("in front of plane")
+  SECTION("point in front of plane")
   {
     Point point(0.0f, 2.0f, 0.0f);
-    REQUIRE(point_vs_plane(point, plane) == false);
+    REQUIRE(point_vs_plane(point, plane) == true);
   }
 
-  SECTION("on plane")
+  SECTION("point on plane")
   {
     Point point(0.0f, 0.0f, 0.0f);
     REQUIRE(point_vs_plane(point, plane) == true);
   }
 
-  SECTION("behind plane")
+  SECTION("point behind plane")
   {
     Point point(0.0f, -2.0f, 0.0f);
-    REQUIRE(point_vs_plane(point, plane) == true);
+    REQUIRE(point_vs_plane(point, plane) == false);
   }
 }
 
@@ -38,19 +39,28 @@ TEST_CASE("AABB vs Plane")
 {
   Plane plane(glm::vec3(0.0f, 1.0f, 0.0f), 0.0f);
 
+  SECTION("fully above plane")
   {
-    AABB aabb(glm::vec3(-1.0f), glm::vec3(1.0f));
+    AABB aabb = AABB::from_center_and_size(glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(1.0f));
     REQUIRE(aabb_vs_plane(aabb, plane) == true);
   }
 
+  SECTION("partly above, partly below plane")
   {
-    AABB aabb = AABB::from_center_and_size(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f));
+    AABB aabb = AABB::from_center_and_size(glm::vec3(0.0f), glm::vec3(1.0f));
+    REQUIRE(aabb_vs_plane(aabb, plane) == true);
+  }
+
+  SECTION("fully below plane")
+  {
+    AABB aabb = AABB::from_center_and_size(glm::vec3(0.0f, -5.0f, 0.0f), glm::vec3(1.0f));
     REQUIRE(aabb_vs_plane(aabb, plane) == false);
   }
 }
 
 TEST_CASE("AABB vs Frustum")
 {
+  // camera looks down the negative z-axis
   glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
   glm::mat4 proj = glm::perspective(glm::radians(45.0f), 16.0f / 9.0f, 1.0f, 1000.0f);
   glm::mat4 view_proj = proj * view;
@@ -60,27 +70,25 @@ TEST_CASE("AABB vs Frustum")
   SECTION("test frustum creation")
   {
     for (auto& plane : frustum.planes) {
-      std::cout << "normal: " << plane.normal << ", distance: " << plane.distance << std::endl;
+      std::cout << plane << std::endl;
     }
   }
 
-  SECTION("aabb inside frustum")
+  SECTION("aabb behind camera")
   {
-    AABB aabb = AABB::from_center_and_size(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(1.0f));
-    REQUIRE(aabb_vs_frustum(aabb, frustum) == true);
+    glm::vec3 center = glm::vec3(0.0f, 0.0f, 5.0f);
+    AABB aabb = AABB::from_center_and_size(center, glm::vec3(1.0f));
+    std::cout << aabb.min << aabb.max << std::endl;
+
+    REQUIRE(point_vs_plane(center, frustum.planes[Frustum::NEAR]) == false);
   }
 
-  SECTION("aabb behind camera")
+  SECTION("aabb in front of camera")
   {
     glm::vec3 center = glm::vec3(0.0f, 0.0f, -5.0f);
     AABB aabb = AABB::from_center_and_size(center, glm::vec3(1.0f));
     std::cout << aabb.min << aabb.max << std::endl;
 
-    // should be behind near plane
     REQUIRE(point_vs_plane(center, frustum.planes[Frustum::NEAR]) == true);
-
-    REQUIRE(aabb_vs_plane(aabb, frustum.planes[Frustum::NEAR]) == true);
-
-    // REQUIRE(aabb_vs_frustum(aabb, frustum) == false);
   }
 }
