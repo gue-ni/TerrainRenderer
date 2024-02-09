@@ -1,7 +1,8 @@
 #pragma once
 
-#include "../gfx/gl.h"
+#include "../gfx/gfx.h"
 
+using namespace gfx;
 using namespace gfx::gl;
 
 class Cube

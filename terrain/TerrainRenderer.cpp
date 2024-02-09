@@ -1,9 +1,11 @@
 #include "TerrainRenderer.h"
 
+#include <algorithm>
 #include <cassert>
 #include <chrono>
 #include <iostream>
 
+#include "Collision.h"
 #include "Common.h"
 
 #define ENABLE_FOG      1
@@ -27,12 +29,12 @@ uniform uint u_zoom;
 out vec2 uv;
 out vec4 world_pos;
 
-float altitude_from_color(vec4 color) { 
-  return (color.r + color.g / 255.0); 
+float altitude_from_color(vec4 color) {
+  return (color.r + color.g / 255.0);
 }
 
-vec2 map_range(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) { 
-  return out_min + (value - in_min) * (out_max - out_min) / (in_max - in_min); 
+vec2 map_range(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) {
+  return out_min + (value - in_min) * (out_max - out_min) / (in_max - in_min);
 }
 
 void main() {
@@ -74,9 +76,11 @@ uniform float u_fog_far;
 uniform float u_fog_density;
 uniform vec3 u_camera_position;
 uniform uint u_zoom;
+uniform uint u_max_zoom;
+uniform bool u_debug_view;
 
-vec2 map_range(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) { 
-  return out_min + (value - in_min) * (out_max - out_min) / (in_max - in_min); 
+vec2 map_range(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) {
+  return out_min + (value - in_min) * (out_max - out_min) / (in_max - in_min);
 }
 
 void main() {
@@ -98,6 +102,13 @@ void main() {
     vec3 fog_color = u_fog_color;
 
     color = mix(color, fog_color, fog_factor);
+  }
+
+  if (u_debug_view) {
+    float zoom = float(u_zoom);
+    float max_zoom = float(u_max_zoom);
+    vec3 zoom_color = vec3(zoom / max_zoom, 0, 0);
+    color = mix(color, zoom_color, 0.5);
   }
 
   frag_color = vec4(color, 1);
@@ -157,6 +168,12 @@ void main() {
 }
 )";
 
+AABB aabb_from_node(const Node* node)
+{
+  float height = 100.0f;  // TODO
+  return AABB({node->min.x, 0.0f, node->min.y}, {node->max.x, height, node->max.y});
+}
+
 TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned num_zoom_levels, const Bounds<glm::vec2>& bounds)
     : m_shader(std::make_unique<ShaderProgram>(shader_vert, shader_frag)),
       m_sky_shader(std::make_unique<ShaderProgram>(skybox_vert, skybox_frag)),
@@ -183,6 +200,7 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned num_zoom_leve
     (void)m_tile_cache.tile_texture_sync(child, TileType::HEIGHT);
   }
 }
+
 float TerrainRenderer::terrain_elevation(const glm::vec2& point)
 {
   Coordinate coord = point_to_coordinate(point);
@@ -253,32 +271,26 @@ Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::
 
 void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, float altitude)
 {
-  const auto terrain_center = clamp(center, m_bounds);
-
-  int scaled_zoom_levels = 0;
-
-  float elevation = terrain_elevation(center) * scaling_factor();
+  const glm::vec2 terrain_center = clamp_range(center, m_bounds);
 
 #if 1
+  float alt = altitude_over_terrain(center, altitude);
+  float min_alt = 0, max_alt = 15000;
 
-  float root_width = m_bounds.size().x;
+  float normalized_height = alt / (max_alt - min_alt);
 
-  float altitude_ = glm::max(0.0f, altitude - elevation);
+  float factor = glm::clamp(1.0f - normalized_height, 0.0f, 1.0f);
 
-  for (scaled_zoom_levels = 0; scaled_zoom_levels <= m_max_zoom_levels; scaled_zoom_levels++) {
-    float width = root_width / (1 << scaled_zoom_levels);
+  const int max_possible_zoom = 16;
 
-    float tmp = width * 0.05f;
-
-    if (tmp < altitude_) break;
-  }
-
+  int max_zoom_level = static_cast<int>(max_possible_zoom * factor);
+#else
+  int max_zoom_level = 14;
 #endif
 
-  m_zoom_levels = 1 + scaled_zoom_levels;
+  m_zoom_levels = std::max(max_zoom_level - min_zoom_level(), 1);
 
-  QuadTree quad_tree(m_bounds.min, m_bounds.max, m_zoom_levels);
-  quad_tree.insert(terrain_center);
+  QuadTree quad_tree(terrain_center, m_bounds.min, m_bounds.max, m_zoom_levels);
 
   if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -287,6 +299,7 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
   m_shader->set_uniform("u_proj", camera.projection_matrix());
   m_shader->set_uniform("u_camera_position", camera.world_position());
   m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor * m_terrain_scaling_factor);
+  m_shader->set_uniform("u_debug_view", debug_view);
 
   const glm::vec3 sky_color_1 = gfx::rgb(0xB8DEFD);
   const glm::vec3 sky_color_2 = gfx::rgb(0x6F93F2);
@@ -305,17 +318,18 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
   m_shader->set_uniform("u_fog_color", glm::vec3(0.0f));
 #endif
 
-  auto render_tile = [this](Node* node) {
-    if (!node->is_leaf) return;
+  Frustum frustum(camera.view_projection_matrix());
 
+  // This render function is executed on all quadtree nodes.
+  auto render_tile = [&, this](Node* node) {
     TileId tile_id = tile_id_from_node(node);
 
     Texture* albedo = m_tile_cache.tile_texture(tile_id, TileType::ORTHO);
     Texture* heightmap = m_tile_cache.tile_texture(tile_id, TileType::HEIGHT);
 
-    // Render only part of tile if we fallback to lower resolution
-    Bounds<glm::vec2> albedo_uv = {glm::vec2(0.0f), glm::vec2(1.0f)};
-    Bounds<glm::vec2> height_uv = {glm::vec2(0.0f), glm::vec2(1.0f)};
+    // Render only part of tile if we fallback to lower resolution.
+    Bounds<glm::vec2> albedo_uv(glm::vec2(0.0f), glm::vec2(1.0f));
+    Bounds<glm::vec2> height_uv(glm::vec2(0.0f), glm::vec2(1.0f));
 
 #if ENABLE_FALLBACK
     if (!albedo) {
@@ -328,7 +342,8 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
 #endif
 
     if (albedo && heightmap) {
-      m_shader->set_uniform("u_zoom", tile_id.zoom);
+      m_shader->set_uniform("u_zoom", node->depth);
+      m_shader->set_uniform("u_max_zoom", static_cast<unsigned>(m_zoom_levels));
 
       albedo->bind(0);
       m_shader->set_uniform("u_albedo_texture", 0);
@@ -344,16 +359,29 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
     }
   };
 
+  // only leaves are rendered
+  auto nodes = quad_tree.leaves();
+
+  // Sort nodes so biggest zoom level is rendered and requested first
+  std::sort(nodes.begin(), nodes.end(), [](Node* a, Node* b) { return a->depth > b->depth; });
+
 #if 0
-  m_tile_cache.clear_pending();
+
+  auto is_visible = [&](Node* node) {
+    AABB aabb = aabb_from_node(node);
+    Plane near = frustum.planes[Frustum::NEAR];
+    // TODO: check agains other planes, not just near
+    return aabb_vs_plane(aabb, near);
+  };
+
+  int culled = std::count_if(nodes.begin(), nodes.end(), [&](Node* node) { return !is_visible(node); });
+
+  std::cout << "total: " << nodes.size() << ", culled: " << culled << std::endl;
 #endif
 
-  auto nodes = quad_tree.nodes();
-  std::sort(nodes.begin(), nodes.end(), [](Node* a, Node* b) { return a->depth > b->depth; });
   std::for_each(nodes.begin(), nodes.end(), render_tile);
 
 #if ENABLE_SKYBOX
-
   glCullFace(GL_BACK);
   glDepthFunc(GL_LEQUAL);
 

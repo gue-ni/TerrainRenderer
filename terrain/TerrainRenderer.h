@@ -34,12 +34,17 @@ class TerrainRenderer
 
   inline int zoom_levels() const { return m_zoom_levels; }
 
+  inline int min_zoom_level() const { return m_root_tile.zoom; }
+
+  inline int max_zoom_level() const { return m_root_tile.zoom + zoom_levels(); }
+
   Coordinate point_to_coordinate(const glm::vec2&) const;
 
   glm::vec2 coordinate_to_point(const Coordinate&) const;
 
   bool wireframe{false};
   bool intersect_terrain{false};
+  bool debug_view{false};
   float fog_far{2000.0f};
   float fog_density{0.25f};
 

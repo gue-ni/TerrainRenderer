@@ -57,7 +57,7 @@ void Game::render_terrain()
 
     if (ray_vs_plane(ray, plane, t)) {
       glm::vec3 point = ray.point_at(t);
-      glm::vec2 clamped_point = clamp(glm::vec2(point.x, point.z), m_terrain_renderer.bounds());
+      glm::vec2 clamped_point = clamp_range(glm::vec2(point.x, point.z), m_terrain_renderer.bounds());
       center = glm::mix(center, clamped_point, 0.5);
     }
   }
@@ -88,10 +88,10 @@ void Game::render_ui()
   ImGui::Text("Heading %d", heading);
   ImGui::Text("Terrain Elevation: %.2f", m_terrain_renderer.terrain_elevation(pos2));
   ImGui::Text("Altitude over terrain: %.2f", m_terrain_renderer.altitude_over_terrain(pos2, pos.y));
-  ImGui::Text("Zoom Levels: [%d, %d]", m_terrain_renderer.root_tile().zoom,
-              m_terrain_renderer.root_tile().zoom + m_terrain_renderer.zoom_levels());
+  ImGui::Text("Zoom Levels: [%d, %d]", m_terrain_renderer.min_zoom_level(), m_terrain_renderer.max_zoom_level());
   ImGui::Checkbox("Wireframe", &m_terrain_renderer.wireframe);
   ImGui::Checkbox("Ray Intersect", &m_terrain_renderer.intersect_terrain);
+  ImGui::Checkbox("Debug View", &m_terrain_renderer.debug_view);
   ImGui::SliderFloat("Camera Speed", &m_speed, 10.0f, 5000.0f);
   ImGui::SliderFloat("Fog Far", &m_terrain_renderer.fog_far, 100.0f, 100000.0f);
   ImGui::SliderFloat("Fog Density", &m_terrain_renderer.fog_density, 0.0f, 10.0f);
@@ -144,7 +144,7 @@ void Game::read_input(float dt)
 
           m_camera.yaw += delta_yaw;
           m_camera.pitch -= delta_pitch;
-          m_camera.pitch = std::clamp(m_camera.pitch, -89.0f, 89.0f);
+          m_camera.pitch = glm::clamp(m_camera.pitch, -89.0f, 89.0f);
 
           glm::vec3 front = vector_from_spherical(glm::radians(m_camera.pitch), glm::radians(m_camera.yaw));
 

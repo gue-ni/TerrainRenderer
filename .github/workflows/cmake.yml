@@ -1,0 +1,72 @@
+name: CMake on multiple platforms
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Release]
+        c_compiler: [gcc, cl]
+        include:
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+            release_name: windows-app
+          - os: ubuntu-latest
+            c_compiler: gcc
+            cpp_compiler: g++-13
+            release_name: linux-app
+        exclude:
+          - os: windows-latest
+            c_compiler: gcc
+          - os: ubuntu-latest
+            c_compiler: cl
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Install Dependencies
+      if: matrix.os == 'ubuntu-latest'
+      run: sudo apt install libsdl2-dev libglew-dev libgle3-dev g++-13
+
+    - name: Configure
+      run: >
+        cmake -B '${{ github.workspace }}/build'
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -S ${{ github.workspace }}
+
+    - name: Build
+      run: cmake --build '${{ github.workspace }}/build' --config ${{ matrix.build_type }} --parallel
+
+    - name: Run Tests
+      if: matrix.os == 'windows-latest'
+      run: ${{ github.workspace}}/build/test/${{matrix.build_type}}/tests.exe
+
+    - name: Upload Artifact
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v3
+      with:
+        name: terrain-renderer
+        path: |
+          ${{github.workspace}}/build/app/${{matrix.build_type}}/*.exe
+          ${{github.workspace}}/build/app/${{matrix.build_type}}/*.dll
+
+
+
+
+
+

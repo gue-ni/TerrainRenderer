@@ -8,9 +8,9 @@ A simple OpenGL Terrain Renderer.
 
 ## Features
 
-- [x] Real-world height and texture data 
+- [x] Real-world height and texture data
 - [x] Multithreaded terrain tile loading
-- [X] Quadtree level-of-detail 
+- [X] Quadtree level-of-detail
 - [ ] Frustum Culling
 
 ## Build Instructions
@@ -18,3 +18,8 @@ A simple OpenGL Terrain Renderer.
 This project depends on SDL2, GLM, GLEW and libcpr. You should be able to build on
 windows by following the steps in the [msbuild.yml](./.github/workflows/msbuild.yml).
 
+```
+git clone --recursive git@github.com:gue-ni/TerrainRenderer.git
+cmake -DCMAKE_BUILD_TYPE=Release -B build
+cmake --build build --config Release --parallel
+```

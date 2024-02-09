@@ -1,7 +1,8 @@
 #include "TileCache.h"
 
+#include <fmt/core.h>
+
 #include <cassert>
-#include <format>
 #include <iostream>
 
 #include "../gfx/util.h"
@@ -10,12 +11,13 @@
 TileCache::TileCache(const TileId& root_tile)
     : m_root_tile(root_tile),
 #if 0
-      m_ortho_service("https://gataki.cg.tuwien.ac.at/raw/basemap/tiles", UrlPattern::ZYX_Y_SOUTH, ".jpeg", "ortho_1"),
+      m_ortho_service("https://gataki.cg.tuwien.ac.at/raw/basemap/tiles", UrlPattern::ZYX_Y_SOUTH, ".jpeg", "tiles/ortho_1"),
 #else
       m_ortho_service("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile",
-                      UrlPattern::ZYX_Y_SOUTH, "", "ortho_2"),
+                      UrlPattern::ZYX_Y_SOUTH, "", "tiles/ortho_2"),
 #endif
-      m_height_service("https://alpinemaps.cg.tuwien.ac.at/tiles/alpine_png", UrlPattern::ZXY_Y_NORTH, ".png", "height")
+      m_height_service("https://alpinemaps.cg.tuwien.ac.at/tiles/alpine_png", UrlPattern::ZXY_Y_NORTH, ".png",
+                       "tiles/height")
 
 {
 }

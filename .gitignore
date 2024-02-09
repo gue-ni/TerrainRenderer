@@ -1,13 +1,7 @@
 .vs/
 libraries/
 x64/
+build/
+build2/
 *.user
-*.mp4
-cache/*
-tmp/
-*.zip
-terrain-renderer/
-Debug/
-*.ps1
-imgui.ini
-*.png
+CMakeSettings.json
