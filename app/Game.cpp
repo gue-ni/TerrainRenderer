@@ -20,7 +20,7 @@ const float terrain_width = wms::tile_width(root.lat, zoom) * 0.01f;
 
 Game::Game(size_t width, size_t height)
     : Window(width, height),
-      m_terrain_renderer(TileId(root, zoom), 4, {glm::vec2(-terrain_width / 2.0f), glm::vec2(terrain_width / 2.0f)})
+      m_terrain_renderer(TileId(root, zoom), 5, {glm::vec2(-terrain_width / 2.0f), glm::vec2(terrain_width / 2.0f)})
 {
   float fov = 45.0f, aspect_ratio = float(width) / float(height), near = 1.0f, far = 100000.0f;
   m_camera.set_attributes(glm::radians(fov), aspect_ratio, near, far);
@@ -88,7 +88,8 @@ void Game::render_ui()
   ImGui::Text("Heading %d", heading);
   ImGui::Text("Terrain Elevation: %.2f", m_terrain_renderer.terrain_elevation(pos2));
   ImGui::Text("Altitude over terrain: %.2f", m_terrain_renderer.altitude_over_terrain(pos2, pos.y));
-  ImGui::Text("Zoom Levels: [%d, %d]", m_terrain_renderer.min_zoom_level(), m_terrain_renderer.max_zoom_level());
+  ImGui::Text("Zoom Levels: [%d, %d] (%d)", m_terrain_renderer.min_zoom_level(), m_terrain_renderer.max_zoom_level(),
+              m_terrain_renderer.zoom_levels());
   ImGui::Checkbox("Wireframe", &m_terrain_renderer.wireframe);
   ImGui::Checkbox("Ray Intersect", &m_terrain_renderer.intersect_terrain);
   ImGui::Checkbox("Debug View", &m_terrain_renderer.debug_view);

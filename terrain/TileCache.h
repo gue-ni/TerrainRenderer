@@ -47,12 +47,6 @@ class TileCache
 
   void invalidate_gpu_cache();
 
-  void clear_pending()
-  {
-    m_ortho_service.clear_pending_downloads();
-    m_height_service.clear_pending_downloads();
-  }
-
  private:
   const TileId m_root_tile;
   std::unordered_map<std::string, std::unique_ptr<Texture>> m_gpu_cache;

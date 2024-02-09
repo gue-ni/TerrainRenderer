@@ -1,8 +1,7 @@
 #pragma once
 
-#include <fmt/core.h>
-
 #include <array>
+#include <format>
 #include <numbers>
 #include <string>
 
@@ -67,7 +66,7 @@ struct Coordinate {
 // y-axis points south, so y=0 is the northern most tile.
 struct TileId {
   unsigned zoom, x, y;
-  static const unsigned MAX_ZOOM{20U};
+  static const unsigned MAX_ZOOM{16U};
   static const unsigned MAX_X{1 << MAX_ZOOM};
   static const unsigned MAX_Y{1 << MAX_ZOOM};
 
@@ -84,7 +83,7 @@ struct TileId {
 
   auto operator<=>(const TileId&) const = default;
 
-  inline std::string to_string() const { return fmt::format("{}-{}-{}", zoom, x, y); }
+  inline std::string to_string() const { return std::format("{}-{}-{}", zoom, x, y); }
 
   inline Bounds<Coordinate> bounds() const
   {
@@ -114,7 +113,4 @@ struct std::hash<TileId> {
 
 inline std::ostream& operator<<(std::ostream& os, const Coordinate& c) { return os << c.lat << ", " << c.lon; }
 
-inline std::ostream& operator<<(std::ostream& os, const TileId& t)
-{
-  return os << t.zoom << ", " << t.x << ", " << t.y;
-}
+inline std::ostream& operator<<(std::ostream& os, const TileId& t) { return os << t.to_string(); }

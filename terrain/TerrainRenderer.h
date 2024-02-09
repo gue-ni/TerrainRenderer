@@ -14,7 +14,7 @@ using namespace gfx::gl;
 class TerrainRenderer
 {
  public:
-  TerrainRenderer(const TileId& root_tile, unsigned m_zoom_levels, const Bounds<glm::vec2>& bounds);
+  TerrainRenderer(const TileId& root_tile, unsigned max_zoom_level_range, const Bounds<glm::vec2>& bounds);
 
   void render(const Camera& camera, const glm::vec2& center, float altitude = 0.0f);
 
@@ -32,11 +32,11 @@ class TerrainRenderer
 
   inline TileId root_tile() const { return m_root_tile; }
 
-  inline int zoom_levels() const { return m_zoom_levels; }
+  inline int zoom_levels() const { return std::max(1, max_zoom_level() - min_zoom_level()) ; }
 
-  inline int min_zoom_level() const { return m_root_tile.zoom; }
+  inline int min_zoom_level() const { return m_min_zoom; }
 
-  inline int max_zoom_level() const { return m_root_tile.zoom + zoom_levels(); }
+  inline int max_zoom_level() const { return m_max_zoom; }
 
   Coordinate point_to_coordinate(const glm::vec2&) const;
 
@@ -55,11 +55,15 @@ class TerrainRenderer
   const Cube m_sky_box;
   const Bounds<glm::vec2> m_bounds;
   const Bounds<Coordinate> m_coord_bounds;
-  const int m_max_zoom_levels{7};
+
+  // maximum number of zoom levels rendered at the same time
+  const int m_max_zoom_level_range;
   TileCache m_tile_cache;
   float m_height_scaling_factor;
   float m_terrain_scaling_factor;
-  int m_zoom_levels;
+  int m_min_zoom, m_max_zoom;
+
+  void calculate_zoom_levels(const glm::vec2& center, float altitude);
 
   TileId tile_id_from_node(Node*) const;
 
