@@ -182,7 +182,7 @@ void main() {
 
 AABB aabb_from_node(const Node* node)
 {
-  float height = 100.0f;  // TODO
+  float height = 100.0f;  // TODO: do something smarter
   return AABB({node->min.x, 0.0f, node->min.y}, {node->max.x, height, node->max.y});
 }
 
@@ -194,7 +194,6 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned max_zoom_leve
       m_chunk(32, 1.0f),
       m_bounds(bounds),
       m_coord_bounds(root_tile.bounds()),
-      m_tile_cache(m_root_tile),
       m_max_zoom_level_range(max_zoom_level_range),
       min_zoom(root_tile.zoom),
       max_zoom(root_tile.zoom + max_zoom_level_range)
@@ -409,29 +408,43 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
     }
   };
 
+  Frustum frustum(camera.view_projection_matrix());
+
+  // frustum culling
+  auto is_visible = [&](Node* node) {
+    AABB aabb = aabb_from_node(node);
+    return aabb_vs_frustum(aabb, frustum);
+  };
+
+#if 0
+  // ideally we should test for visibility here. In a quadtree, if a parent node
+  // is not visible, it's children will also not be visible.
+  std::vector<Node*> nodes;
+
+  std::function<bool(Node*)> visitor = [&](Node* node) -> bool {
+    if (!is_visible(node)) {
+      return false;
+    }
+
+    if (node->is_leaf) {
+      nodes.push_back(node);
+    }
+
+    return true;
+  };
+
+  quad_tree.visit(visitor);
+#else
   // only leaves are rendered
   auto nodes = quad_tree.leaves();
+#endif
 
   // Sort nodes so biggest zoom level is rendered and requested first
   std::sort(nodes.begin(), nodes.end(), [](Node* a, Node* b) { return a->depth > b->depth; });
 
-#if 0
-  // TODO: implement frustum culling
-  Frustum frustum(camera.view_projection_matrix());
-
-  auto is_visible = [&](Node* node) {
-    AABB aabb = aabb_from_node(node);
-    Plane near = frustum.planes[Frustum::NEAR];
-    return aabb_vs_plane(aabb, near);
-  };
-
-  int culled = std::count_if(nodes.begin(), nodes.end(), [&](Node* node) { return !is_visible(node); });
-
-  std::cout << "total: " << nodes.size() << ", culled: " << culled << std::endl;
-#endif
-
+  // we should really exploit our quadtree stucture to reduce the frustum culling tests
   std::for_each(nodes.begin(), nodes.end(), [&](Node* node) {
-    if (min_zoom <= (m_root_tile.zoom + node->depth)) {
+    if (min_zoom <= (m_root_tile.zoom + node->depth) && is_visible(node)) {
       render_tile(node);
     }
   });

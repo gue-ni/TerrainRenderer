@@ -33,7 +33,7 @@ struct CacheInfo {
 class TileCache
 {
  public:
-  TileCache(const TileId& root_tile);
+  TileCache();
 
   Texture* tile_texture(const TileId&, const TileType&);
 
@@ -46,10 +46,8 @@ class TileCache
   void invalidate_gpu_cache();
 
  private:
-  const TileId m_root_tile;
   std::unordered_map<std::string, std::unique_ptr<Texture>> m_gpu_cache;
-  TileService m_ortho_service;
-  TileService m_height_service;
+  TileService m_ortho_service, m_height_service;
 
   std::unique_ptr<Texture> create_texture(const Image& image);
 

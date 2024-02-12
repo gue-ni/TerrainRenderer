@@ -6,8 +6,8 @@
 #include "../gfx/util.h"
 #include "Common.h"
 
-TileCache::TileCache(const TileId& root_tile)
-    : m_root_tile(root_tile),
+TileCache::TileCache()
+    :
 #if 0
       m_ortho_service("https://gataki.cg.tuwien.ac.at/raw/basemap/tiles", UrlPattern::ZYX_Y_SOUTH, ".jpeg", "tiles/ortho_1"),
 #else
@@ -136,12 +136,14 @@ Image* TileCache::request_image(const TileId& tile, const TileType& tile_type)
 
 float TileCache::terrain_elevation(const Coordinate& coord)
 {
-  TileId tile(coord, m_root_tile.zoom + 1);  // probably not the best, as this is very low res
+  TileId tile(coord, 7);  // probably not the best, as this is very low res
 
   Bounds<Coordinate> bounds = tile.bounds();
 
   Image* image = m_height_service.get_tile(tile);
-  if (!image) return 0.0f;
+  if (!image) {
+    image = m_height_service.get_tile_sync(tile);
+  }
 
   assert(image);
 

@@ -3,6 +3,8 @@
 #include <array>
 #include <glm/glm.hpp>
 #include <iostream>
+#include <ranges>
+#include <span>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/io.hpp>
 
@@ -14,8 +16,10 @@ struct AABB {
   AABB(const glm::vec3 &min_, const glm::vec3 &max_);
   inline glm::vec3 size() const { return max - min; }
   inline glm::vec3 center() const { return min + size() / 2.0f; }
-  std::array<glm::vec3, 8> corners() const;
+  std::array<glm::vec3, 8> vertices() const;
   static AABB from_center_and_size(const glm::vec3 &center, const glm::vec3 &size);
+  static AABB from_points(const std::span<glm::vec3> &points);
+  bool contains(const AABB &);
 };
 
 // A ray is defined by an origin and a normalized direction.
@@ -45,14 +49,38 @@ struct Plane {
   float signed_distance(const Point &) const;
 };
 
-inline std::ostream &operator<<(std::ostream &os, const Plane &p) { return os << p.normal << ", " << p.distance; }
-
 // A frustum is defined by 6 planes that each point inwards.
 struct Frustum {
   enum : std::size_t { NEAR = 0, FAR, TOP, BOTTOM, LEFT, RIGHT };
   std::array<Plane, 6> planes;
   Frustum(const glm::mat4 &view_projection_matrix);
+  Plane &right() { return planes[RIGHT]; }
+  Plane &left() { return planes[LEFT]; };
+  Plane &near() { return planes[NEAR]; }
+  Plane &far() { return planes[FAR]; }
+  Plane &top() { return planes[TOP]; }
+  Plane &bottom() { return planes[BOTTOM]; }
+  // this does not work properly
+  std::array<glm::vec3, 8> vertices() const;
 };
+
+inline std::ostream &operator<<(std::ostream &os, const Plane &p) { return os << p.normal << ", " << p.distance; }
+
+inline std::ostream &operator<<(std::ostream &os, const AABB &a) { return os << a.min << " " << a.max; }
+
+inline std::ostream &operator<<(std::ostream &os, const Frustum &f)
+{
+  os << "near:    " << f.planes[Frustum::NEAR] << "\n";
+  os << "far:     " << f.planes[Frustum::FAR] << "\n";
+  os << "left:    " << f.planes[Frustum::LEFT] << "\n";
+  os << "right:   " << f.planes[Frustum::RIGHT] << "\n";
+  os << "top:     " << f.planes[Frustum::TOP] << "\n";
+  os << "bottom:  " << f.planes[Frustum::BOTTOM] << "\n";
+  return os;
+}
+
+// Return true and point if the 3 planes intersect.
+bool plane_vs_plane_vs_plane(const Plane &, const Plane &, const Plane &, Point &);
 
 // Return true if ray intersects plane.
 bool ray_vs_plane(const Ray &, const Plane &, float &t);
