@@ -182,7 +182,7 @@ void main() {
 
 AABB aabb_from_node(const Node* node)
 {
-  float height = 100.0f;  // TODO
+  float height = 100.0f;  // TODO: do something smarter
   return AABB({node->min.x, 0.0f, node->min.y}, {node->max.x, height, node->max.y});
 }
 
@@ -409,29 +409,23 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
     }
   };
 
+  Frustum frustum(camera.view_projection_matrix());
+
+  // frustum culling
+  auto is_visible = [&](Node* node) {
+    AABB aabb = aabb_from_node(node);
+    return aabb_vs_frustum(aabb, frustum);
+  };
+
   // only leaves are rendered
   auto nodes = quad_tree.leaves();
 
   // Sort nodes so biggest zoom level is rendered and requested first
   std::sort(nodes.begin(), nodes.end(), [](Node* a, Node* b) { return a->depth > b->depth; });
 
-#if 0
-  // TODO: implement frustum culling
-  Frustum frustum(camera.view_projection_matrix());
-
-  auto is_visible = [&](Node* node) {
-    AABB aabb = aabb_from_node(node);
-    Plane near = frustum.planes[Frustum::NEAR];
-    return aabb_vs_plane(aabb, near);
-  };
-
-  int culled = std::count_if(nodes.begin(), nodes.end(), [&](Node* node) { return !is_visible(node); });
-
-  std::cout << "total: " << nodes.size() << ", culled: " << culled << std::endl;
-#endif
-
+  // we should really exploit our quadtree stucture to reduce the frustum culling tests
   std::for_each(nodes.begin(), nodes.end(), [&](Node* node) {
-    if (min_zoom <= (m_root_tile.zoom + node->depth)) {
+    if (min_zoom <= (m_root_tile.zoom + node->depth) && is_visible(node)) {
       render_tile(node);
     }
   });
