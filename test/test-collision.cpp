@@ -92,6 +92,36 @@ TEST_CASE("AABB vs Plane")
   }
 }
 
+TEST_CASE("Plane vs Plane vs Plane")
+{
+  SECTION("basic intersection")  
+  {
+    Plane p0(glm::vec3(1.0f, 0.0f, 0.0f), 0.0f);
+    Plane p1(glm::vec3(0.0f, 1.0f, 0.0f), 0.0f);
+    Plane p2(glm::vec3(0.0f, 0.0f, 1.0f), 0.0f);
+
+    glm::vec3 point;
+
+    REQUIRE(plane_vs_plane_vs_plane(p0, p1, p2, point) == true);
+    // REQUIRE(point == glm::vec3(0.0f));
+  }
+}
+
+TEST_CASE("Frustum")
+{
+  // camera looks down the negative z-axis
+  glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+  glm::mat4 proj = glm::perspective(glm::radians(45.0f), 16.0f / 9.0f, 1.0f, 1000.0f);
+  glm::mat4 view_proj = proj * view;
+
+  Frustum frustum(view_proj);
+
+  SECTION("frustum vertices")
+  {
+    auto vertices = frustum.vertices();
+  }
+}
+
 TEST_CASE("AABB vs Frustum")
 {
   // camera looks down the negative z-axis

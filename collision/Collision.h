@@ -15,6 +15,7 @@ struct AABB {
   inline glm::vec3 size() const { return max - min; }
   inline glm::vec3 center() const { return min + size() / 2.0f; }
   std::array<glm::vec3, 8> corners() const;
+  std::array<glm::vec3, 8> vertices() const;
   static AABB from_center_and_size(const glm::vec3 &center, const glm::vec3 &size);
 };
 
@@ -52,7 +53,11 @@ struct Frustum {
   enum : std::size_t { NEAR = 0, FAR, TOP, BOTTOM, LEFT, RIGHT };
   std::array<Plane, 6> planes;
   Frustum(const glm::mat4 &view_projection_matrix);
+  std::array<glm::vec3, 8> vertices() const;
 };
+
+// Return true and point if the 3 planes intersect.
+bool plane_vs_plane_vs_plane(const Plane&, const Plane&, const Plane&, Point&);
 
 // Return true if ray intersects plane.
 bool ray_vs_plane(const Ray &, const Plane &, float &t);

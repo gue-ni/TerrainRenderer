@@ -28,6 +28,11 @@ std::array<glm::vec3, 8> AABB::corners() const
   };
 }
 
+std::array<glm::vec3, 8> AABB::vertices() const
+{
+  return corners();
+}
+
 Plane::Plane() : normal({0.0f, 1.0f, 0.0f}), distance(0.0f) {}
 
 Plane::Plane(const glm::vec4& vec) : normal(glm::vec3(vec)), distance(vec.w) {}
@@ -63,6 +68,46 @@ Frustum::Frustum(const glm::mat4& view_projection_matrix)
   planes[FAR] = Plane(transposed[3] - transposed[2]);
 
   for (auto& plane : planes) plane.normalize();
+}
+
+std::array<glm::vec3, 8> Frustum::vertices() const 
+{
+  // https://gamedev.net/forums/topic/255800-finding-8-vertices-of-a-frustum-from-the-6-planes-defining-it/2550538/
+
+  glm::vec3 point;
+  std::array<glm::vec3, 8> vertices;
+
+  (void)plane_vs_plane_vs_plane(planes[NEAR], planes[RIGHT], planes[TOP], point);
+  vertices[0] = point;
+
+  (void)plane_vs_plane_vs_plane(planes[NEAR], planes[LEFT], planes[TOP], point);
+  vertices[1] = point;
+ 
+  (void)plane_vs_plane_vs_plane(planes[NEAR], planes[RIGHT], planes[BOTTOM], point);
+  vertices[2] = point;
+ 
+  (void)plane_vs_plane_vs_plane(planes[NEAR], planes[LEFT], planes[BOTTOM], point);
+  vertices[3] = point; 
+
+  (void)plane_vs_plane_vs_plane(planes[FAR], planes[RIGHT], planes[TOP], point);
+  vertices[4] = point;
+
+  (void)plane_vs_plane_vs_plane(planes[FAR], planes[LEFT], planes[TOP], point);
+  vertices[5] = point;
+ 
+  (void)plane_vs_plane_vs_plane(planes[FAR], planes[RIGHT], planes[BOTTOM], point);
+  vertices[6] = point;
+ 
+  (void)plane_vs_plane_vs_plane(planes[FAR], planes[LEFT], planes[BOTTOM], point);
+  vertices[7] = point; 
+
+  return vertices;
+}
+
+bool plane_vs_plane_vs_plane(const Plane& p0, const Plane& p1, const Plane& p2, Point& point)
+{
+  // https://gdbooks.gitbooks.io/3dcollisions/content/Chapter1/three_plane_intersection.html
+  return false;
 }
 
 bool ray_vs_plane(const Ray& ray, const Plane& plane, float& t)
