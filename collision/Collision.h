@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <span>
 #include <glm/glm.hpp>
 #include <iostream>
 #define GLM_ENABLE_EXPERIMENTAL
@@ -14,9 +15,10 @@ struct AABB {
   AABB(const glm::vec3 &min_, const glm::vec3 &max_);
   inline glm::vec3 size() const { return max - min; }
   inline glm::vec3 center() const { return min + size() / 2.0f; }
-  std::array<glm::vec3, 8> corners() const;
   std::array<glm::vec3, 8> vertices() const;
   static AABB from_center_and_size(const glm::vec3 &center, const glm::vec3 &size);
+  static AABB from_points(const std::span<glm::vec3> &points);
+  bool contains(const AABB &);
 };
 
 // A ray is defined by an origin and a normalized direction.
@@ -48,6 +50,8 @@ struct Plane {
 
 inline std::ostream &operator<<(std::ostream &os, const Plane &p) { return os << p.normal << ", " << p.distance; }
 
+inline std::ostream &operator<<(std::ostream &os, const AABB &a) { return os << a.min << " " << a.max; }
+
 // A frustum is defined by 6 planes that each point inwards.
 struct Frustum {
   enum : std::size_t { NEAR = 0, FAR, TOP, BOTTOM, LEFT, RIGHT };
@@ -57,7 +61,7 @@ struct Frustum {
 };
 
 // Return true and point if the 3 planes intersect.
-bool plane_vs_plane_vs_plane(const Plane&, const Plane&, const Plane&, Point&);
+bool plane_vs_plane_vs_plane(const Plane &, const Plane &, const Plane &, Point &);
 
 // Return true if ray intersects plane.
 bool ray_vs_plane(const Ray &, const Plane &, float &t);

@@ -38,7 +38,7 @@ TEST_CASE("Create QuadTree")
     auto nodes = quad_tree.nodes();
     auto leaves = quad_tree.leaves();
 
-    print(quad_tree);
+    // print(quad_tree);
 
     REQUIRE(leaves.size() == 4);
     REQUIRE(nodes.size() == 5);
@@ -51,7 +51,7 @@ TEST_CASE("Create QuadTree")
     auto nodes = quad_tree.nodes();
     auto leaves = quad_tree.leaves();
 
-    print(quad_tree);
+    // print(quad_tree);
 
     // REQUIRE(leaves.size() == (3 + 4));
     // REQUIRE(nodes.size() == (1 + 4 + 4));

@@ -8,6 +8,22 @@ AABB AABB::from_center_and_size(const glm::vec3& center, const glm::vec3& size)
   return AABB(center - half_size, center + half_size);
 }
 
+AABB AABB::from_points(const std::span<glm::vec3>& points)
+{
+  glm::vec3 min(1e6f), max(-1e6f);
+
+  for (auto& point : points) {
+    min = glm::min(min, point);
+    max = glm::max(max, point);
+  }
+  return AABB(min, max);
+}
+
+bool AABB::contains(const AABB& other)
+{
+  return glm::all(glm::lessThanEqual(min, other.min)) && glm::all(glm::lessThanEqual(other.max, max));
+}
+
 Ray::Ray(const glm::vec3& origin_, const glm::vec3& direction_) : origin(origin_), direction(direction_) {}
 
 Ray Ray::between_points(const glm::vec3& source, const glm::vec3& target)
@@ -17,7 +33,7 @@ Ray Ray::between_points(const glm::vec3& source, const glm::vec3& target)
 
 Sphere::Sphere(const glm::vec3& center_, float radius_) : center(center_), radius(radius_) {}
 
-std::array<glm::vec3, 8> AABB::corners() const
+std::array<glm::vec3, 8> AABB::vertices() const
 {
   return {
       glm::vec3(min.x, min.y, min.z), glm::vec3(max.x, min.y, min.z),
@@ -26,11 +42,6 @@ std::array<glm::vec3, 8> AABB::corners() const
       glm::vec3(min.x, max.y, min.z), glm::vec3(max.x, max.y, min.z),
       glm::vec3(min.z, max.y, max.z), glm::vec3(max.x, max.y, max.z),
   };
-}
-
-std::array<glm::vec3, 8> AABB::vertices() const
-{
-  return corners();
 }
 
 Plane::Plane() : normal({0.0f, 1.0f, 0.0f}), distance(0.0f) {}
@@ -70,7 +81,7 @@ Frustum::Frustum(const glm::mat4& view_projection_matrix)
   for (auto& plane : planes) plane.normalize();
 }
 
-std::array<glm::vec3, 8> Frustum::vertices() const 
+std::array<glm::vec3, 8> Frustum::vertices() const
 {
   // https://gamedev.net/forums/topic/255800-finding-8-vertices-of-a-frustum-from-the-6-planes-defining-it/2550538/
 
@@ -82,24 +93,24 @@ std::array<glm::vec3, 8> Frustum::vertices() const
 
   (void)plane_vs_plane_vs_plane(planes[NEAR], planes[LEFT], planes[TOP], point);
   vertices[1] = point;
- 
+
   (void)plane_vs_plane_vs_plane(planes[NEAR], planes[RIGHT], planes[BOTTOM], point);
   vertices[2] = point;
- 
+
   (void)plane_vs_plane_vs_plane(planes[NEAR], planes[LEFT], planes[BOTTOM], point);
-  vertices[3] = point; 
+  vertices[3] = point;
 
   (void)plane_vs_plane_vs_plane(planes[FAR], planes[RIGHT], planes[TOP], point);
   vertices[4] = point;
 
   (void)plane_vs_plane_vs_plane(planes[FAR], planes[LEFT], planes[TOP], point);
   vertices[5] = point;
- 
+
   (void)plane_vs_plane_vs_plane(planes[FAR], planes[RIGHT], planes[BOTTOM], point);
   vertices[6] = point;
- 
+
   (void)plane_vs_plane_vs_plane(planes[FAR], planes[LEFT], planes[BOTTOM], point);
-  vertices[7] = point; 
+  vertices[7] = point;
 
   return vertices;
 }
@@ -118,10 +129,10 @@ bool plane_vs_plane_vs_plane(const Plane& p1, const Plane& p2, const Plane& p3, 
 
   const float epsilon = 0.01f;
 
-  if (glm::abs(denom) < EPSILON) {
+  if (glm::abs(denom) < epsilon) {
     return false;
   }
-  
+
   point = glm::vec3(glm::dot(d, u), glm::dot(m3, v), -glm::dot(m2, v)) / denom;
   return true;
 }
@@ -146,7 +157,11 @@ bool ray_vs_sphere(const Ray& ray, const Sphere& sphere, float& t)
   return false;
 }
 
-bool point_vs_plane(const Point& point, const Plane& plane) { return 0.0f <= plane.signed_distance(point); }
+bool point_vs_plane(const Point& point, const Plane& plane)
+{
+  float d = plane.signed_distance(point);
+  return 0.0f <= d;
+}
 
 bool point_vs_frustum(const Point& point, const Frustum& frustum)
 {
@@ -171,7 +186,7 @@ bool aabb_vs_aabb(const AABB& a, const AABB& b)
 
 bool aabb_vs_plane(const AABB& aabb, const Plane& plane)
 {
-  for (const glm::vec3& corner : aabb.corners()) {
+  for (const glm::vec3& corner : aabb.vertices()) {
     if (0.0f <= plane.signed_distance(corner)) {
       return true;
     }
@@ -182,31 +197,11 @@ bool aabb_vs_plane(const AABB& aabb, const Plane& plane)
 // https://cgvr.cs.uni-bremen.de/teaching/cg_literatur/lighthouse3d_view_frustum_culling/index.html
 bool aabb_vs_frustum(const AABB& aabb, const Frustum& frustum)
 {
-  auto vertices = aabb.corners();
-#if 0
-  for (auto& plane : frustum.planes) {
-    int front = 0, behind = 0;
-
-    for (int k = 0; k < 8 && (front == 0 || behind == 0); k++) {
-      if (plane.signed_distance(vertices[k]) < 0.0f) {
-        behind++;
-      } else {
-        front++;
-      }
-    }
-
-    if (front == 0) {
-      return false;  // all corners are outside
-    }
-  }
-  return true;
-#else
-
+  auto vertices = aabb.vertices();
   for (const Plane& plane : frustum.planes) {
     if (!aabb_vs_plane(aabb, plane)) {
       return false;
     }
   }
   return true;
-#endif
 }
