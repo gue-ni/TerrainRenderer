@@ -61,6 +61,7 @@ struct Coordinate {
   Coordinate(float lat_, float lon_) : lat(lat_), lon(lon_) {}
   Coordinate(const glm::vec2& lat_lon) : Coordinate(lat_lon.y, lat_lon.x) {}
   glm::vec2 to_vec2() const { return {lon, lat}; }
+  operator glm::vec2() const { return glm::vec2(lon, lat); }
 };
 
 // y-axis points south, so y=0 is the northern most tile.

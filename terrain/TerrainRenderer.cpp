@@ -194,7 +194,6 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned max_zoom_leve
       m_chunk(32, 1.0f),
       m_bounds(bounds),
       m_coord_bounds(root_tile.bounds()),
-      m_tile_cache(m_root_tile),
       m_max_zoom_level_range(max_zoom_level_range),
       min_zoom(root_tile.zoom),
       max_zoom(root_tile.zoom + max_zoom_level_range)
@@ -417,8 +416,28 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
     return aabb_vs_frustum(aabb, frustum);
   };
 
+#if 0
+  // ideally we should test for visibility here. In a quadtree, if a parent node
+  // is not visible, it's children will also not be visible.
+  std::vector<Node*> nodes;
+
+  std::function<bool(Node*)> visitor = [&](Node* node) -> bool {
+    if (!is_visible(node)) {
+      return false;
+    }
+
+    if (node->is_leaf) {
+      nodes.push_back(node);
+    }
+
+    return true;
+  };
+
+  quad_tree.visit(visitor);
+#else
   // only leaves are rendered
   auto nodes = quad_tree.leaves();
+#endif
 
   // Sort nodes so biggest zoom level is rendered and requested first
   std::sort(nodes.begin(), nodes.end(), [](Node* a, Node* b) { return a->depth > b->depth; });

@@ -45,8 +45,14 @@ class QuadTree
 
   unsigned max_depth() const { return m_max_depth; }
 
-  template <typename Visitor>
-  void visit(Visitor visitor) const
+  void visit(std::function<void(Node*)> visitor) const
+  {
+    assert(m_root != nullptr);
+    visit(m_root, visitor);
+  }
+
+  // If visitor returns false, child nodes will not be visited.
+  void visit(std::function<bool(Node*)> visitor) const
   {
     assert(m_root != nullptr);
     visit(m_root, visitor);
@@ -58,14 +64,24 @@ class QuadTree
 
   void insert(std::unique_ptr<Node>& child, const glm::vec2& point);
 
-  template <typename Visitor>
-  void visit(const std::unique_ptr<Node>& node, Visitor visitor) const
+  void visit(const std::unique_ptr<Node>& node, std::function<void(Node*)> visitor) const
   {
     assert(node != nullptr);
 
     visitor(node.get());
 
     if (!node->is_leaf) {
+      for (const auto& child : node->children) {
+        visit(child, visitor);
+      }
+    }
+  }
+
+  void visit(const std::unique_ptr<Node>& node, std::function<bool(Node*)> visitor) const
+  {
+    assert(node != nullptr);
+
+    if (visitor(node.get()) && !node->is_leaf) {
       for (const auto& child : node->children) {
         visit(child, visitor);
       }
