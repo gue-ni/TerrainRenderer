@@ -52,9 +52,13 @@ jobs:
     - name: Build
       run: cmake --build '${{ github.workspace }}/build' --config ${{ matrix.build_type }} --parallel
 
-    - name: Run Tests
+    - name: Run Tests (Windows)
       if: matrix.os == 'windows-latest'
       run: ${{ github.workspace}}/build/test/${{matrix.build_type}}/tests.exe
+
+    - name: Run Tests (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: ${{ github.workspace}}/build/test/tests
 
     - name: Upload Artifact
       if: matrix.os == 'windows-latest'
@@ -64,9 +68,3 @@ jobs:
         path: |
           ${{github.workspace}}/build/app/${{matrix.build_type}}/*.exe
           ${{github.workspace}}/build/app/${{matrix.build_type}}/*.dll
-
-
-
-
-
-

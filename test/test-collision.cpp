@@ -142,27 +142,6 @@ TEST_CASE("AABB vs Frustum")
 
   SECTION("frustum creation")
   {
-    std::cout << "frustum:\n";
-    std::cout << frustum << std::endl;
-
-    glm::vec3 point;
-    REQUIRE(plane_vs_plane_vs_plane(frustum.near(), frustum.right(), frustum.bottom(), point) == true);
-
-    std::cout << point << std::endl;
-
-    // CHECK(frustum.near().signed_distance(point) == Catch::Approx(0));
-    // CHECK(frustum.right().signed_distance(point) == Catch::Approx(0));
-    // CHECK(frustum.bottom().signed_distance(point) == Catch::Approx(0));
-
-    auto vertices = frustum.vertices();
-    AABB frustum_bb = AABB::from_points(std::span(vertices));
-
-    // std::cout << "vertices:\n";
-    // for (auto& v : vertices) std::cout << v << std::endl;
-
-    // std::cout << "frustum_bb:\n";
-    // std::cout << frustum_bb << std::endl;
-
     REQUIRE(equal(frustum.near().normal, glm::vec3(0.0f, 0.0f, -1.0f)) == true);
     REQUIRE(equal(frustum.far().normal, glm::vec3(0.0f, 0.0f, 1.0f)) == true);
   }
