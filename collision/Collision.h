@@ -1,9 +1,9 @@
 #pragma once
 
 #include <array>
-#include <span>
 #include <glm/glm.hpp>
 #include <iostream>
+#include <span>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/io.hpp>
 
