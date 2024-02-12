@@ -10,12 +10,14 @@ AABB AABB::from_center_and_size(const glm::vec3& center, const glm::vec3& size)
 
 AABB AABB::from_points(const std::span<glm::vec3>& points)
 {
-  glm::vec3 min(1e6f), max(-1e6f);
+  constexpr float float_max = std::numeric_limits<float>::max();
+  glm::vec3 min(float_max), max(-float_max);
 
   for (auto& point : points) {
     min = glm::min(min, point);
     max = glm::max(max, point);
   }
+
   return AABB(min, max);
 }
 
@@ -65,7 +67,7 @@ void Plane::normalize()
   distance /= length;
 }
 
-float Plane::signed_distance(const Point& point) const { return glm::dot(point, normal) - distance; }
+float Plane::signed_distance(const Point& point) const { return glm::dot(point, normal) + distance; }
 
 Frustum::Frustum(const glm::mat4& view_projection_matrix)
 {
@@ -198,10 +200,25 @@ bool aabb_vs_plane(const AABB& aabb, const Plane& plane)
 bool aabb_vs_frustum(const AABB& aabb, const Frustum& frustum)
 {
   auto vertices = aabb.vertices();
+
+  int total_in = 0;
+
   for (const Plane& plane : frustum.planes) {
-    if (!aabb_vs_plane(aabb, plane)) {
-      return false;
+    int out = 0;
+    int in = 0;
+
+    for (int i = 0; i < 8; ++i) {
+      if (plane.signed_distance(vertices[i]) < 0.0f) {
+        out++;
+      } else {
+        in++;
+      }
+    }
+
+    if (out == 8) {
+      return false;  // all 8 corners are outside
     }
   }
+
   return true;
 }
