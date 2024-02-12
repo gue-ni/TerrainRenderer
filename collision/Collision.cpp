@@ -104,10 +104,26 @@ std::array<glm::vec3, 8> Frustum::vertices() const
   return vertices;
 }
 
-bool plane_vs_plane_vs_plane(const Plane& p0, const Plane& p1, const Plane& p2, Point& point)
+bool plane_vs_plane_vs_plane(const Plane& p1, const Plane& p2, const Plane& p3, Point& point)
 {
   // https://gdbooks.gitbooks.io/3dcollisions/content/Chapter1/three_plane_intersection.html
-  return false;
+  auto m1 = glm::vec3(p1.normal.x, p2.normal.x, p3.normal.x);
+  auto m2 = glm::vec3(p1.normal.y, p2.normal.y, p3.normal.y);
+  auto m3 = glm::vec3(p1.normal.z, p2.normal.z, p3.normal.z);
+  auto d = glm::vec3(p1.distance, p2.distance, p3.distance);
+
+  glm::vec3 u = glm::cross(m2, m3);
+  glm::vec3 v = glm::cross(m1, d);
+  float denom = glm::dot(m1, u);
+
+  const float epsilon = 0.01f;
+
+  if (glm::abs(denom) < EPSILON) {
+    return false;
+  }
+  
+  point = glm::vec3(glm::dot(d, u), glm::dot(m3, v), -glm::dot(m2, v)) / denom;
+  return true;
 }
 
 bool ray_vs_plane(const Ray& ray, const Plane& plane, float& t)
