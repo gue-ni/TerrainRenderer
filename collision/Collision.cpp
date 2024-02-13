@@ -155,8 +155,19 @@ bool ray_vs_plane(const Ray& ray, const Plane& plane, float& t)
 
 bool ray_vs_sphere(const Ray& ray, const Sphere& sphere, float& t)
 {
-  // TODO
-  return false;
+  // https://viclw17.github.io/2018/07/16/raytracing-ray-sphere-intersection
+  glm::vec3 oc = ray.origin - sphere.center;
+  float a = glm::dot(ray.direction, ray.direction);
+  float b = 2.0f * glm::dot(oc, ray.direction);
+  float c = glm::dot(oc, oc) - (sphere.radius * sphere.radius);
+  float discriminant = b * b - 4.0f * a * c;
+
+  if (discriminant < 0.0f) {
+    return false;
+  } else {
+    t = (-b - std::sqrt(discriminant)) / (2.0f * a);
+    return true;
+  }
 }
 
 bool point_vs_plane(const Point& point, const Plane& plane)
