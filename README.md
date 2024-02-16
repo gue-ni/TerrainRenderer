@@ -1,6 +1,6 @@
 # Terrain Renderer
 
-![msbuild workflow badge](https://github.com/gue-ni/TerrainRenderer/actions/workflows/msbuild.yml/badge.svg)
+![cmake workflow badge](https://github.com/gue-ni/TerrainRenderer/actions/workflows/cmake.yml/badge.svg)
 
 A simple OpenGL Terrain Renderer.
 
@@ -8,15 +8,15 @@ A simple OpenGL Terrain Renderer.
 
 ## Features
 
-- [x] Real-world height and texture data
+- [x] Real-world elevation and orthofoto data
 - [x] Multithreaded terrain tile loading
 - [X] Quadtree level-of-detail
-- [ ] Frustum Culling
+- [X] Frustum Culling
 
 ## Build Instructions
 
-This project depends on SDL2, GLM, GLEW and libcpr. You should be able to build on
-windows by following the steps in the [msbuild.yml](./.github/workflows/msbuild.yml).
+This project depends on SDL2, GLM, GLEW and libcpr. You should be able to build by following the steps 
+in the [cmake.yml](./.github/workflows/cmake.yml).
 
 ```
 git clone --recursive git@github.com:gue-ni/TerrainRenderer.git
