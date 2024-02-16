@@ -13,6 +13,7 @@ FetchContent_MakeAvailable(Catch2)
 add_executable(tests
   test-collision.cpp
   test-quadtree.cpp
+  test-terrain.cpp
 )
 
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain collision terrain)

@@ -3,6 +3,7 @@
 
 #include "Common.h"
 #include "QuadTree.h"
+#include "TileUtils.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/io.hpp>
@@ -29,11 +30,12 @@ void print(QuadTree& quad_tree)
 
 TEST_CASE("Create QuadTree")
 {
-  const Bounds<glm::vec2> bounds(glm::vec2(0.0f), glm::vec2(100.0f));
+  const TileId root_tile = TileId(0U, 0U, 0U);
+  const auto bounds = Bounds<glm::vec2>(glm::vec2(0.0f), glm::vec2(100.0f));
 
   SECTION("depth == 1")
   {
-    QuadTree quad_tree(bounds.center(), bounds.min, bounds.max, 1);
+    QuadTree quad_tree(bounds.center(), bounds.min, bounds.max, 1, root_tile);
 
     auto nodes = quad_tree.nodes();
     auto leaves = quad_tree.leaves();
@@ -46,7 +48,7 @@ TEST_CASE("Create QuadTree")
 
   SECTION("depth == 2")
   {
-    QuadTree quad_tree(bounds.center(), bounds.min, bounds.max, 2);
+    QuadTree quad_tree(bounds.center(), bounds.min, bounds.max, 2, root_tile);
 
     auto nodes = quad_tree.nodes();
     auto leaves = quad_tree.leaves();

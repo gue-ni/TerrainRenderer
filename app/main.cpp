@@ -1,10 +1,8 @@
-#include <iostream>
-
-#include "Game.h"
+#include "App.h"
 
 int main()
 {
-  Game game(1280, 720);
-  game.run();
+  App app(1280, 720);
+  app.run();
   return 0;
 }

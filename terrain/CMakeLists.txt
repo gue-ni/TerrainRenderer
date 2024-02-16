@@ -1,12 +1,13 @@
 cmake_minimum_required(VERSION 3.21)
 
 add_library(terrain STATIC
-    TileService.cpp
-    TileCache.cpp
-    TerrainRenderer.cpp
-    QuadTree.cpp
-    Cube.cpp
-    Chunk.cpp
+    TileService.cpp TileService.h
+    TileCache.cpp TileCache.h
+    TerrainRenderer.cpp TerrainRenderer.h
+    QuadTree.cpp QuadTree.h
+    Cube.cpp Cube.h
+    Chunk.cpp Chunk.h
+    TileUtils.h
 )
 
 target_link_libraries(terrain PUBLIC

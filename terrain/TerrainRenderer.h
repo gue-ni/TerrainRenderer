@@ -11,12 +11,14 @@
 using namespace gfx;
 using namespace gfx::gl;
 
+Bounds<glm::vec2> rescale_uv(const TileId& parent_tile_id, const TileId& tile_id);
+
 class TerrainRenderer
 {
  public:
   TerrainRenderer(const TileId& root_tile, unsigned max_zoom_level_range, const Bounds<glm::vec2>& bounds);
 
-  void render(const Camera& camera, const glm::vec2& center, float altitude = 0.0f);
+  void render(const Camera& camera);
 
   // get terrain elevation in meters
   float terrain_elevation(const glm::vec2&);
@@ -39,11 +41,13 @@ class TerrainRenderer
   bool wireframe{false};
   bool intersect_terrain{false};
   bool debug_view{false};
+  bool debug_view_2{false};
   bool manual_zoom{false};
+  bool frustum_culling{true};
   float fog_far{2000.0f};
-  float fog_density{0.25f};
-  int min_zoom, max_zoom;
+  float fog_density{0.66f};
   float max_horizon{500.0f};
+  int min_zoom, max_zoom;
 
  private:
   const std::unique_ptr<ShaderProgram> m_shader, m_sky_shader;
@@ -60,8 +64,6 @@ class TerrainRenderer
   void calculate_zoom_levels(const glm::vec2& center, float altitude);
 
   glm::vec2 calculate_lod_center(const Camera& camera);
-
-  TileId tile_id_from_node(Node*) const;
 
   Texture* find_cached_lower_zoom_parent(Node* node, Bounds<glm::vec2>& uv, const TileType&);
 };

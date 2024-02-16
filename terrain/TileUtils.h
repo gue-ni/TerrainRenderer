@@ -95,14 +95,16 @@ struct TileId {
 
   inline TileId parent() const { return TileId(zoom - 1U, x / 2U, y / 2U); }
 
+  // https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Subtiles
   inline std::array<TileId, 4> children() const
   {
     unsigned child_zoom = zoom + 1U;
+
     return std::array<TileId, 4>({
-        TileId(child_zoom, 2U * x + 0U, 2U * y + 0U),
-        TileId(child_zoom, 2U * x + 1U, 2U * y + 0U),
-        TileId(child_zoom, 2U * x + 0U, 2U * y + 1U),
+        TileId(child_zoom, 2U * x, 2U * y),
+        TileId(child_zoom, 2U * x + 1U, 2U * y),
         TileId(child_zoom, 2U * x + 1U, 2U * y + 1U),
+        TileId(child_zoom, 2U * x, 2U * y + 1U),
     });
   }
 };
@@ -111,7 +113,3 @@ template <>
 struct std::hash<TileId> {
   std::size_t operator()(const TileId& t) const noexcept { return std::hash<std::string>{}(t.to_string()); }
 };
-
-inline std::ostream& operator<<(std::ostream& os, const Coordinate& c) { return os << c.lat << ", " << c.lon; }
-
-inline std::ostream& operator<<(std::ostream& os, const TileId& t) { return os << t.to_string(); }

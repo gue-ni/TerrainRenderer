@@ -4,7 +4,7 @@
 
 A simple OpenGL Terrain Renderer.
 
-![Example](assets/Image_2024-01-22_23-24-21.png)
+![](assets/Screenshot_2024-02-16_203330.png)
 
 ## Features
 
