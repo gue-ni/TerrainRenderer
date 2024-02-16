@@ -200,11 +200,7 @@ Bounds<glm::vec2> rescale_uv(const TileId& parent_tile_id, const TileId& tile_id
   unsigned num_tiles = 1 << zoom_delta;
 
   // maybe it is here
-  auto scaled_root_tile = TileId(
-    tile_id.zoom, 
-    parent_tile_id.x * num_tiles, 
-    parent_tile_id.y * num_tiles
-  );
+  auto scaled_root_tile = TileId(tile_id.zoom, parent_tile_id.x * num_tiles, parent_tile_id.y * num_tiles);
 
   unsigned delta_x = tile_id.x - scaled_root_tile.x;
   unsigned delta_y = tile_id.y - scaled_root_tile.y;
@@ -217,15 +213,12 @@ Bounds<glm::vec2> rescale_uv(const TileId& parent_tile_id, const TileId& tile_id
   Bounds<glm::vec2> uv = {glm::vec2(0), glm::vec2(1)};
 #endif
 
-
   if ((tile_id.zoom == 12U || tile_id.zoom == 11U) && tile_id.x == scaled_root_tile.x) {
-    //std::cout << tile_id << ": " << uv << std::endl;
-  
-      //uv.min = glm::vec2(0);
-      //uv.max = glm::vec2(1);
-  
-  }
+    // std::cout << tile_id << ": " << uv << std::endl;
 
+    // uv.min = glm::vec2(0);
+    // uv.max = glm::vec2(1);
+  }
 
   return uv;
 }
