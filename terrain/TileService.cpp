@@ -9,6 +9,11 @@
 #define CACHE_ON_DISK true
 #define NUM_THREADS   3
 
+inline std::ostream& operator<<(std::ostream& os, const TileId& tile)
+{
+  return os << tile.zoom << "-" << tile.x << "-" << tile.y;
+}
+
 TileService::TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype,
                          const std::string& dir)
     : m_url(url), m_url_pattern(url_pattern), m_filetype(filetype), m_thread_pool(NUM_THREADS), m_cache_dir(dir)

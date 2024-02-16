@@ -6,16 +6,19 @@
 #include <memory>
 #include <vector>
 
+#include "TileUtils.h"
+
 struct Node {
-  enum : std::size_t { NE = 0, NW, SE, SW };
+  enum : std::size_t { NW = 0, NE = 1, SE = 2, SW = 3 };
   glm::vec2 min, max;
   bool is_leaf;
   unsigned depth;
   Node* parent;
   std::array<std::unique_ptr<Node>, 4> children;
+  TileId id;
 
-  Node(const glm::vec2& min_, const glm::vec2& max_, unsigned depth_, Node* parent_ = nullptr)
-      : children{nullptr}, min(min_), max(max_), depth(depth_), parent(parent_), is_leaf(true)
+  Node(const glm::vec2& min_, const glm::vec2& max_, unsigned depth_, const TileId& id_, Node* parent_ = nullptr)
+      : children{nullptr}, min(min_), max(max_), depth(depth_), parent(parent_), is_leaf(true), id(id_)
   {
   }
 
@@ -28,15 +31,14 @@ struct Node {
     return glm::all(glm::lessThanEqual(min, point)) && glm::all(glm::lessThanEqual(point, max));
   }
 
-  std::vector<Node*> neighbours() const;
-
   void split();
 };
 
 class QuadTree
 {
  public:
-  QuadTree(const glm::vec2& point, const glm::vec2& min, const glm::vec2& max, unsigned m_max_depth);
+  QuadTree(const glm::vec2& point, const glm::vec2& min, const glm::vec2& max, unsigned m_max_depth,
+           const TileId& root_tile);
 
   std::vector<Node*> nodes();
 
@@ -60,6 +62,7 @@ class QuadTree
   }
 
  private:
+  const TileId m_root_tile;
   const unsigned m_max_depth;
   std::unique_ptr<Node> m_root{nullptr};
 

@@ -8,10 +8,10 @@
 #include "Collision.h"
 #include "Common.h"
 
-#define ENABLE_FOG       0
-#define ENABLE_FALLBACK  0
-#define ENABLE_SKYBOX    0
-#define ENABLE_SMART_LOD 0
+#define ENABLE_FOG       1
+#define ENABLE_FALLBACK  1
+#define ENABLE_SKYBOX    1
+#define ENABLE_SMART_LOD 1
 
 const std::string shader_vert = R"(
 #version 430
@@ -102,13 +102,11 @@ vec2 map_range(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max)
 void main() {
   vec2 scaled_uv = map_range(uv, vec2(0), vec2(1), u_albedo_uv_min, u_albedo_uv_max);
 
-#if 0
-  vec3 color = vec3(scaled_uv.x, scaled_uv.y, 0);
-#else
   vec3 color = texture(u_albedo_texture, scaled_uv).rgb;
-#endif
 
+#if 0
   color = mix(color, vec3(scaled_uv.xy, 0), 0.5);
+#endif
 
   if (u_fog_color != vec3(0)) {
     vec3 camera_dir = normalize(u_camera_position - world_pos.xyz);
@@ -281,18 +279,12 @@ glm::vec2 TerrainRenderer::coordinate_to_point(const Coordinate& coord) const
   return map_range(coord.to_vec2(), coord_min, coord_max, m_bounds.min, m_bounds.max);
 }
 
-TileId TerrainRenderer::tile_id_from_node(Node* node) const
-{
-  Coordinate coord = point_to_coordinate(node->center());
-  return TileId(coord, m_root_tile.zoom + node->depth);
-}
-
 void TerrainRenderer::calculate_zoom_levels(const glm::vec2& center, float altitude)
 {
   // linear interpolate
   // this should probably be something more clever
   float alt = altitude_over_terrain(center, altitude);
-  float min_alt = 0, max_alt = 20000;
+  float min_alt = 0, max_alt = 25000;
   float normalized_height = alt / (max_alt - min_alt);
   float factor = glm::clamp(1.0f - normalized_height, 0.0f, 1.0f);
 
@@ -319,7 +311,8 @@ glm::vec2 TerrainRenderer::calculate_lod_center(const Camera& camera)
 
     if (ray_vs_plane(ray, plane, t)) {
       glm::vec3 point = ray.point_at(t);
-      return {point.x, point.z};
+      glm::vec2 new_position = {point.x, point.z};
+      return clamp_range(new_position, m_bounds);
     } else {
       return position;
     }
@@ -334,25 +327,25 @@ glm::vec2 TerrainRenderer::calculate_lod_center(const Camera& camera)
 
     float horizon = map_range(alt, min_alt, max_alt, 0.0f, max_horizon);
 
-    return position + view_direction * horizon;
+    glm::vec2 new_position = position + view_direction * horizon;
+
+    return clamp_range(new_position, m_bounds);
   }
 }
 
 Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::vec2>& uv, const TileType& type)
 {
   Texture* parent_texture = nullptr;
-  TileId tile_id = tile_id_from_node(node);
+  TileId tile_id = node->id;
 
   unsigned zoom = m_root_tile.zoom + node->depth;
 
   Node* parent = node->parent;
   TileId parent_tile_id;
 
-  int depth = 0;
-
 #if 1
-  while (parent != nullptr && (depth++ < 1)) {
-    parent_tile_id = tile_id_from_node(parent);
+  while (parent != nullptr) {
+    parent_tile_id = parent->id;
     parent_texture = m_tile_cache.tile_texture_cached(parent_tile_id, type);
     if (parent_texture) break;
     parent = parent->parent;
@@ -390,7 +383,7 @@ void TerrainRenderer::render(const Camera& camera)
     calculate_zoom_levels(center, altitude);
   }
 
-  QuadTree quad_tree(terrain_center, m_bounds.min, m_bounds.max, max_zoom - m_root_tile.zoom);
+  QuadTree quad_tree(terrain_center, m_bounds.min, m_bounds.max, max_zoom - m_root_tile.zoom, m_root_tile);
 
   if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -419,7 +412,7 @@ void TerrainRenderer::render(const Camera& camera)
 
   // This render function is executed on all quadtree nodes.
   auto render_tile = [&, this](Node* node) {
-    TileId tile_id = tile_id_from_node(node);
+    TileId tile_id = node->id;
 
     Texture *albedo = nullptr, *heightmap = nullptr;
 
@@ -455,8 +448,6 @@ void TerrainRenderer::render(const Camera& camera)
       m_shader->set_uniform("u_height_uv_min", height_uv.min);
       m_shader->set_uniform("u_height_uv_max", height_uv.max);
 
-      std::cout << "render " << tile_id << std::endl;
-
       m_chunk.draw(m_shader.get(), node->min, node->max);
     }
   };
@@ -489,11 +480,8 @@ void TerrainRenderer::render(const Camera& camera)
   // Sort nodes so biggest zoom level is rendered and requested first
   std::sort(nodes.begin(), nodes.end(), [](Node* a, Node* b) { return a->depth > b->depth; });
 
-  std::cout << "start render\n";
-  // we should really exploit our quadtree stucture to reduce the frustum culling tests
+  //  we should really exploit our quadtree stucture to reduce the frustum culling tests
   std::for_each(nodes.begin(), nodes.end(), render_tile);
-
-  std::cout << "stop render\n";
 
 #if ENABLE_SKYBOX
   if (!wireframe) {

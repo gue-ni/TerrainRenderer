@@ -3,7 +3,6 @@
 #include <cassert>
 #include <iostream>
 
-#include "../gfx/util.h"
 #include "Common.h"
 
 TileCache::TileCache()

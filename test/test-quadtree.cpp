@@ -36,7 +36,7 @@ TEST_CASE("Create QuadTree")
 
   SECTION("depth == 1")
   {
-    QuadTree quad_tree(bounds.center(), bounds.min, bounds.max, 1);
+    QuadTree quad_tree(bounds.center(), bounds.min, bounds.max, 1, root_tile);
 
     auto nodes = quad_tree.nodes();
     auto leaves = quad_tree.leaves();
@@ -49,7 +49,7 @@ TEST_CASE("Create QuadTree")
 
   SECTION("depth == 2")
   {
-    QuadTree quad_tree(bounds.center(), bounds.min, bounds.max, 2);
+    QuadTree quad_tree(bounds.center(), bounds.min, bounds.max, 2, root_tile);
 
     auto nodes = quad_tree.nodes();
     auto leaves = quad_tree.leaves();

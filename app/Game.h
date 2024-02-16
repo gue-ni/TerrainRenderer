@@ -14,7 +14,7 @@ class FirstPersonCamera : public Camera
 {
  public:
   float pitch = 0.0f;
-  float yaw = -180.0f;
+  float yaw = 0.0f;
 
   FirstPersonCamera() : Camera() { update(); }
 

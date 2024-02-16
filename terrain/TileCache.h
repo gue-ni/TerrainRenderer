@@ -12,9 +12,7 @@
 #include <tuple>
 #include <unordered_map>
 
-#include "../gfx/gl.h"
-#include "../gfx/image.h"
-#include "QuadTree.h"
+#include "../gfx/gfx.h"
 #include "TileService.h"
 #include "TileUtils.h"
 

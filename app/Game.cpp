@@ -12,7 +12,7 @@ const Coordinate root = INNSBRUCK;
 
 const unsigned zoom = 6;
 
-const int zoom_range = 3;
+const int zoom_range = 5;
 
 const float terrain_width = wms::tile_width(root.lat, zoom) * 0.01f;
 
@@ -22,11 +22,13 @@ Game::Game(size_t width, size_t height)
 {
   float fov = 45.0f, aspect_ratio = float(width) / float(height), near = 1.0f, far = 100000.0f;
   m_camera.set_attributes(glm::radians(fov), aspect_ratio, near, far);
+
 #if 1
   glm::vec2 camera_position = m_terrain.coordinate_to_point(root);
 #else
   glm::vec2 camera_position = glm::vec2(0.0f);
 #endif
+
   float camera_altitude = 5000.0f * m_terrain.scaling_factor();
   m_camera.set_local_position(glm::vec3(camera_position.x, camera_altitude, camera_position.y));
 }
