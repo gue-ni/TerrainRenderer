@@ -1,4 +1,4 @@
-#include "Game.h"
+#include "App.h"
 
 const Coordinate GROSS_GLOCKNER(47.0742f, 12.6947f);
 
@@ -16,7 +16,7 @@ const int zoom_range = 5;
 
 const float terrain_width = wms::tile_width(root.lat, zoom) * 0.01f;
 
-Game::Game(size_t width, size_t height)
+App::App(size_t width, size_t height)
     : Window(width, height),
       m_terrain(TileId(root, zoom), zoom_range, {glm::vec2(-terrain_width / 2.0f), glm::vec2(terrain_width / 2.0f)})
 {
@@ -33,7 +33,7 @@ Game::Game(size_t width, size_t height)
   m_camera.set_local_position(glm::vec3(camera_position.x, camera_altitude, camera_position.y));
 }
 
-void Game::render(float dt)
+void App::render(float dt)
 {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL2_NewFrame(m_window);
@@ -49,9 +49,9 @@ void Game::render(float dt)
   SDL_GL_SwapWindow(m_window);
 }
 
-void Game::render_terrain() { m_terrain.render(m_camera); }
+void App::render_terrain() { m_terrain.render(m_camera); }
 
-void Game::render_ui()
+void App::render_ui()
 {
   ImGuiWindowFlags window_flags = 0;
 
@@ -96,7 +96,7 @@ void Game::render_ui()
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void Game::run()
+void App::run()
 {
   m_clock.init();
   while (!m_quit) {
@@ -112,7 +112,7 @@ void Game::run()
   }
 }
 
-void Game::read_input(float dt)
+void App::read_input(float dt)
 {
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
@@ -184,4 +184,4 @@ void Game::read_input(float dt)
   m_camera.set_local_position({position2.x, position.y, position2.y});
 }
 
-void Game::update(float dt) {}
+void App::update(float dt) {}

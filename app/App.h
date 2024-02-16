@@ -42,10 +42,10 @@ class FirstPersonCamera : public Camera
   }
 };
 
-class Game : public Window
+class App : public Window
 {
  public:
-  Game(size_t width, size_t height);
+  App(size_t width, size_t height);
   void run();
 
  private:

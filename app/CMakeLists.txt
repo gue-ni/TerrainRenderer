@@ -22,9 +22,9 @@ include_directories(${imgui_SOURCE_DIR})
 
 add_executable(app
     main.cpp
-    Window.cpp
-    Game.cpp
-    Clock.cpp
+    Window.cpp Window.h
+    App.cpp App.h
+    Clock.cpp Clock.h
     ${imgui_SOURCE}
 )
 
