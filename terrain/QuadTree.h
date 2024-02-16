@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <memory>
 #include <vector>
+#include <functional>
 
 struct Node {
   enum : std::size_t { NE = 0, NW, SE, SW };

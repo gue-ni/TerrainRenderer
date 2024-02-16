@@ -49,6 +49,12 @@ TEST_CASE("Ray vs Plane")
   }
 }
 
+TEST_CASE("Create AABB from points")
+{
+  std::vector points = {glm::vec3(7.0f, 0.0f, 1.0f), glm::vec3(-1.0f, 5.0f, 2.0f), glm::vec3(-1.0f, -5.0f, -2.0f)};
+  AABB bb = AABB::from_points(points.begin(), points.end());
+}
+
 TEST_CASE("Point vs Plane")
 {
   SECTION("point in front of plane")

@@ -5,10 +5,16 @@
 template <typename T>
 struct Bounds {
   T min, max;
-  Bounds(const T& min_, const T& max_) : min(min_), max(max_) {}
+  constexpr Bounds(const T& min_, const T& max_) : min(min_), max(max_) {}
   T size() const { return max - min; }
   T center() const { return min + size() / T(2); }
 };
+
+template <typename T>
+inline std::ostream& operator<<(std::ostream& os, const Bounds<T>& b)
+{
+  return os << b.min << ", " << b.max;
+}
 
 template <typename T>
 inline T map_range(const T& value, const T& in_min, const T& in_max, const T& out_min, const T& out_max)
@@ -38,3 +44,11 @@ inline bool contains(const glm_vec& value, const Bounds<glm_vec>& bounds)
 {
   return glm::all(glm::lessThanEqual(bounds.min, value)) && glm::all(glm::lessThanEqual(value, bounds.max));
 }
+
+#if 0
+template <typename glm_vec>
+inline bool contains(const Bounds<glm_vec2> & a, const Bounds<glm_vec>& b)
+{
+  return 
+}
+#endif

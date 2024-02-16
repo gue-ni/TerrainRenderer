@@ -7,7 +7,7 @@
 
 #define LOG_REQUESTS  true
 #define CACHE_ON_DISK true
-#define NUM_THREADS   2
+#define NUM_THREADS   3
 
 TileService::TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype,
                          const std::string& dir)
@@ -96,7 +96,7 @@ std::unique_ptr<Image> TileService::download_tile(const TileId& tile)
 
     if (image) {
 #if LOG_REQUESTS
-      std::cout << "Load from disk: " << tile << "\n";
+      std::cout << "Load from disk: " << m_cache_dir << " " << tile << "\n";
 #endif
       return image;
     }

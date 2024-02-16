@@ -10,9 +10,9 @@ const Coordinate BLUDENZ(47.1599f, 9.8082f);
 
 const Coordinate root = INNSBRUCK;
 
-const unsigned zoom = 7;
+const unsigned zoom = 6;
 
-const int zoom_range = 5;
+const int zoom_range = 3;
 
 const float terrain_width = wms::tile_width(root.lat, zoom) * 0.01f;
 
@@ -22,7 +22,13 @@ Game::Game(size_t width, size_t height)
 {
   float fov = 45.0f, aspect_ratio = float(width) / float(height), near = 1.0f, far = 100000.0f;
   m_camera.set_attributes(glm::radians(fov), aspect_ratio, near, far);
-  m_camera.set_local_position(glm::vec3(0.0f, 5000.0f * m_terrain.scaling_factor(), 0.0f));
+#if 1
+  glm::vec2 camera_position = m_terrain.coordinate_to_point(root);
+#else
+  glm::vec2 camera_position = glm::vec2(0.0f);
+#endif
+  float camera_altitude = 5000.0f * m_terrain.scaling_factor();
+  m_camera.set_local_position(glm::vec3(camera_position.x, camera_altitude, camera_position.y));
 }
 
 void Game::render(float dt)
@@ -41,12 +47,7 @@ void Game::render(float dt)
   SDL_GL_SwapWindow(m_window);
 }
 
-void Game::render_terrain()
-{
-  glm::vec3 camera_position = m_camera.local_position();
-  glm::vec2 center = {camera_position.x, camera_position.z};
-  m_terrain.render(m_camera, center, camera_position.y);
-}
+void Game::render_terrain() { m_terrain.render(m_camera); }
 
 void Game::render_ui()
 {
@@ -73,9 +74,11 @@ void Game::render_ui()
   ImGui::Text("Altitude over terrain: %.2f", m_terrain.altitude_over_terrain(pos2, pos.y));
   ImGui::Text("Zoom Level Range: [%d, %d] (%d)", m_terrain.min_zoom, m_terrain.max_zoom,
               m_terrain.max_zoom - m_terrain.min_zoom);
+  ImGui::Text("Camera: pitch = %.2f, yaw = %.2f", m_camera.pitch, m_camera.yaw);
   ImGui::Checkbox("Wireframe", &m_terrain.wireframe);
   ImGui::Checkbox("Ray Intersect", &m_terrain.intersect_terrain);
   ImGui::Checkbox("Debug View", &m_terrain.debug_view);
+  ImGui::Checkbox("Frustum Culling", &m_terrain.frustum_culling);
   ImGui::SliderFloat("Camera Speed", &m_speed, 10.0f, 5000.0f);
   ImGui::SliderFloat("Fog Far", &m_terrain.fog_far, 100.0f, 100000.0f);
   ImGui::SliderFloat("Fog Density", &m_terrain.fog_density, 0.0f, 10.0f);
@@ -97,8 +100,12 @@ void Game::run()
   while (!m_quit) {
     float dt = m_clock.delta_time();
     read_input(dt);
-    update(dt);
-    render(dt);
+
+    if (!m_paused) {
+      update(dt);
+      render(dt);
+    }
+
     m_clock.tick();
   }
 }
@@ -114,10 +121,20 @@ void Game::read_input(float dt)
         m_quit = true;
         break;
 
+      case SDL_KEYDOWN:
+        switch (event.key.keysym.sym) {
+          case SDLK_p:
+            m_paused = !m_paused;
+            break;
+        }
+        break;
+
       case SDL_WINDOWEVENT:
-        if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
-          resize(event.window.data1, event.window.data2);
-          m_camera.set_aspect_ratio(aspect_ratio());
+        switch (event.window.event) {
+          case SDL_WINDOWEVENT_RESIZED:
+            resize(event.window.data1, event.window.data2);
+            m_camera.set_aspect_ratio(aspect_ratio());
+            break;
         }
         break;
 
@@ -134,23 +151,7 @@ void Game::read_input(float dt)
             ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) || ImGui::IsWindowFocused(ImGuiHoveredFlags_AnyWindow);
 
         if (m_mousedown && !hover) {
-          const float sensitivity = 0.20f;
-          float delta_yaw = static_cast<float>(event.motion.xrel) * sensitivity;
-          float delta_pitch = static_cast<float>(event.motion.yrel) * sensitivity;
-
-          m_camera.yaw += delta_yaw;
-          m_camera.pitch -= delta_pitch;
-          m_camera.pitch = glm::clamp(m_camera.pitch, -89.0f, 89.0f);
-
-          glm::vec3 front = vector_from_spherical(glm::radians(m_camera.pitch), glm::radians(m_camera.yaw));
-
-          glm::vec3 world_up = {0.0f, 1.0f, 0.0f};
-          glm::vec3 right = glm::normalize(glm::cross(front, world_up));
-          glm::vec3 up = glm::normalize(glm::cross(right, front));
-          glm::vec3 position = m_camera.local_position();
-
-          auto look_at = glm::lookAt(position, position + front, up);
-          m_camera.set_local_transform(glm::inverse(look_at));
+          m_camera.handle_input(event);
         }
 
         break;
@@ -177,7 +178,8 @@ void Game::read_input(float dt)
     position += right * m_speed * dt;
   }
 
-  m_camera.set_local_position(position);
+  auto position2 = clamp_range(glm::vec2(position.x, position.z), m_terrain.bounds());
+  m_camera.set_local_position({position2.x, position.y, position2.y});
 }
 
 void Game::update(float dt) {}

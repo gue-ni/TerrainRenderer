@@ -5,3 +5,4 @@ build/
 build2/
 *.user
 CMakeSettings.json
+NOTES.txt

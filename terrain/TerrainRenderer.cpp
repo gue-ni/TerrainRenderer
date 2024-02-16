@@ -8,9 +8,10 @@
 #include "Collision.h"
 #include "Common.h"
 
-#define ENABLE_FOG      1
-#define ENABLE_FALLBACK 1
-#define ENABLE_SKYBOX   1
+#define ENABLE_FOG       0
+#define ENABLE_FALLBACK  0
+#define ENABLE_SKYBOX    0
+#define ENABLE_SMART_LOD 0
 
 const std::string shader_vert = R"(
 #version 430
@@ -101,7 +102,13 @@ vec2 map_range(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max)
 void main() {
   vec2 scaled_uv = map_range(uv, vec2(0), vec2(1), u_albedo_uv_min, u_albedo_uv_max);
 
+#if 0
+  vec3 color = vec3(scaled_uv.x, scaled_uv.y, 0);
+#else
   vec3 color = texture(u_albedo_texture, scaled_uv).rgb;
+#endif
+
+  color = mix(color, vec3(scaled_uv.xy, 0), 0.5);
 
   if (u_fog_color != vec3(0)) {
     vec3 camera_dir = normalize(u_camera_position - world_pos.xyz);
@@ -186,6 +193,43 @@ AABB aabb_from_node(const Node* node)
   return AABB({node->min.x, 0.0f, node->min.y}, {node->max.x, height, node->max.y});
 }
 
+Bounds<glm::vec2> rescale_uv(const TileId& parent_tile_id, const TileId& tile_id)
+{
+  // what is the problem here?
+  unsigned zoom_delta = tile_id.zoom - parent_tile_id.zoom;
+  unsigned num_tiles = 1 << zoom_delta;
+
+  // maybe it is here
+  auto scaled_root_tile = TileId(
+    tile_id.zoom, 
+    parent_tile_id.x * num_tiles, 
+    parent_tile_id.y * num_tiles
+  );
+
+  unsigned delta_x = tile_id.x - scaled_root_tile.x;
+  unsigned delta_y = tile_id.y - scaled_root_tile.y;
+
+  float factor = 1.0f / num_tiles;
+#if 1
+  Bounds<glm::vec2> uv = {glm::vec2((delta_x + 0) * factor, (delta_y + 0) * factor),
+                          glm::vec2((delta_x + 1) * factor, (delta_y + 1) * factor)};
+#else
+  Bounds<glm::vec2> uv = {glm::vec2(0), glm::vec2(1)};
+#endif
+
+
+  if ((tile_id.zoom == 12U || tile_id.zoom == 11U) && tile_id.x == scaled_root_tile.x) {
+    //std::cout << tile_id << ": " << uv << std::endl;
+  
+      //uv.min = glm::vec2(0);
+      //uv.max = glm::vec2(1);
+  
+  }
+
+
+  return uv;
+}
+
 TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned max_zoom_level_range,
                                  const Bounds<glm::vec2>& bounds)
     : m_shader(std::make_unique<ShaderProgram>(shader_vert, shader_frag)),
@@ -206,6 +250,9 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned max_zoom_leve
   // for decoding the height map
   const float min_elevation = 0.0f, max_elevation = 8191.0f;
   m_height_scaling_factor = (max_elevation - min_elevation);
+
+  (void)m_tile_cache.tile_texture_sync(m_root_tile, TileType::ORTHO);
+  (void)m_tile_cache.tile_texture_sync(m_root_tile, TileType::HEIGHT);
 
   // request low zoom tiles as fallback
   for (auto& child : m_root_tile.children()) {
@@ -303,39 +350,46 @@ Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::
   Texture* parent_texture = nullptr;
   TileId tile_id = tile_id_from_node(node);
 
+  unsigned zoom = m_root_tile.zoom + node->depth;
+
   Node* parent = node->parent;
   TileId parent_tile_id;
 
-  while (parent != nullptr) {
+  int depth = 0;
+
+#if 1
+  while (parent != nullptr && (depth++ < 1)) {
     parent_tile_id = tile_id_from_node(parent);
     parent_texture = m_tile_cache.tile_texture_cached(parent_tile_id, type);
     if (parent_texture) break;
     parent = parent->parent;
   }
+#endif
 
+#if 1
   if (!parent_texture) {
     parent_tile_id = m_root_tile;
     parent_texture = m_tile_cache.tile_texture_cached(m_root_tile, type);
+    assert(parent_texture);
   }
+#endif
 
-  assert(parent_texture);
-
-  unsigned zoom_delta = tile_id.zoom - parent_tile_id.zoom;
-  unsigned num_tiles = 1 << zoom_delta;
-  TileId scaled_root_tile(tile_id.zoom, parent_tile_id.x * num_tiles, parent_tile_id.y * num_tiles);
-  unsigned delta_x = tile_id.x - scaled_root_tile.x;
-  unsigned delta_y = tile_id.y - scaled_root_tile.y;
-  float factor = 1.0f / num_tiles;
-
-  uv.min = glm::vec2((delta_x + 0) * factor, (delta_y + 0) * factor);
-  uv.max = glm::vec2((delta_x + 1) * factor, (delta_y + 1) * factor);
+  uv = rescale_uv(parent_tile_id, tile_id);
 
   return parent_texture;
 }
 
-void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, float altitude)
+void TerrainRenderer::render(const Camera& camera)
 {
+  glm::vec3 position = camera.world_position();
+  glm::vec2 center = glm::vec2(position.x, position.z);
+  float altitude = position.y;
+
+#if ENABLE_SMART_LOD
   auto terrain_center = calculate_lod_center(camera);
+#else
+  auto terrain_center = center;
+#endif
 
   // terrain_center = clamp_range(center, m_bounds);
 
@@ -374,8 +428,12 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
   auto render_tile = [&, this](Node* node) {
     TileId tile_id = tile_id_from_node(node);
 
-    Texture* albedo = m_tile_cache.tile_texture(tile_id, TileType::ORTHO);
-    Texture* heightmap = m_tile_cache.tile_texture(tile_id, TileType::HEIGHT);
+    Texture *albedo = nullptr, *heightmap = nullptr;
+
+#if 1
+    albedo = m_tile_cache.tile_texture(tile_id, TileType::ORTHO);
+    heightmap = m_tile_cache.tile_texture(tile_id, TileType::HEIGHT);
+#endif
 
     // Render only part of tile if we fallback to lower resolution.
     Bounds<glm::vec2> albedo_uv(glm::vec2(0.0f), glm::vec2(1.0f));
@@ -404,6 +462,8 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
       m_shader->set_uniform("u_height_uv_min", height_uv.min);
       m_shader->set_uniform("u_height_uv_max", height_uv.max);
 
+      std::cout << "render " << tile_id << std::endl;
+
       m_chunk.draw(m_shader.get(), node->min, node->max);
     }
   };
@@ -416,21 +476,15 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
     return aabb_vs_frustum(aabb, frustum);
   };
 
-#if 0
+#if 1
   // ideally we should test for visibility here. In a quadtree, if a parent node
   // is not visible, it's children will also not be visible.
   std::vector<Node*> nodes;
 
-  std::function<bool(Node*)> visitor = [&](Node* node) -> bool {
-    if (!is_visible(node)) {
-      return false;
-    }
-
-    if (node->is_leaf) {
+  std::function<void(Node*)> visitor = [&](Node* node) {
+    if (node->is_leaf && min_zoom <= (m_root_tile.zoom + node->depth) && (!frustum_culling || is_visible(node))) {
       nodes.push_back(node);
     }
-
-    return true;
   };
 
   quad_tree.visit(visitor);
@@ -442,12 +496,11 @@ void TerrainRenderer::render(const Camera& camera, const glm::vec2& center, floa
   // Sort nodes so biggest zoom level is rendered and requested first
   std::sort(nodes.begin(), nodes.end(), [](Node* a, Node* b) { return a->depth > b->depth; });
 
+  std::cout << "start render\n";
   // we should really exploit our quadtree stucture to reduce the frustum culling tests
-  std::for_each(nodes.begin(), nodes.end(), [&](Node* node) {
-    if (min_zoom <= (m_root_tile.zoom + node->depth) && is_visible(node)) {
-      render_tile(node);
-    }
-  });
+  std::for_each(nodes.begin(), nodes.end(), render_tile);
+
+  std::cout << "stop render\n";
 
 #if ENABLE_SKYBOX
   if (!wireframe) {

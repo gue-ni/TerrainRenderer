@@ -7,14 +7,8 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(cpr)
 
 FetchContent_Declare(
-    cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git
-    GIT_TAG 3b15fa82ea74739b574d705fea44959b58142eb8
-)
-FetchContent_MakeAvailable(cpr)
-
-FetchContent_Declare(
     imgui GIT_REPOSITORY https://github.com/ocornut/imgui.git
-    GIT_TAG master
+    GIT_TAG 536090303a8fca7d896f77d6d63dc59249bc87f4
 )
 FetchContent_MakeAvailable(imgui)
 

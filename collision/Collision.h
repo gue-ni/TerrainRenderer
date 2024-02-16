@@ -17,9 +17,23 @@ struct AABB {
   inline glm::vec3 size() const { return max - min; }
   inline glm::vec3 center() const { return min + size() / 2.0f; }
   std::array<glm::vec3, 8> vertices() const;
+  bool contains(const AABB &);
   static AABB from_center_and_size(const glm::vec3 &center, const glm::vec3 &size);
   static AABB from_points(const std::span<glm::vec3> &points);
-  bool contains(const AABB &);
+
+  template <class It>
+  static AABB from_points(It begin, It end)
+  {
+    using limits = std::numeric_limits<float>;
+    glm::vec3 min(limits::max()), max(limits::min());
+
+    for (auto it = begin; it != end; ++it) {
+      min = glm::min(min, *it);
+      max = glm::max(max, *it);
+    }
+
+    return AABB(min, max);
+  }
 };
 
 // A ray is defined by an origin and a normalized direction.

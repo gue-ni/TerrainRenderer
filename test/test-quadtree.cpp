@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "Common.h"
+#include "TileUtils.h"
 #include "QuadTree.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -29,7 +30,9 @@ void print(QuadTree& quad_tree)
 
 TEST_CASE("Create QuadTree")
 {
-  const Bounds<glm::vec2> bounds(glm::vec2(0.0f), glm::vec2(100.0f));
+  const TileId root_tile = TileId(0U, 0U, 0U);
+  const auto bounds = Bounds<glm::vec2>(glm::vec2(0.0f), glm::vec2(100.0f));
+
 
   SECTION("depth == 1")
   {
