@@ -6,6 +6,8 @@ FetchContent_Declare(fmt
 )
 FetchContent_MakeAvailable(fmt)
 
+find_package(Threads REQUIRED)
+
 add_library(terrain STATIC
     TileService.cpp TileService.h
     TileCache.cpp TileCache.h
@@ -21,6 +23,7 @@ target_link_libraries(terrain PUBLIC
   gfx
   cpr::cpr
   fmt::fmt
+  Threads::Threads
 )
 
 target_include_directories(terrain PUBLIC

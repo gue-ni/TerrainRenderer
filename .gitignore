@@ -2,7 +2,11 @@
 libraries/
 x64/
 build/
-build2/
+out/
+tiles/
+tools/
+pre-commit.ps1
 *.user
 CMakeSettings.json
 NOTES.txt
+imgui.ini

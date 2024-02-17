@@ -28,7 +28,9 @@ add_executable(app
     ${imgui_SOURCE}
 )
 
-target_link_libraries(app PRIVATE terrain)
+target_link_libraries(app PRIVATE 
+  terrain
+)
 
 target_include_directories(app PRIVATE
     "${glm_SOURCE_DIR}"

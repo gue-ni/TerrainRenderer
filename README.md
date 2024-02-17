@@ -19,7 +19,7 @@ This project depends on SDL2, GLM, GLEW and libcpr. You should be able to build 
 in the [cmake.yml](./.github/workflows/cmake.yml).
 
 ```
-git clone --recursive git@github.com:gue-ni/TerrainRenderer.git
+git clone --recursive https://github.com/gue-ni/TerrainRenderer.git
 cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build --config Release --parallel
 ```
