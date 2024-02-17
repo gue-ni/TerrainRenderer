@@ -3,8 +3,6 @@
 #include <array>
 #include <glm/glm.hpp>
 #include <iostream>
-#include <ranges>
-#include <span>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/io.hpp>
 
@@ -19,7 +17,6 @@ struct AABB {
   std::array<glm::vec3, 8> vertices() const;
   bool contains(const AABB &);
   static AABB from_center_and_size(const glm::vec3 &center, const glm::vec3 &size);
-  static AABB from_points(const std::span<glm::vec3> &points);
 
   template <class It>
   static AABB from_points(It begin, It end)

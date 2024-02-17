@@ -205,11 +205,8 @@ Bounds<glm::vec2> rescale_uv(const TileId& parent_tile_id, const TileId& tile_id
 
   float factor = 1.0f / num_tiles;
 
-
   Bounds<glm::vec2> uv = {glm::vec2((delta_x + 0) * factor, (delta_y + 0) * factor),
                           glm::vec2((delta_x + 1) * factor, (delta_y + 1) * factor)};
-
-
 
   return uv;
 }
@@ -244,7 +241,7 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned max_zoom_leve
     (void)m_tile_cache.tile_texture_sync(child, TileType::ORTHO);
     (void)m_tile_cache.tile_texture_sync(child, TileType::HEIGHT);
   }
-  #endif
+#endif
 }
 
 float TerrainRenderer::terrain_elevation(const glm::vec2& point)
@@ -351,7 +348,7 @@ Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::
   if (!parent_texture) {
     parent_tile_id = m_root_tile;
     parent_texture = m_tile_cache.tile_texture(m_root_tile, type);
-    //assert(parent_texture);
+    // assert(parent_texture);
   }
 #endif
 

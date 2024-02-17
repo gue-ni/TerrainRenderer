@@ -157,23 +157,6 @@ TEST_CASE("AABB vs Frustum")
     glm::vec3 center = glm::vec3(0.0f, 0.0f, -5.0f);
     AABB bb = AABB::from_center_and_size(center, glm::vec3(1.0f));
 
-#if 0
-    auto vertices = frustum.vertices();
-    AABB frustum_bb = AABB::from_points(std::span(vertices));
-
-
-    std::cout << "vertices:\n";
-    for (auto& v : vertices) std::cout << v << std::endl;
-
-    std::cout << "frustum_bb:\n";
-    std::cout << frustum_bb << std::endl;
-
-    std::cout << "bb:\n";
-    std::cout << bb << std::endl;
-
-    CHECK(frustum_bb.contains(bb) == true);
-#endif
-
     CHECK(point_vs_plane(center, frustum.near()) == true);
     CHECK(point_vs_plane(center, frustum.far()) == true);
 
@@ -184,24 +167,6 @@ TEST_CASE("AABB vs Frustum")
   {
     glm::vec3 center = glm::vec3(0.0f, 0.0f, 5.0f);
     AABB bb = AABB::from_center_and_size(center, glm::vec3(1.0f));
-
-#if 0
-  auto vertices = frustum.vertices();
-    AABB frustum_bb = AABB::from_points(std::span(vertices));
-
-    std::cout << "bb:\n";
-    std::cout << bb << std::endl;
-
-    std::cout << "frustum:\n";
-    std::cout << frustum << std::endl;
-
-    std::cout << "vertices:\n";
-    for (auto& v : vertices) std::cout << v << std::endl;
-
-    std::cout << "frustum_bb:\n";
-    std::cout << frustum_bb << std::endl;
-    CHECK(frustum_bb.contains(bb) == false);
-#endif
 
     CHECK(point_vs_plane(center, frustum.near()) == false);
     CHECK(point_vs_plane(center, frustum.far()) == true);
