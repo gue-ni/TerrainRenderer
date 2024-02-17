@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.18)
 
 FetchContent_Declare(
     cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git
