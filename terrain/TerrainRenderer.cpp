@@ -34,6 +34,10 @@ float altitude_from_color(vec4 color) {
   return (color.r + color.g / 255.0);
 }
 
+float altitude_from_color_2(vec4 color) {
+  return color.r;
+}
+
 vec2 map_range(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) {
   return out_min + (value - in_min) * (out_max - out_min) / (in_max - in_min);
 }
@@ -47,7 +51,7 @@ void main() {
 
   vec4 height_sample = texture(u_height_texture, scaled_uv);
 
-  float height = altitude_from_color(height_sample);
+  float height = altitude_from_color_2(height_sample);
 
   world_pos.y = height * u_height_scaling_factor;
 
@@ -228,8 +232,12 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned max_zoom_leve
   float tile_width = wms::tile_width(wms::tiley2lat(m_root_tile.y, m_root_tile.zoom), m_root_tile.zoom);
   m_terrain_scaling_factor = width / tile_width;
 
-  // for decoding the height map
+// for decoding the height map
+#if 0
   const float min_elevation = 0.0f, max_elevation = 8191.0f;
+#else
+  const float min_elevation = 0.0f, max_elevation = 3795.0f;
+#endif
   m_height_scaling_factor = (max_elevation - min_elevation);
 
 #if 0

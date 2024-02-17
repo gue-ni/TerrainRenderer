@@ -13,9 +13,7 @@ TileCache::TileCache()
       m_ortho_service("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile",
                       UrlPattern::ZYX_Y_SOUTH, "", "tiles/ortho-2"),
 #endif
-      m_height_service("https://alpinemaps.cg.tuwien.ac.at/tiles/alpine_png", UrlPattern::ZXY_Y_NORTH, ".png",
-                       "tiles/height")
-
+      m_height_service("https://www.jakobmaier.at/blob/big-tiles-2", UrlPattern::ZXY_Y_NORTH, ".png", "tiles/height-2")
 {
 }
 

@@ -2,7 +2,8 @@
 
 ![cmake workflow badge](https://github.com/gue-ni/TerrainRenderer/actions/workflows/cmake.yml/badge.svg)
 
-A simple OpenGL Terrain Renderer.
+A simple OpenGL Terrain Renderer. Terrain data is provided by [basemap.at](https://basemap.at/) and 
+[geoland.at](https://www.geoland.at/).
 
 ![](assets/Screenshot_2024-02-16_203330.png)
 
