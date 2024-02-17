@@ -50,7 +50,7 @@ std::string TileService::tile_url(const TileId& tile) const
 
 std::string TileService::tile_filename(const TileId& tile) const
 {
-  return std::format("{}/{}.png", m_cache_dir, tile.to_string());
+  return fmt::format("{}/{}.png", m_cache_dir, tile.to_string());
 }
 
 Image* TileService::get_tile(const TileId& tile)
