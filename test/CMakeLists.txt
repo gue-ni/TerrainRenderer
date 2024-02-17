@@ -10,6 +10,13 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
+#message(NOTICE "building with address sanitizer enabled")
+#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+#set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+#message(NOTICE "building with thread sanitizer enabled")
+#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=thread")
+#set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=thread")
+
 add_executable(tests
   test-collision.cpp
   test-quadtree.cpp
@@ -17,6 +24,11 @@ add_executable(tests
 )
 
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain collision terrain)
+
+if(CMAKE_COMPILER_IS_GNUCC)
+    target_link_options(tests PRIVATE -fsanitize=thread)
+    target_compile_options(tests PRIVATE -fsanitize=thread)
+endif()
 
 if(WIN32)
     add_custom_command(TARGET tests POST_BUILD

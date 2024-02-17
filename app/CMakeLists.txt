@@ -35,6 +35,11 @@ target_include_directories(app PRIVATE
     "${SDL2_INCLUDE_DIRS}"
 )
 
+if(CMAKE_COMPILER_IS_GNUCC)
+    target_link_options(app PRIVATE -fsanitize=address)
+    target_compile_options(app PRIVATE -fsanitize=address)
+endif()
+
 if(WIN32)
     add_custom_command(TARGET app POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:app> $<TARGET_FILE_DIR:app>

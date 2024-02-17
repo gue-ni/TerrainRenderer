@@ -3,6 +3,7 @@ libraries/
 x64/
 build/
 build2/
+tiles/
 *.user
 CMakeSettings.json
 NOTES.txt

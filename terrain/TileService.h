@@ -9,6 +9,10 @@
 #include "Threading.h"
 #include "TileUtils.h"
 
+#ifndef CACHE_ON_DISK
+#define CACHE_ON_DISK true
+#endif
+
 using namespace gfx;
 
 enum UrlPattern {
@@ -23,6 +27,8 @@ class TileService
  public:
   TileService(const std::string& url, const UrlPattern& url_pattern, const std::string& filetype = "png",
               const std::string& cache_dir = "");
+
+  Image* get_tile_cached(const TileId&);
 
   // If tile in cache, return tile. If not, request it for download and return nullptr.
   Image* get_tile(const TileId&);

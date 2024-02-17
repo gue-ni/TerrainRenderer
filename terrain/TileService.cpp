@@ -5,9 +5,8 @@
 #include <filesystem>
 #include <format>
 
-#define LOG_REQUESTS  true
-#define CACHE_ON_DISK true
-#define NUM_THREADS   3
+#define LOG_REQUESTS true
+#define NUM_THREADS  3
 
 inline std::ostream& operator<<(std::ostream& os, const TileId& tile)
 {
@@ -71,7 +70,7 @@ Image* TileService::get_tile_sync(const TileId& tile)
     return m_ram_cache[tile].get();
   }
 
-  auto image = download_tile(tile);
+  std::unique_ptr<Image> image = download_tile(tile);
 
   if (!image) {
     return nullptr;
@@ -79,6 +78,15 @@ Image* TileService::get_tile_sync(const TileId& tile)
 
   m_ram_cache[tile] = std::move(image);
   return m_ram_cache[tile].get();
+}
+
+Image* TileService::get_tile_cached(const TileId& tile)
+{
+  if (m_ram_cache.contains(tile)) {
+    return m_ram_cache[tile].get();
+  } else {
+    return nullptr;
+  }
 }
 
 void TileService::request_tile(const TileId& tile)
@@ -117,7 +125,7 @@ std::unique_ptr<Image> TileService::download_tile(const TileId& tile)
   }
 
 #if LOG_REQUESTS
-  std::cout << "Load from web: " << tile << "\n";
+  std::cout << "Load from web: " << tile << " " << url << "\n";
 #endif
 
   auto image = std::make_unique<Image>();
