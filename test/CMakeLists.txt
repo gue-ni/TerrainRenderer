@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.18)
 
 Include(FetchContent)
 
@@ -11,10 +11,15 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 
 add_executable(tests
-  test-collision.cpp
-  test-quadtree.cpp
-  test-terrain.cpp
+  test_collision.cpp
+  test_quadtree.cpp
+  test_terrain.cpp
 )
+
+if(CMAKE_COMPILER_IS_GNUCC)
+    target_link_options(tests PRIVATE -fsanitize=thread)
+    target_compile_options(tests PRIVATE -fsanitize=thread)
+endif()
 
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain collision terrain)
 

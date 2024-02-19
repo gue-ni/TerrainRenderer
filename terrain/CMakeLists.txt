@@ -1,4 +1,12 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.18)
+
+FetchContent_Declare(fmt
+  GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+  GIT_TAG e69e5f977d458f2650bb346dadf2ad30c5320281
+)
+FetchContent_MakeAvailable(fmt)
+
+find_package(Threads REQUIRED)
 
 add_library(terrain STATIC
     TileService.cpp TileService.h
@@ -14,6 +22,8 @@ target_link_libraries(terrain PUBLIC
   collision
   gfx
   cpr::cpr
+  fmt::fmt
+  Threads::Threads
 )
 
 target_include_directories(terrain PUBLIC

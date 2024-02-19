@@ -34,6 +34,10 @@ float altitude_from_color(vec4 color) {
   return (color.r + color.g / 255.0);
 }
 
+float altitude_from_color_2(vec4 color) {
+  return color.r;
+}
+
 vec2 map_range(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) {
   return out_min + (value - in_min) * (out_max - out_min) / (in_max - in_min);
 }
@@ -47,7 +51,7 @@ void main() {
 
   vec4 height_sample = texture(u_height_texture, scaled_uv);
 
-  float height = altitude_from_color(height_sample);
+  float height = altitude_from_color_2(height_sample);
 
   world_pos.y = height * u_height_scaling_factor;
 
@@ -204,19 +208,9 @@ Bounds<glm::vec2> rescale_uv(const TileId& parent_tile_id, const TileId& tile_id
   unsigned delta_y = tile_id.y - scaled_root_tile.y;
 
   float factor = 1.0f / num_tiles;
-#if 1
+
   Bounds<glm::vec2> uv = {glm::vec2((delta_x + 0) * factor, (delta_y + 0) * factor),
                           glm::vec2((delta_x + 1) * factor, (delta_y + 1) * factor)};
-#else
-  Bounds<glm::vec2> uv = {glm::vec2(0), glm::vec2(1)};
-#endif
-
-  if ((tile_id.zoom == 12U || tile_id.zoom == 11U) && tile_id.x == scaled_root_tile.x) {
-    // std::cout << tile_id << ": " << uv << std::endl;
-
-    // uv.min = glm::vec2(0);
-    // uv.max = glm::vec2(1);
-  }
 
   return uv;
 }
@@ -238,10 +232,15 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned max_zoom_leve
   float tile_width = wms::tile_width(wms::tiley2lat(m_root_tile.y, m_root_tile.zoom), m_root_tile.zoom);
   m_terrain_scaling_factor = width / tile_width;
 
-  // for decoding the height map
+// for decoding the height map
+#if 0
   const float min_elevation = 0.0f, max_elevation = 8191.0f;
+#else
+  const float min_elevation = 0.0f, max_elevation = 3795.0f;
+#endif
   m_height_scaling_factor = (max_elevation - min_elevation);
 
+#if 0
   (void)m_tile_cache.tile_texture_sync(m_root_tile, TileType::ORTHO);
   (void)m_tile_cache.tile_texture_sync(m_root_tile, TileType::HEIGHT);
 
@@ -250,6 +249,7 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned max_zoom_leve
     (void)m_tile_cache.tile_texture_sync(child, TileType::ORTHO);
     (void)m_tile_cache.tile_texture_sync(child, TileType::HEIGHT);
   }
+#endif
 }
 
 float TerrainRenderer::terrain_elevation(const glm::vec2& point)
@@ -355,8 +355,8 @@ Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::
 #if 1
   if (!parent_texture) {
     parent_tile_id = m_root_tile;
-    parent_texture = m_tile_cache.tile_texture_cached(m_root_tile, type);
-    assert(parent_texture);
+    parent_texture = m_tile_cache.tile_texture(m_root_tile, type);
+    // assert(parent_texture);
   }
 #endif
 

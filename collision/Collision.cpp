@@ -8,19 +8,6 @@ AABB AABB::from_center_and_size(const glm::vec3& center, const glm::vec3& size)
   return AABB(center - half_size, center + half_size);
 }
 
-AABB AABB::from_points(const std::span<glm::vec3>& points)
-{
-  constexpr float float_max = std::numeric_limits<float>::max();
-  glm::vec3 min(float_max), max(-float_max);
-
-  for (auto& point : points) {
-    min = glm::min(min, point);
-    max = glm::max(max, point);
-  }
-
-  return AABB(min, max);
-}
-
 bool AABB::contains(const AABB& other)
 {
   return glm::all(glm::lessThanEqual(min, other.min)) && glm::all(glm::lessThanEqual(other.max, max));

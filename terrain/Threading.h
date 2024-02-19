@@ -1,9 +1,9 @@
 #pragma once
 
 #include <condition_variable>
-#include <deque>
 #include <functional>
 #include <mutex>
+#include <queue>
 #include <thread>
 
 template <typename T>
@@ -27,7 +27,7 @@ class ThreadedQueue
   {
     {
       std::unique_lock lock(m_mutex);
-      m_queue.push_front(std::move(item));
+      m_queue.push(std::move(item));
     }
     m_condition.notify_one();
   }
@@ -42,7 +42,7 @@ class ThreadedQueue
     }
 
     item = std::move(m_queue.front());
-    m_queue.pop_front();
+    m_queue.pop();
     return true;
   }
 
@@ -76,7 +76,7 @@ class ThreadedQueue
 
  private:
   bool m_stop = false;
-  std::deque<T> m_queue;
+  std::queue<T> m_queue;
   std::mutex m_mutex;
   std::condition_variable m_condition;
 };

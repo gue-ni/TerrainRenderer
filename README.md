@@ -17,12 +17,12 @@ A simple OpenGL Terrain Renderer. Orthophoto data is provided by [basemap.at](ht
 
 ## Build Instructions
 
-This project depends on [SDL2](https://www.libsdl.org/), [GLM](https://github.com/g-truc/glm), 
-[GLEW](https://glew.sourceforge.net/) and [libcpr](https://github.com/libcpr/cpr). You should be able to 
+This project depends on [SDL2](https://www.libsdl.org/), [GLM](https://github.com/g-truc/glm),
+[GLEW](https://glew.sourceforge.net/) and [libcpr](https://github.com/libcpr/cpr). You should be able to
 build by following the steps in the [cmake.yml](./.github/workflows/cmake.yml).
 
 ```
-git clone --recursive git@github.com:gue-ni/TerrainRenderer.git
+git clone --recursive https://github.com/gue-ni/TerrainRenderer.git
 cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build --config Release --parallel
 ```

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.18)
 
 FetchContent_Declare(
     cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git
@@ -28,7 +28,9 @@ add_executable(app
     ${imgui_SOURCE}
 )
 
-target_link_libraries(app PRIVATE terrain)
+target_link_libraries(app PRIVATE 
+  terrain
+)
 
 target_include_directories(app PRIVATE
     "${glm_SOURCE_DIR}"

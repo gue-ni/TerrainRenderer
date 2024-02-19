@@ -1,9 +1,9 @@
 #include "TileService.h"
 
 #include <cpr/cpr.h>
+#include <fmt/core.h>
 
 #include <filesystem>
-#include <format>
 
 #define LOG_REQUESTS  true
 #define CACHE_ON_DISK true
@@ -31,16 +31,16 @@ std::string TileService::tile_url(const TileId& tile) const
 
   switch (m_url_pattern) {
     case ZXY_Y_NORTH: {
-      return std::format("{}/{}/{}/{}{}", m_url, tile.zoom, tile.x, (num_y_tiles - tile.y - 1), m_filetype);
+      return fmt::format("{}/{}/{}/{}{}", m_url, tile.zoom, tile.x, (num_y_tiles - tile.y - 1), m_filetype);
     }
     case ZYX_Y_NORTH: {
-      return std::format("{}/{}/{}/{}{}", m_url, tile.zoom, (num_y_tiles - tile.y - 1), tile.x, m_filetype);
+      return fmt::format("{}/{}/{}/{}{}", m_url, tile.zoom, (num_y_tiles - tile.y - 1), tile.x, m_filetype);
     }
     case ZYX_Y_SOUTH: {
-      return std::format("{}/{}/{}/{}{}", m_url, tile.zoom, tile.y, tile.x, m_filetype);
+      return fmt::format("{}/{}/{}/{}{}", m_url, tile.zoom, tile.y, tile.x, m_filetype);
     }
     case ZXY_Y_SOUTH: {
-      return std::format("{}/{}/{}/{}{}", m_url, tile.zoom, tile.x, tile.y, m_filetype);
+      return fmt::format("{}/{}/{}/{}{}", m_url, tile.zoom, tile.x, tile.y, m_filetype);
     }
     default:
       assert(false);
@@ -50,7 +50,7 @@ std::string TileService::tile_url(const TileId& tile) const
 
 std::string TileService::tile_filename(const TileId& tile) const
 {
-  return std::format("{}/{}.png", m_cache_dir, tile.to_string());
+  return fmt::format("{}/{}.png", m_cache_dir, tile.to_string());
 }
 
 Image* TileService::get_tile(const TileId& tile)
@@ -79,6 +79,15 @@ Image* TileService::get_tile_sync(const TileId& tile)
 
   m_ram_cache[tile] = std::move(image);
   return m_ram_cache[tile].get();
+}
+
+Image* TileService::get_tile_cached(const TileId& tile)
+{
+  if (m_ram_cache.contains(tile)) {
+    return m_ram_cache[tile].get();
+  } else {
+    return nullptr;
+  }
 }
 
 void TileService::request_tile(const TileId& tile)
