@@ -16,6 +16,11 @@ add_executable(tests
   test-terrain.cpp
 )
 
+if(CMAKE_COMPILER_IS_GNUCC)
+    target_link_options(tests PRIVATE -fsanitize=thread)
+    target_compile_options(tests PRIVATE -fsanitize=thread)
+endif()
+
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain collision terrain)
 
 if(WIN32)
