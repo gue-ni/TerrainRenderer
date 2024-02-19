@@ -38,6 +38,6 @@ TEST_CASE("TileService")
 
   for (auto& tile : tiles) {
     Image* image = tile_service.get_tile_cached(tile);
-    // CHECK(image != nullptr);
+    CHECK(image != nullptr);
   }
 }
