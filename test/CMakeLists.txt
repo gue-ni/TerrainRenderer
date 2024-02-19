@@ -11,9 +11,9 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 
 add_executable(tests
-  test-collision.cpp
-  test-quadtree.cpp
-  test-terrain.cpp
+  test_collision.cpp
+  test_quadtree.cpp
+  test_terrain.cpp
 )
 
 if(CMAKE_COMPILER_IS_GNUCC)
