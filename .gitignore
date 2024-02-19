@@ -4,7 +4,7 @@ x64/
 build/
 out/
 tiles/
-tools/
+doc/
 pre-commit.ps1
 *.user
 CMakeSettings.json
