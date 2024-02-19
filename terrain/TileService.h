@@ -30,6 +30,8 @@ class TileService
   // Download tile and return it.
   Image* get_tile_sync(const TileId&);
 
+  Image* get_tile_cached(const TileId&);
+
  private:
   const UrlPattern m_url_pattern;
   const std::string m_url, m_filetype, m_cache_dir;

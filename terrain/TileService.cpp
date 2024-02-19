@@ -81,6 +81,15 @@ Image* TileService::get_tile_sync(const TileId& tile)
   return m_ram_cache[tile].get();
 }
 
+Image* TileService::get_tile_cached(const TileId& tile)
+{
+  if (m_ram_cache.contains(tile)) {
+    return m_ram_cache[tile].get();
+  } else {
+    return nullptr;
+  }
+}
+
 void TileService::request_tile(const TileId& tile)
 {
   m_already_requested.insert(tile);
