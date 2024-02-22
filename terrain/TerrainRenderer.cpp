@@ -26,9 +26,11 @@ uniform vec2 u_height_uv_min;
 uniform vec2 u_height_uv_max;
 uniform sampler2D u_height_texture;
 uniform uint u_zoom;
+uniform float u_pixel_resolution;
 
 out vec2 uv;
 out vec4 world_pos;
+out vec3 out_normal;
 
 float altitude_from_color(vec4 color) {
   return (color.r + color.g / 255.0)  * u_height_scaling_factor;
@@ -46,11 +48,17 @@ vec3 compute_normal(vec2 uv) {
   // https://stackoverflow.com/a/5284527/11009152
   // https://stackoverflow.com/a/5282364/11009152
 
-  // size of a pixel in meters
-  float pixel_resolution; 
-  ivec3 offset = ivec3(-1, 0, 1);
-  float h00 = altitude_from_color(textureOffset(u_height_texture, uv, ivec2(1,1)));
-  return vec3();
+  vec2 size = vec2(u_pixel_resolution, 0.0);
+
+  float h00 = altitude_from_color(textureOffset(u_height_texture, uv, ivec2(-1,0)));
+  float h01 = altitude_from_color(textureOffset(u_height_texture, uv, ivec2(+1,0)));
+  float h10 = altitude_from_color(textureOffset(u_height_texture, uv, ivec2(0,-1)));
+  float h11 = altitude_from_color(textureOffset(u_height_texture, uv, ivec2(0,+1)));
+
+  vec3 va = normalize(vec3(size.x, h00 - h01, size.y));      
+  vec3 vb = normalize(vec3(size.y, h10 - h11, -size.x));
+
+  return cross(va, vb);
 }
 
 void main() {
