@@ -31,15 +31,22 @@ out vec2 uv;
 out vec4 world_pos;
 
 float altitude_from_color(vec4 color) {
-  return (color.r + color.g / 255.0);
+  return (color.r + color.g / 255.0)  * u_height_scaling_factor;
 }
 
 float altitude_from_color_2(vec4 color) {
-  return color.r;
+  return color.r  * u_height_scaling_factor;
 }
 
 vec2 map_range(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) {
   return out_min + (value - in_min) * (out_max - out_min) / (in_max - in_min);
+}
+
+vec3 compute_normal(vec2 uv) {
+  // https://stackoverflow.com/a/5284527/11009152
+  ivec3 offset = ivec3(-1, 0, 1);
+  float h00 = altitude_from_color(textureOffset(u_height_texture, uv, ivec2(1,1)));
+  return vec3();
 }
 
 void main() {
@@ -53,7 +60,7 @@ void main() {
 
   float height = altitude_from_color_2(height_sample);
 
-  world_pos.y = height * u_height_scaling_factor;
+  world_pos.y = height;
 
   // skirts on tiles
   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
@@ -83,8 +90,7 @@ uniform vec3 u_camera_position;
 uniform uint u_zoom;
 uniform bool u_debug_view;
 
-uint compute_hash(uint a)
-{
+uint compute_hash(uint a) {
    uint b = (a+2127912214u) + (a<<12u);
    b = (b^3345072700u) ^ (b>>19u);
    b = (b+374761393u) + (b<<5u);
