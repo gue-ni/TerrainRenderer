@@ -44,6 +44,10 @@ vec2 map_range(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max)
 
 vec3 compute_normal(vec2 uv) {
   // https://stackoverflow.com/a/5284527/11009152
+  // https://stackoverflow.com/a/5282364/11009152
+
+  // size of a pixel in meters
+  float pixel_resolution; 
   ivec3 offset = ivec3(-1, 0, 1);
   float h00 = altitude_from_color(textureOffset(u_height_texture, uv, ivec2(1,1)));
   return vec3();
