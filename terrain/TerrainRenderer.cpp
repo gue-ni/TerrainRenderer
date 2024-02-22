@@ -456,6 +456,11 @@ void TerrainRenderer::render(const Camera& camera)
     if (albedo && heightmap) {
       m_shader->set_uniform("u_zoom", node->depth);
 
+      const float pixel_per_tile = 256;
+      const float root_tile_width = 0;
+      float tile_width = wms::tile_width(wms::tiley2lat(tile_id.y, tile_id.zoom), tile_id.zoom);
+      m_shader->set_uniform("u_pixel_resolution", tile_width / pixel_per_tile);
+
       albedo->bind(0);
       m_shader->set_uniform("u_albedo_texture", 0);
       m_shader->set_uniform("u_albedo_uv_min", albedo_uv.min);
