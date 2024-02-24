@@ -34,7 +34,7 @@ target_include_directories(terrain PUBLIC
 
 add_custom_command(
   OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/generated/sky.vert" "${CMAKE_CURRENT_SOURCE_DIR}/generated/sky.frag" "${CMAKE_CURRENT_SOURCE_DIR}/generated/terrain.vert" "${CMAKE_CURRENT_SOURCE_DIR}/generated/terrain.frag"
-  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/parse_shader.cmake
+  COMMAND ${CMAKE_COMMAND} -DSHADER_DIR="${CMAKE_CURRENT_SOURCE_DIR}" -P ${CMAKE_CURRENT_SOURCE_DIR}/parse_shader.cmake
   DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/shaders/sky.vert" "${CMAKE_CURRENT_SOURCE_DIR}/shaders/sky.frag" "${CMAKE_CURRENT_SOURCE_DIR}/shaders/terrain.vert" "${CMAKE_CURRENT_SOURCE_DIR}/shaders/terrain.frag"
   COMMENT "Generate shaders"
 )
