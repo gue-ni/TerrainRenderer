@@ -10,3 +10,4 @@ pre-commit.ps1
 CMakeSettings.json
 NOTES.txt
 imgui.ini
+terrain/generated/
