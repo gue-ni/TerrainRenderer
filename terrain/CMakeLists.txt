@@ -31,3 +31,27 @@ target_include_directories(terrain PUBLIC
   "${glm_SOURCE_DIR}"
   "${SDL2_INCLUDE_DIRS}"
 )
+
+set(SHADER_SOURCE
+  "${CMAKE_CURRENT_SOURCE_DIR}/shaders/sky.vert" 
+  "${CMAKE_CURRENT_SOURCE_DIR}/shaders/sky.frag" 
+  "${CMAKE_CURRENT_SOURCE_DIR}/shaders/terrain.vert" 
+  "${CMAKE_CURRENT_SOURCE_DIR}/shaders/terrain.frag"
+)
+set(SHADER_GEN 
+  "${CMAKE_CURRENT_SOURCE_DIR}/generated/sky.vert" 
+  "${CMAKE_CURRENT_SOURCE_DIR}/generated/sky.frag" 
+  "${CMAKE_CURRENT_SOURCE_DIR}/generated/terrain.vert" 
+  "${CMAKE_CURRENT_SOURCE_DIR}/generated/terrain.frag"
+)
+
+add_custom_command(
+  OUTPUT ${SHADER_GEN}
+  COMMAND ${CMAKE_COMMAND} -DSHADER_DIR="${CMAKE_CURRENT_SOURCE_DIR}" -P ${CMAKE_CURRENT_SOURCE_DIR}/parse_shader.cmake
+  DEPENDS ${SHADER_SOURCE} 
+  COMMENT "Generate shaders"
+)
+
+add_custom_target(shaders DEPENDS ${SHADER_GEN})
+
+add_dependencies(terrain shaders)
