@@ -20,6 +20,3 @@ make_includable(
 make_includable(
   "${SHADER_DIR}/shaders/terrain.frag" 
   "${SHADER_DIR}/generated/terrain.frag")
-
-
-
