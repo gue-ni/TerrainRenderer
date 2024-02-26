@@ -12,7 +12,7 @@ const Coordinate root = INNSBRUCK;
 
 const unsigned zoom = 6;
 
-const int zoom_range = 5;
+const int zoom_range = 4;
 
 const float terrain_width = wms::tile_width(root.lat, zoom) * 0.01f;
 
