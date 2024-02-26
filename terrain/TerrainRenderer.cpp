@@ -31,13 +31,13 @@ const char* skybox_frag =
 ;
 /* clang-format on */
 
-AABB aabb_from_node(const Node* node)
+static AABB aabb_from_node(const Node* node)
 {
   float height = 100.0f;  // TODO: do something smarter
   return AABB({node->min.x, 0.0f, node->min.y}, {node->max.x, height, node->max.y});
 }
 
-Bounds<glm::vec2> rescale_uv(const TileId& parent_tile_id, const TileId& tile_id)
+static Bounds<glm::vec2> rescale_uv(const TileId& parent_tile_id, const TileId& tile_id)
 {
   // what is the problem here?
   unsigned zoom_delta = tile_id.zoom - parent_tile_id.zoom;

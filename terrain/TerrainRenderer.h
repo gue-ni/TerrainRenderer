@@ -11,8 +11,6 @@
 using namespace gfx;
 using namespace gfx::gl;
 
-Bounds<glm::vec2> rescale_uv(const TileId& parent_tile_id, const TileId& tile_id);
-
 class TerrainRenderer
 {
  public:
