@@ -1,7 +1,8 @@
 #version 430
 
-uniform vec3 u_sky_color_1;
-uniform vec3 u_sky_color_2;
+uniform vec3 u_sky_color;
+uniform vec3 u_sun_dir;
+uniform vec3 u_sun_color;
 
 out vec4 frag_color;
 in vec3 uv;
@@ -21,13 +22,11 @@ vec3 map_cube_to_sphere(vec3 point_on_cube) {
 void main() {
   vec3 spherical = map_cube_to_sphere(uv);
 
-  vec3 color = mix(u_sky_color_1, u_sky_color_2, spherical.y);
+  vec3 color = mix(u_sky_color, u_sun_color, spherical.y * .25);
 
-  vec3 sun_dir = normalize(vec3(0, 1, 2));
-  vec3 sun_color = vec3(1.0, 0.9, 0.7);
-  float sun_factor = max(dot(spherical, sun_dir), 0.0);
+  float sun_factor = max(dot(spherical, u_sun_dir), 0.0);
 
-  color  = mix(color, sun_color, pow(sun_factor, 8.0));
+  color = mix(color, u_sun_color, pow(sun_factor, 8.0));
 
   frag_color = vec4(color, 1);
 }

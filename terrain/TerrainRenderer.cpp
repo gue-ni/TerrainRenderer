@@ -267,11 +267,12 @@ void TerrainRenderer::render(const Camera& camera)
   m_terrain_shader->set_uniform("u_shading", shading);
 
   const glm::vec3 sky_color_1 = gfx::rgb(0xB8DEFD);
-  const glm::vec3 sky_color_2 = gfx::rgb(0x6F93F2);
+  const glm::vec3 sun_color = glm::vec3(1.0, 0.9, 0.7);
 
-  float sun_elevation = 25.61f, sun_azimuth = 179.85f;
-  glm::vec3 sun_direction = direction_from_spherical(glm::radians(sun_elevation), glm::radians(sun_azimuth));
+  const glm::vec3 sun_direction = direction_from_spherical(glm::radians(sun_elevation), glm::radians(sun_azimuth));
+
   m_terrain_shader->set_uniform("u_sun_dir", sun_direction);
+  m_terrain_shader->set_uniform("u_sun_color", sun_color);
 
 #if ENABLE_FOG
   m_terrain_shader->set_uniform("u_fog_color", sky_color_1);
@@ -370,8 +371,9 @@ void TerrainRenderer::render(const Camera& camera)
     m_sky_shader->bind();
     m_sky_shader->set_uniform("u_view", glm::mat4(glm::mat3(camera.view_matrix())));
     m_sky_shader->set_uniform("u_proj", camera.projection_matrix());
-    m_sky_shader->set_uniform("u_sky_color_1", sky_color_1);
-    m_sky_shader->set_uniform("u_sky_color_2", sky_color_2);
+    m_sky_shader->set_uniform("u_sky_color", sky_color_1);
+    m_sky_shader->set_uniform("u_sun_dir", sun_direction);
+    m_sky_shader->set_uniform("u_sun_color", sun_color);
     m_sky_box.draw(m_sky_shader.get(), glm::vec3(0.0f, 0.0f, 0.0f), 1.0f);
 
     glDepthFunc(GL_LESS);

@@ -87,6 +87,9 @@ void App::render_ui()
 
   ImGui::SliderFloat("Horizon", &m_terrain.max_horizon, 0.0f, 5000.0f);
 
+  ImGui::SliderFloat("Sun Azimuth", &m_terrain.sun_azimuth, 0.0f, 360.0f);
+  ImGui::SliderFloat("Sun Elevation", &m_terrain.sun_elevation, 0.0f, 90.0f);
+
   ImGui::Checkbox("Manual Zoom", &m_terrain.manual_zoom);
   if (m_terrain.manual_zoom) {
     ImGui::SliderInt("Min Zoom", &m_terrain.min_zoom, zoom, 16);
