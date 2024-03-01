@@ -81,7 +81,7 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned max_zoom_leve
 {
   // the rendered terrain does not necessarily match with it's size in meters
   float width = m_bounds.size().x;
-  float tile_width = wms::tile_width(wms::tiley2lat(m_root_tile.y, m_root_tile.zoom), m_root_tile.zoom);
+  float tile_width = m_root_tile.width_in_meters();
   m_terrain_scaling_factor = width / tile_width;
 
 // for decoding the height map
@@ -198,7 +198,7 @@ glm::vec2 TerrainRenderer::calculate_lod_center(const Camera& camera)
   }
 }
 
-Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::vec2>& uv, const TileType& type)
+Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::vec2>& uv, const TileType& type, TileId& used)
 {
   Texture* parent_texture = nullptr;
   TileId tile_id = node->id;
@@ -206,7 +206,7 @@ Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::
   unsigned zoom = m_root_tile.zoom + node->depth;
 
   Node* parent = node->parent;
-  TileId parent_tile_id;
+  TileId parent_tile_id = tile_id;
 
 #if 1
   while (parent != nullptr) {
@@ -226,6 +226,8 @@ Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::
 #endif
 
   uv = rescale_uv(parent_tile_id, tile_id);
+
+  used = parent_tile_id;
 
   return parent_texture;
 }
@@ -256,7 +258,9 @@ void TerrainRenderer::render(const Camera& camera)
   m_terrain_shader->set_uniform("u_view", camera.view_matrix());
   m_terrain_shader->set_uniform("u_proj", camera.projection_matrix());
   m_terrain_shader->set_uniform("u_camera_position", camera.world_position());
-  m_terrain_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor * m_terrain_scaling_factor);
+  m_terrain_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor);
+  m_terrain_shader->set_uniform("u_terrain_scaling_factor", m_terrain_scaling_factor);
+
   m_terrain_shader->set_uniform("u_debug_view", debug_view);
 
   const glm::vec3 sky_color_1 = gfx::rgb(0xB8DEFD);
@@ -290,23 +294,25 @@ void TerrainRenderer::render(const Camera& camera)
     Bounds<glm::vec2> albedo_uv(glm::vec2(0.0f), glm::vec2(1.0f));
     Bounds<glm::vec2> height_uv(glm::vec2(0.0f), glm::vec2(1.0f));
 
+    TileId albedo_tile_id, height_tile_id;
+
 #if ENABLE_FALLBACK
     if (!albedo) {
-      albedo = find_cached_lower_zoom_parent(node, albedo_uv, TileType::ORTHO);
+      albedo = find_cached_lower_zoom_parent(node, albedo_uv, TileType::ORTHO, albedo_tile_id);
     }
 
     if (!heightmap) {
-      heightmap = find_cached_lower_zoom_parent(node, height_uv, TileType::HEIGHT);
+      heightmap = find_cached_lower_zoom_parent(node, height_uv, TileType::HEIGHT, height_tile_id);
     }
 #endif
 
     if (albedo && heightmap) {
       m_terrain_shader->set_uniform("u_zoom", node->depth);
 
-      const float pixel_per_tile = 256;
-      const float root_tile_width = 0;
-      float tile_width = wms::tile_width(wms::tiley2lat(tile_id.y, tile_id.zoom), tile_id.zoom);
-      m_terrain_shader->set_uniform("u_pixel_resolution", tile_width / pixel_per_tile);
+      const float pixel_per_tile = 128;
+      float tile_width = height_tile_id.width_in_meters();
+      float pixel_resolution = tile_width / pixel_per_tile;
+      m_terrain_shader->set_uniform("u_pixel_resolution", pixel_resolution);
 
       albedo->bind(0);
       m_terrain_shader->set_uniform("u_albedo_texture", 0);

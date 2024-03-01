@@ -2,7 +2,7 @@
 
 in vec2 uv;
 in vec4 world_pos;
-out vec3 out_normal;
+in vec3 normal;
 
 out vec4 frag_color;
 
@@ -27,6 +27,14 @@ uint compute_hash(uint a) {
    return b;
 }
 
+vec3 shading(
+  in vec3 albedo, 
+  in vec3 norm
+) {
+  // TODO
+  return albedo;
+}
+
 vec3 color_from_uint(uint a) {
     uint hash = compute_hash(a);
     return vec3(float(hash & 255u), float((hash >> 8u) & 255u), float((hash >> 16u) & 255u)) / 255.0;
@@ -35,6 +43,10 @@ vec3 color_from_uint(uint a) {
 vec2 map_range(vec2 value, vec2 in_min, vec2 in_max, vec2 out_min, vec2 out_max) {
   return out_min + (value - in_min) * (out_max - out_min) / (in_max - in_min);
 }
+
+vec3 visualize_normal(vec3 n) {
+    return (n + vec3(1.0)) / vec3(2.0);
+} 
 
 void main() {
   vec2 scaled_uv = map_range(uv, vec2(0), vec2(1), u_albedo_uv_min, u_albedo_uv_max);
@@ -65,7 +77,12 @@ void main() {
     color = mix(color_from_uint(u_zoom), color, 0.5);
   }
 
-  // color = out_normal;
+  color = mix(color, visualize_normal(normal), 0.5);
+
+  color = shading(
+    color, 
+    normal
+  );
 
   frag_color = vec4(color, 1);
 }
