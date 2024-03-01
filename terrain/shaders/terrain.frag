@@ -16,6 +16,7 @@ uniform float u_fog_density;
 uniform vec3 u_camera_position;
 uniform uint u_zoom;
 uniform bool u_debug_view;
+uniform bool u_shading;
 
 uint compute_hash(uint a) {
    uint b = (a+2127912214u) + (a<<12u);
@@ -29,10 +30,17 @@ uint compute_hash(uint a) {
 
 vec3 shading(
   in vec3 albedo, 
-  in vec3 norm
+  in vec3 norm,
+  in vec3 sun_dir,
+  in vec3 sun_color
 ) {
-  // TODO
-  return albedo;
+  float ambient_strength = 0.3;
+  vec3 ambient = ambient_strength * sun_color;
+
+  float n_dot_l = max(0.0, dot(norm, sun_dir)); // lambertian coefficient
+  vec3 diffuse = n_dot_l * sun_color;
+
+  return (ambient + diffuse) * albedo;
 }
 
 vec3 color_from_uint(uint a) {
@@ -57,14 +65,16 @@ void main() {
   color = mix(color, vec3(scaled_uv.xy, 0), 0.5);
 #endif
 
+  vec3 sun_dir = normalize(vec3(0, 1, 2));
+  vec3 sun_color = vec3(1.0, 0.9, 0.7);
+
+#if 0
   if (u_fog_color != vec3(0)) {
     vec3 camera_dir = normalize(u_camera_position - world_pos.xyz);
     float camera_dist = length(world_pos.xyz - u_camera_position);
     float dist_ratio = 4.0 * camera_dist / u_fog_far;
     float fog_factor = 1.0 - exp(-dist_ratio * u_fog_density);
 
-    vec3 sun_dir = normalize(vec3(0, 1, 2));
-    vec3 sun_color = vec3(1.0, 0.9, 0.7);
     float sun_factor = max(dot(camera_dir, sun_dir), 0.0);
 
     //vec3 fog_color  = mix(u_fog_color, sun_color, pow(sun_factor, 8.0));
@@ -72,17 +82,22 @@ void main() {
 
     color = mix(color, fog_color, fog_factor);
   }
+#endif
 
   if (u_debug_view) {
     color = mix(color_from_uint(u_zoom), color, 0.5);
   }
 
-  color = mix(color, visualize_normal(normal), 0.5);
+  //color = mix(color, visualize_normal(normal), 0.5);
 
-  color = shading(
-    color, 
-    normal
-  );
-
+  if (u_shading) {
+   color = shading(
+      color, 
+      normal,
+      sun_dir,
+      sun_color
+    );
+  }
+ 
   frag_color = vec4(color, 1);
 }

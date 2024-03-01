@@ -43,6 +43,7 @@ class TerrainRenderer
   bool debug_view{false};
   bool debug_view_2{false};
   bool manual_zoom{false};
+  bool shading{true};
   bool frustum_culling{true};
   float fog_far{2000.0f};
   float fog_density{0.66f};

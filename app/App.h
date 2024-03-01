@@ -33,7 +33,7 @@ class FirstPersonCamera : public Camera
   void update()
   {
     glm::vec3 world_up = {0.0f, 1.0f, 0.0f};
-    glm::vec3 forward = vector_from_spherical(glm::radians(pitch), glm::radians(yaw));
+    glm::vec3 forward = direction_from_spherical(glm::radians(pitch), glm::radians(yaw));
     glm::vec3 right = glm::cross(forward, world_up);
     glm::vec3 up = glm::cross(right, forward);
     glm::vec3 position = local_position();

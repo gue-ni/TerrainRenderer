@@ -35,9 +35,7 @@ vec3 compute_normal(vec2 uv) {
   // https://stackoverflow.com/a/5282364/11009152
 
   // this value is not correct
-  //vec2 size = vec2(u_pixel_resolution, 0.0);
-  vec2 size = vec2(10, 0.0); // TODO actually fix this
-
+  vec2 size = vec2(u_pixel_resolution, 0.0);
 
   float h00 = altitude_from_color(textureOffset(u_height_texture, uv, ivec2(-1,0)));
   float h01 = altitude_from_color(textureOffset(u_height_texture, uv, ivec2(+1,0)));

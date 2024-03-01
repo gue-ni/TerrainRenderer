@@ -12,7 +12,7 @@ const Coordinate root = INNSBRUCK;
 
 const unsigned zoom = 6;
 
-const int zoom_range = 4;
+const int zoom_range = 5;
 
 const float terrain_width = wms::tile_width(root.lat, zoom) * 0.01f;
 
@@ -81,6 +81,7 @@ void App::render_ui()
   ImGui::Checkbox("Ray Intersect", &m_terrain.intersect_terrain);
   ImGui::Checkbox("Debug View", &m_terrain.debug_view);
   ImGui::Checkbox("Frustum Culling", &m_terrain.frustum_culling);
+  ImGui::Checkbox("Enable Shading", &m_terrain.shading);
 
   ImGui::SliderFloat("Camera Speed", &m_speed, 10.0f, 5000.0f);
 

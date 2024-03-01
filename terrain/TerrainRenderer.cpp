@@ -92,7 +92,7 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned max_zoom_leve
 #endif
   m_height_scaling_factor = (max_elevation - min_elevation);
 
-#if 0
+#if 1
   (void)m_tile_cache.tile_texture_sync(m_root_tile, TileType::ORTHO);
   (void)m_tile_cache.tile_texture_sync(m_root_tile, TileType::HEIGHT);
 
@@ -203,6 +203,7 @@ Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::
 {
   Texture* parent_texture = nullptr;
   TileId tile_id = node->id;
+  used = tile_id;
 
   unsigned zoom = m_root_tile.zoom + node->depth;
 
@@ -263,19 +264,20 @@ void TerrainRenderer::render(const Camera& camera)
   m_terrain_shader->set_uniform("u_terrain_scaling_factor", m_terrain_scaling_factor);
 
   m_terrain_shader->set_uniform("u_debug_view", debug_view);
+  m_terrain_shader->set_uniform("u_shading", shading);
 
   const glm::vec3 sky_color_1 = gfx::rgb(0xB8DEFD);
   const glm::vec3 sky_color_2 = gfx::rgb(0x6F93F2);
+
+  float sun_elevation = 25.61f, sun_azimuth = 179.85f;
+  glm::vec3 sun_direction = direction_from_spherical(glm::radians(sun_elevation), glm::radians(sun_azimuth));
+  m_terrain_shader->set_uniform("u_sun_dir", sun_direction);
 
 #if ENABLE_FOG
   m_terrain_shader->set_uniform("u_fog_color", sky_color_1);
   m_terrain_shader->set_uniform("u_fog_near", 0.0f);
   m_terrain_shader->set_uniform("u_fog_far", fog_far);
   m_terrain_shader->set_uniform("u_fog_density", fog_density);
-
-  float sun_elevation = 25.61f, sun_azimuth = 179.85f;
-  glm::vec3 sun_direction = vector_from_spherical(glm::radians(sun_elevation), glm::radians(sun_azimuth));
-  m_terrain_shader->set_uniform("u_sun_dir", sun_direction);
 #else
   m_terrain_shader->set_uniform("u_fog_color", glm::vec3(0.0f));
 #endif
@@ -311,7 +313,7 @@ void TerrainRenderer::render(const Camera& camera)
       m_terrain_shader->set_uniform("u_zoom", node->depth);
 
       const float pixel_per_tile = 128;
-      float tile_width = height_tile_id.width_in_meters();
+      float tile_width = tile_id.width_in_meters();
       float pixel_resolution = tile_width / pixel_per_tile;
       m_terrain_shader->set_uniform("u_pixel_resolution", pixel_resolution);
 
