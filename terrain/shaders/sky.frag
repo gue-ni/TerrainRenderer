@@ -22,11 +22,13 @@ vec3 map_cube_to_sphere(vec3 point_on_cube) {
 void main() {
   vec3 spherical = map_cube_to_sphere(uv);
 
-  vec3 color = mix(u_sky_color, u_sun_color, spherical.y * .25);
+  //vec3 color = mix(u_sky_color, u_sun_color, spherical.y);
+
+  vec3 color = u_sky_color;
 
   float sun_factor = max(dot(spherical, u_sun_dir), 0.0);
 
-  color = mix(color, u_sun_color, pow(sun_factor, 8.0));
+  color = mix(color, u_sun_color, pow(sun_factor, 32.0));
 
   frag_color = vec4(color, 1);
 }
