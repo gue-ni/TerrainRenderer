@@ -81,14 +81,24 @@ void App::render_ui()
   ImGui::Checkbox("Ray Intersect", &m_terrain.intersect_terrain);
   ImGui::Checkbox("Debug View", &m_terrain.debug_view);
   ImGui::Checkbox("Frustum Culling", &m_terrain.frustum_culling);
+
   ImGui::SliderFloat("Camera Speed", &m_speed, 10.0f, 5000.0f);
-  ImGui::SliderFloat("Fog Far", &m_terrain.fog_far, 100.0f, 100000.0f);
-  ImGui::SliderFloat("Fog Density", &m_terrain.fog_density, 0.0f, 10.0f);
+
   ImGui::SliderFloat("Horizon", &m_terrain.max_horizon, 0.0f, 5000.0f);
+
   ImGui::Checkbox("Manual Zoom", &m_terrain.manual_zoom);
   if (m_terrain.manual_zoom) {
     ImGui::SliderInt("Min Zoom", &m_terrain.min_zoom, zoom, 16);
     ImGui::SliderInt("Max Zoom", &m_terrain.max_zoom, zoom, 16);
+  }
+
+  if (ImGui::CollapsingHeader("Atmosphere")) {
+    ImGui::SliderFloat("Fog Far", &m_terrain.fog_far, 100.0f, 100000.0f);
+    ImGui::SliderFloat("Fog Density", &m_terrain.fog_density, 0.0f, 10.0f);
+  }
+
+  if (ImGui::Button("Reload Shaders")) {
+    m_terrain.reload_shaders();
   }
   ImGui::End();
 

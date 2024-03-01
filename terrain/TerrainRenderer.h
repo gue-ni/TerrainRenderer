@@ -18,6 +18,8 @@ class TerrainRenderer
 
   void render(const Camera& camera);
 
+  void reload_shaders();
+
   // get terrain elevation in meters
   float terrain_elevation(const glm::vec2&);
 
@@ -48,7 +50,7 @@ class TerrainRenderer
   int min_zoom, max_zoom;
 
  private:
-  const std::unique_ptr<ShaderProgram> m_shader, m_sky_shader;
+  std::unique_ptr<ShaderProgram> m_terrain_shader, m_sky_shader;
   const TileId m_root_tile;
   const Chunk m_chunk;
   const Cube m_sky_box;

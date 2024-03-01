@@ -59,8 +59,18 @@ static Bounds<glm::vec2> rescale_uv(const TileId& parent_tile_id, const TileId& 
 
 TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned max_zoom_level_range,
                                  const Bounds<glm::vec2>& bounds)
-    : m_shader(std::make_unique<ShaderProgram>(shader_vert, shader_frag)),
+    :
+#if NDEBUG
+      m_terrain_shader(std::make_unique<ShaderProgram>(shader_vert, shader_frag)),
       m_sky_shader(std::make_unique<ShaderProgram>(skybox_vert, skybox_frag)),
+#else
+      m_terrain_shader(ShaderProgram::create_from_files(
+          "C:/Users/jakob/Documents/Projects/TerrainRenderer/terrain/shaders/terrain.vert",
+          "C:/Users/jakob/Documents/Projects/TerrainRenderer/terrain/shaders/terrain.frag")),
+      m_sky_shader(ShaderProgram::create_from_files(
+          "C:/Users/jakob/Documents/Projects/TerrainRenderer/terrain/shaders/sky.vert",
+          "C:/Users/jakob/Documents/Projects/TerrainRenderer/terrain/shaders/sky.frag")),
+#endif
       m_root_tile(root_tile),
       m_chunk(32, 1.0f),
       m_bounds(bounds),
@@ -91,6 +101,19 @@ TerrainRenderer::TerrainRenderer(const TileId& root_tile, unsigned max_zoom_leve
     (void)m_tile_cache.tile_texture_sync(child, TileType::ORTHO);
     (void)m_tile_cache.tile_texture_sync(child, TileType::HEIGHT);
   }
+#endif
+}
+
+void TerrainRenderer::reload_shaders()
+{
+#if !NDEBUG
+  ShaderProgram::reload_from_files(std::move(m_terrain_shader),
+                                   "C:/Users/jakob/Documents/Projects/TerrainRenderer/terrain/shaders/terrain.vert",
+                                   "C:/Users/jakob/Documents/Projects/TerrainRenderer/terrain/shaders/terrain.frag");
+
+  ShaderProgram::reload_from_files(std::move(m_sky_shader),
+                                   "C:/Users/jakob/Documents/Projects/TerrainRenderer/terrain/shaders/sky.vert",
+                                   "C:/Users/jakob/Documents/Projects/TerrainRenderer/terrain/shaders/sky.frag");
 #endif
 }
 
@@ -229,27 +252,27 @@ void TerrainRenderer::render(const Camera& camera)
 
   if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-  m_shader->bind();
-  m_shader->set_uniform("u_view", camera.view_matrix());
-  m_shader->set_uniform("u_proj", camera.projection_matrix());
-  m_shader->set_uniform("u_camera_position", camera.world_position());
-  m_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor * m_terrain_scaling_factor);
-  m_shader->set_uniform("u_debug_view", debug_view);
+  m_terrain_shader->bind();
+  m_terrain_shader->set_uniform("u_view", camera.view_matrix());
+  m_terrain_shader->set_uniform("u_proj", camera.projection_matrix());
+  m_terrain_shader->set_uniform("u_camera_position", camera.world_position());
+  m_terrain_shader->set_uniform("u_height_scaling_factor", m_height_scaling_factor * m_terrain_scaling_factor);
+  m_terrain_shader->set_uniform("u_debug_view", debug_view);
 
   const glm::vec3 sky_color_1 = gfx::rgb(0xB8DEFD);
   const glm::vec3 sky_color_2 = gfx::rgb(0x6F93F2);
 
 #if ENABLE_FOG
-  m_shader->set_uniform("u_fog_color", sky_color_1);
-  m_shader->set_uniform("u_fog_near", 0.0f);
-  m_shader->set_uniform("u_fog_far", fog_far);
-  m_shader->set_uniform("u_fog_density", fog_density);
+  m_terrain_shader->set_uniform("u_fog_color", sky_color_1);
+  m_terrain_shader->set_uniform("u_fog_near", 0.0f);
+  m_terrain_shader->set_uniform("u_fog_far", fog_far);
+  m_terrain_shader->set_uniform("u_fog_density", fog_density);
 
   float sun_elevation = 25.61f, sun_azimuth = 179.85f;
   glm::vec3 sun_direction = vector_from_spherical(glm::radians(sun_elevation), glm::radians(sun_azimuth));
-  m_shader->set_uniform("u_sun_dir", sun_direction);
+  m_terrain_shader->set_uniform("u_sun_dir", sun_direction);
 #else
-  m_shader->set_uniform("u_fog_color", glm::vec3(0.0f));
+  m_terrain_shader->set_uniform("u_fog_color", glm::vec3(0.0f));
 #endif
 
   // This render function is executed on all quadtree nodes.
@@ -278,24 +301,24 @@ void TerrainRenderer::render(const Camera& camera)
 #endif
 
     if (albedo && heightmap) {
-      m_shader->set_uniform("u_zoom", node->depth);
+      m_terrain_shader->set_uniform("u_zoom", node->depth);
 
       const float pixel_per_tile = 256;
       const float root_tile_width = 0;
       float tile_width = wms::tile_width(wms::tiley2lat(tile_id.y, tile_id.zoom), tile_id.zoom);
-      m_shader->set_uniform("u_pixel_resolution", tile_width / pixel_per_tile);
+      m_terrain_shader->set_uniform("u_pixel_resolution", tile_width / pixel_per_tile);
 
       albedo->bind(0);
-      m_shader->set_uniform("u_albedo_texture", 0);
-      m_shader->set_uniform("u_albedo_uv_min", albedo_uv.min);
-      m_shader->set_uniform("u_albedo_uv_max", albedo_uv.max);
+      m_terrain_shader->set_uniform("u_albedo_texture", 0);
+      m_terrain_shader->set_uniform("u_albedo_uv_min", albedo_uv.min);
+      m_terrain_shader->set_uniform("u_albedo_uv_max", albedo_uv.max);
 
       heightmap->bind(1);
-      m_shader->set_uniform("u_height_texture", 1);
-      m_shader->set_uniform("u_height_uv_min", height_uv.min);
-      m_shader->set_uniform("u_height_uv_max", height_uv.max);
+      m_terrain_shader->set_uniform("u_height_texture", 1);
+      m_terrain_shader->set_uniform("u_height_uv_min", height_uv.min);
+      m_terrain_shader->set_uniform("u_height_uv_max", height_uv.max);
 
-      m_chunk.draw(m_shader.get(), node->min, node->max);
+      m_chunk.draw(m_terrain_shader.get(), node->min, node->max);
     }
   };
 
