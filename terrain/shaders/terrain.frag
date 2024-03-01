@@ -67,22 +67,6 @@ void main() {
   color = mix(color, vec3(scaled_uv.xy, 0), 0.5);
 #endif
 
-#if 1
-  if (u_fog_color != vec3(0)) {
-    vec3 camera_dir = normalize(u_camera_position - world_pos.xyz);
-    float camera_dist = length(world_pos.xyz - u_camera_position);
-    float dist_ratio = 4.0 * camera_dist / u_fog_far;
-    float fog_factor = 1.0 - exp(-dist_ratio * u_fog_density);
-
-    float sun_factor = max(dot(camera_dir, u_sun_dir), 0.0);
-
-    vec3 fog_color  = mix(u_fog_color, u_sun_color, pow(sun_factor, 8.0));
-    //vec3 fog_color = u_fog_color;
-
-    color = mix(color, fog_color, fog_factor);
-  }
-#endif
-
   if (u_debug_view) {
     color = mix(color_from_uint(u_zoom), color, 0.5);
   }
@@ -90,7 +74,7 @@ void main() {
 #if 0
   color = mix(color, visualize_normal(normal), 0.5);
 #endif
-
+#if 1
   if (u_shading) {
    color = shading(
       color,
@@ -99,6 +83,21 @@ void main() {
       u_sun_color
     );
   }
+#endif
+#if 1
+  if (u_fog_color != vec3(0)) {
+    vec3 camera_dir = normalize(u_camera_position - world_pos.xyz);
+    float camera_dist = length(world_pos.xyz - u_camera_position);
+    float dist_ratio = 4.0 * camera_dist / u_fog_far;
+    float fog_factor = 1.0 - exp(-dist_ratio * u_fog_density);
+
+    float sun_factor = max(dot(-camera_dir, u_sun_dir), 0.0);
+
+    vec3 fog_color  = mix(u_fog_color, u_sun_color, pow(sun_factor, 32.0));
+
+    color = mix(color, fog_color, fog_factor);
+  }
+#endif
 
   frag_color = vec4(color, 1);
 }

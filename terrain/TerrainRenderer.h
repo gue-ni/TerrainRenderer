@@ -49,8 +49,8 @@ class TerrainRenderer
   float fog_density{0.66f};
   float max_horizon{500.0f};
   int min_zoom, max_zoom;
-  float sun_elevation = 25.61f;
-  float sun_azimuth = 179.85f;
+  float sun_elevation = 15.0f;
+  float sun_azimuth = 0.0f;
 
  private:
   std::unique_ptr<ShaderProgram> m_terrain_shader, m_sky_shader;
