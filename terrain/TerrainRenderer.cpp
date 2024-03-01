@@ -198,7 +198,8 @@ glm::vec2 TerrainRenderer::calculate_lod_center(const Camera& camera)
   }
 }
 
-Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::vec2>& uv, const TileType& type, TileId& used)
+Texture* TerrainRenderer::find_cached_lower_zoom_parent(Node* node, Bounds<glm::vec2>& uv, const TileType& type,
+                                                        TileId& used)
 {
   Texture* parent_texture = nullptr;
   TileId tile_id = node->id;
