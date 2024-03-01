@@ -138,6 +138,9 @@ void App::read_input(float dt)
           case SDLK_p:
             m_paused = !m_paused;
             break;
+          case SDLK_r:
+            m_terrain.reload_shaders();
+            break;
         }
         break;
 
