@@ -29,13 +29,23 @@ add_executable(app
 )
 
 target_link_libraries(app PRIVATE 
-  terrain
+    terrain
 )
 
 target_include_directories(app PRIVATE
     "${glm_SOURCE_DIR}"
     "${SDL2_INCLUDE_DIRS}"
 )
+
+if(ENABLE_ADDRESS_SANITIZER)
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+    set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+endif()
+
+if(ENABLE_THREAD_SANITIZER)
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=thread")
+    set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=thread")
+endif()
 
 if(WIN32)
     add_custom_command(TARGET app POST_BUILD

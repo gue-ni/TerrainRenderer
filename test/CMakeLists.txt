@@ -23,6 +23,16 @@ endif()
 
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain collision terrain)
 
+if(ENABLE_ADDRESS_SANITIZER)
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+    set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+endif()
+
+if(ENABLE_THREAD_SANITIZER)
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=thread")
+    set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=thread")
+endif()
+
 if(WIN32)
     add_custom_command(TARGET tests POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:tests> $<TARGET_FILE_DIR:tests>
@@ -35,6 +45,3 @@ if(WIN32)
         COMMENT "Copy glew32.dll"
     )
 endif(WIN32)
-
-
-

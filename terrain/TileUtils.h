@@ -94,6 +94,8 @@ struct TileId {
     return {min, max};
   }
 
+  inline float width_in_meters() const { return wms::tile_width(wms::tiley2lat(y, zoom), zoom); }
+
   inline TileId parent() const { return TileId(zoom - 1U, x / 2U, y / 2U); }
 
   // https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Subtiles
