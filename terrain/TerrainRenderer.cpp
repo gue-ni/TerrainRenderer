@@ -371,6 +371,7 @@ void TerrainRenderer::render(const Camera& camera)
     m_sky_shader->bind();
     m_sky_shader->set_uniform("u_view", glm::mat4(glm::mat3(camera.view_matrix())));
     m_sky_shader->set_uniform("u_proj", camera.projection_matrix());
+    m_sky_shader->set_uniform("u_camera_position", camera.world_position());
     m_sky_shader->set_uniform("u_sky_color", sky_color_1);
     m_sky_shader->set_uniform("u_sun_dir", sun_direction);
     m_sky_shader->set_uniform("u_sun_color", sun_color);
