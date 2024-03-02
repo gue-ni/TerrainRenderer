@@ -5,7 +5,7 @@
 
 #include <filesystem>
 
-#define LOG_REQUESTS  true
+#define LOG_REQUESTS  false
 #define CACHE_ON_DISK true
 #define NUM_THREADS   3
 
