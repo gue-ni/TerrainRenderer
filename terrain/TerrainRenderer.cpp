@@ -244,7 +244,7 @@ void TerrainRenderer::render(const Camera& camera)
 
   glm::vec3 lat_lon_alt = glm::vec3(coord.lat, altitude / m_terrain_scaling_factor, coord.lon);
 
-  //std::cout << lat_lon_alt << std::endl;
+  // std::cout << lat_lon_alt << std::endl;
 
 #if ENABLE_SMART_LOD
   auto terrain_center = calculate_lod_center(camera);
