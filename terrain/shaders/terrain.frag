@@ -19,6 +19,8 @@ uniform bool u_debug_view;
 uniform bool u_shading;
 uniform vec3 u_sun_dir;
 uniform vec3 u_sun_color;
+uniform vec3 u_light_blue;
+uniform vec3 u_dark_blue;
 
 uint compute_hash(uint a) {
    uint b = (a+2127912214u) + (a<<12u);
@@ -85,18 +87,18 @@ void main() {
   }
 #endif
 #if 1
-  if (u_fog_color != vec3(0)) {
-    vec3 camera_dir = normalize(u_camera_position - world_pos.xyz);
-    float camera_dist = length(world_pos.xyz - u_camera_position);
-    float dist_ratio = 4.0 * camera_dist / u_fog_far;
-    float fog_factor = 1.0 - exp(-dist_ratio * u_fog_density);
+  vec3 camera_dir = normalize(u_camera_position - world_pos.xyz);
+  float camera_dist = length(world_pos.xyz - u_camera_position);
+  float dist_ratio = 4.0 * camera_dist / u_fog_far;
+  float fog_factor = 1.0 - exp(-dist_ratio * u_fog_density);
 
-    float sun_factor = max(dot(-camera_dir, u_sun_dir), 0.0);
+  vec3 sky_color = mix(u_light_blue, u_dark_blue, camera_dir.y);
 
-    vec3 fog_color  = mix(u_fog_color, u_sun_color, pow(sun_factor, 32.0));
+  float sun_factor = max(dot(-camera_dir, u_sun_dir), 0.0);
 
-    color = mix(color, fog_color, fog_factor);
-  }
+  vec3 fog_color  = mix(sky_color, u_sun_color, pow(sun_factor, 32.0));
+
+  color = mix(color, fog_color, fog_factor);
 #endif
 
   frag_color = vec4(color, 1);

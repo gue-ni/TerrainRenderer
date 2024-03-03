@@ -34,7 +34,6 @@ vec3 compute_normal(vec2 uv) {
   // https://stackoverflow.com/a/5284527/11009152
   // https://stackoverflow.com/a/5282364/11009152
 
-  // this value is not correct
   vec2 size = vec2(u_pixel_resolution, 0.0);
 
   float h00 = altitude_from_color(textureOffset(u_height_texture, uv, ivec2(-1,0)));
@@ -42,13 +41,8 @@ vec3 compute_normal(vec2 uv) {
   float h10 = altitude_from_color(textureOffset(u_height_texture, uv, ivec2(0,-1)));
   float h11 = altitude_from_color(textureOffset(u_height_texture, uv, ivec2(0,+1)));
 
-  vec3 va = normalize(vec3(size.x, 1, size.y));      
+  vec3 va = normalize(vec3(size.x, h00 - h01, size.y));      
   vec3 vb = normalize(vec3(size.y, h10 - h11, -size.x));
-
-  const vec3 UP = vec3(0,1,0);
-  
-  //return vec3(dot(UP, va));
-  //return va;
 
   return cross(va, vb);
 }

@@ -5,7 +5,7 @@
 A simple OpenGL Terrain Renderer. Orthophoto data is provided by [basemap.at](https://basemap.at/), elevation data is from
 [geoland.at](http://www.geoland.at/). This data is limited to Austria and as such only Austria is rendered.
 
-![](https://www.jakobmaier.at/blob/Screenshot_2024-03-01_135041.png)
+![](assets/showcase.png)
 
 ## Features
 

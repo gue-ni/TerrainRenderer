@@ -240,6 +240,12 @@ void TerrainRenderer::render(const Camera& camera)
   glm::vec2 center = glm::vec2(position.x, position.z);
   float altitude = position.y;
 
+  Coordinate coord = point_to_coordinate(center);
+
+  glm::vec3 lat_lon_alt = glm::vec3(coord.lat, altitude / m_terrain_scaling_factor, coord.lon);
+
+  // std::cout << lat_lon_alt << std::endl;
+
 #if ENABLE_SMART_LOD
   auto terrain_center = calculate_lod_center(camera);
 #else
@@ -274,14 +280,15 @@ void TerrainRenderer::render(const Camera& camera)
   m_terrain_shader->set_uniform("u_sun_dir", sun_direction);
   m_terrain_shader->set_uniform("u_sun_color", sun_color);
 
-#if ENABLE_FOG
-  m_terrain_shader->set_uniform("u_fog_color", sky_color_1);
+  const glm::vec3 dark_blue = gfx::rgb(0x597AE8);
+  const glm::vec3 light_blue = gfx::rgb(0xC7E8F7);
+
+  m_terrain_shader->set_uniform("u_light_blue", light_blue);
+  m_terrain_shader->set_uniform("u_dark_blue", dark_blue);
+
   m_terrain_shader->set_uniform("u_fog_near", 0.0f);
   m_terrain_shader->set_uniform("u_fog_far", fog_far);
   m_terrain_shader->set_uniform("u_fog_density", fog_density);
-#else
-  m_terrain_shader->set_uniform("u_fog_color", glm::vec3(0.0f));
-#endif
 
   // This render function is executed on all quadtree nodes.
   auto render_tile = [&, this](Node* node) {
@@ -371,9 +378,13 @@ void TerrainRenderer::render(const Camera& camera)
     m_sky_shader->bind();
     m_sky_shader->set_uniform("u_view", glm::mat4(glm::mat3(camera.view_matrix())));
     m_sky_shader->set_uniform("u_proj", camera.projection_matrix());
+    m_sky_shader->set_uniform("u_camera_position", camera.world_position());
     m_sky_shader->set_uniform("u_sky_color", sky_color_1);
+    m_sky_shader->set_uniform("u_light_blue", light_blue);
+    m_sky_shader->set_uniform("u_dark_blue", dark_blue);
     m_sky_shader->set_uniform("u_sun_dir", sun_direction);
     m_sky_shader->set_uniform("u_sun_color", sun_color);
+    m_sky_shader->set_uniform("u_lat_lon_alt", lat_lon_alt);
     m_sky_box.draw(m_sky_shader.get(), glm::vec3(0.0f, 0.0f, 0.0f), 1.0f);
 
     glDepthFunc(GL_LESS);

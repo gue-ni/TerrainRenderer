@@ -5,6 +5,7 @@ build/
 out/
 tiles/
 doc/
+screenshots/
 pre-commit.ps1
 *.user
 CMakeSettings.json
