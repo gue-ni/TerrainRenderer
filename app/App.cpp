@@ -44,7 +44,12 @@ void App::render(float dt)
 
   render_terrain();
 
-  render_ui();
+  if (m_render_ui) {
+    render_ui();
+  }
+
+  ImGui::Render();
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
   SDL_GL_SwapWindow(m_window);
 }
@@ -58,7 +63,7 @@ void App::render_ui()
   ImGui::SetNextWindowPos(ImVec2(10, 10));
 
   ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiCond_FirstUseEver);
-  ImGui::Begin("Config", nullptr, window_flags);
+  ImGui::Begin("Options", nullptr, window_flags);
 
   glm::vec3 pos = m_camera.local_position();
   glm::vec2 pos2 = {pos.x, pos.z};
@@ -105,9 +110,6 @@ void App::render_ui()
     m_terrain.reload_shaders();
   }
   ImGui::End();
-
-  ImGui::Render();
-  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void App::run()
@@ -144,6 +146,9 @@ void App::read_input(float dt)
             break;
           case SDLK_r:
             m_terrain.reload_shaders();
+            break;
+          case SDLK_i:
+            m_render_ui = !m_render_ui;
             break;
         }
         break;

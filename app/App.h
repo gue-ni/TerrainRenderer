@@ -52,6 +52,7 @@ class App : public Window
   bool m_quit{false};
   bool m_paused{false};
   bool m_mousedown{false};
+  bool m_render_ui{true};
   float m_speed{100.0f};
   FirstPersonCamera m_camera;
   TerrainRenderer m_terrain;
