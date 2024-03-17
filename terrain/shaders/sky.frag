@@ -18,6 +18,10 @@ vec3 atmospheric_scattering(vec3 ray_origin, vec3 ray_direction)
 
   float sun_factor = max(dot(ray_direction, u_sun_dir), 0.0);
 
+  if (sun_factor > 0.9999) {
+    return vec3(1.0);
+  }
+
   vec3 color = mix(sky_color, u_sun_color, pow(sun_factor, 64.0));
 
   return color;

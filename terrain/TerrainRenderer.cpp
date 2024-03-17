@@ -163,7 +163,7 @@ void TerrainRenderer::calculate_zoom_levels(const glm::vec2& center, float altit
 
 glm::vec2 TerrainRenderer::calculate_lod_center(const Camera& camera)
 {
-  glm::vec3 position3 = camera.local_position();
+  glm::vec3 position3 = camera.world_position();
   glm::vec2 position = {position3.x, position3.z};
   glm::vec3 forward = -camera.local_z_axis();
 
