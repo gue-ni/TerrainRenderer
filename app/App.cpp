@@ -73,7 +73,7 @@ void App::render_ui()
   ImGui::Text("Camera Pos: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
   ImGui::Text("Lat: %.4f, Lon: %.4f", coord.lat, coord.lon);
   ImGui::Text("Heading %d", heading);
-  ImGui::Text("Terrain Elevation: %.2f", m_terrain.terrain_elevation(pos2));
+  ImGui::Text("Terrain Elevation: %.2f", m_terrain.elevation(pos2));
   ImGui::Text("Altitude over terrain: %.2f", m_terrain.altitude_over_terrain(pos2, pos.y));
   ImGui::Text("Zoom Level Range: [%d, %d] (%d)", m_terrain.min_zoom, m_terrain.max_zoom,
               m_terrain.max_zoom - m_terrain.min_zoom);

@@ -8,10 +8,9 @@
 #include "Collision.h"
 #include "Common.h"
 
-#define ENABLE_FOG       1
-#define ENABLE_FALLBACK  1
-#define ENABLE_SKYBOX    1
-#define ENABLE_SMART_LOD 1
+#define ENABLE_FOG      1
+#define ENABLE_FALLBACK 1
+#define ENABLE_SKYBOX   1
 
 /* clang-format off */
 const char* shader_vert =
@@ -117,17 +116,25 @@ void TerrainRenderer::reload_shaders()
 #endif
 }
 
-float TerrainRenderer::terrain_elevation(const glm::vec2& point)
+float TerrainRenderer::elevation(const glm::vec2& point)
 {
   Coordinate coord = point_to_coordinate(point);
-  return m_tile_cache.terrain_elevation(coord) * m_height_scaling_factor;
+  return m_tile_cache.elevation(coord) * m_height_scaling_factor;
 }
 
 float TerrainRenderer::altitude_over_terrain(const glm::vec2& point, float altitude)
 {
   float altitude_in_meters = altitude / scaling_factor();
-  float elevation = terrain_elevation(point);
+  float elevation = this->elevation(point);
   return std::max(0.0f, altitude_in_meters - elevation);
+}
+
+Plane TerrainRenderer::collider(const glm::vec2& point)
+{
+  float elevation = this->elevation(point);
+  glm::vec3 normal = glm::vec3(0.0f, 1.0f, 0.0f);  // TODO: fix this
+  glm::vec3 point_on_plane = glm::vec3(point.x, elevation * scaling_factor(), point.y);
+  return Plane(normal, point_on_plane);
 }
 
 Coordinate TerrainRenderer::point_to_coordinate(const glm::vec2& point) const
@@ -163,6 +170,7 @@ void TerrainRenderer::calculate_zoom_levels(const glm::vec2& center, float altit
 
 glm::vec2 TerrainRenderer::calculate_lod_center(const Camera& camera)
 {
+  glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
   glm::vec3 position3 = camera.world_position();
   glm::vec2 position = {position3.x, position3.z};
   glm::vec3 forward = -camera.local_z_axis();
@@ -184,17 +192,20 @@ glm::vec2 TerrainRenderer::calculate_lod_center(const Camera& camera)
   } else {
     // we don't want the lod center the be right below the camera. Depending
     // on the altitude it should be in front of the camera.
-
     glm::vec2 view_direction = glm::normalize(glm::vec2(forward.x, forward.z));
 
     float alt = position3.y / scaling_factor();
     float min_alt = 0, max_alt = 20000;
 
-    float horizon = map_range(alt, min_alt, max_alt, 0.0f, max_horizon);
+    float distance_to_horizon = map_range(alt, min_alt, max_alt, 0.0f, max_horizon);
 
-    glm::vec2 new_position = position + view_direction * horizon;
+    glm::vec2 horizon = position + view_direction * distance_to_horizon;
+    horizon = clamp_range(horizon, m_bounds);
 
-    return clamp_range(new_position, m_bounds);
+    // if the camera is looking down, the lod center should be directly below the camera
+    float t = glm::max(glm::dot(forward, -up), 0.0f);
+
+    return glm::mix(horizon, position, t);
   }
 }
 
@@ -244,21 +255,20 @@ void TerrainRenderer::render(const Camera& camera)
 
   glm::vec3 lat_lon_alt = glm::vec3(coord.lat, altitude / m_terrain_scaling_factor, coord.lon);
 
-  // std::cout << lat_lon_alt << std::endl;
+  // focus point for the level of detail
+  glm::vec2 lod_center = center;
 
-#if ENABLE_SMART_LOD
-  auto terrain_center = calculate_lod_center(camera);
-#else
-  auto terrain_center = center;
-#endif
+  if (smart_lod) {
+    lod_center = calculate_lod_center(camera);
+  }
 
-  // terrain_center = clamp_range(center, m_bounds);
+  lod_center = clamp_range(lod_center, m_bounds);
 
   if (!manual_zoom) {
     calculate_zoom_levels(center, altitude);
   }
 
-  QuadTree quad_tree(terrain_center, m_bounds.min, m_bounds.max, max_zoom - m_root_tile.zoom, m_root_tile);
+  QuadTree quad_tree(lod_center, m_bounds.min, m_bounds.max, max_zoom - m_root_tile.zoom, m_root_tile);
 
   if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
