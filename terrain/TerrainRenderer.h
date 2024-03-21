@@ -3,11 +3,11 @@
 
 #include "../gfx/gfx.h"
 #include "Chunk.h"
+#include "Collision.h"
 #include "Common.h"
 #include "Cube.h"
 #include "QuadTree.h"
 #include "TileCache.h"
-#include "Collision.h"
 
 using namespace gfx;
 using namespace gfx::gl;
@@ -27,7 +27,7 @@ class TerrainRenderer
   float altitude_over_terrain(const glm::vec2&, float altitude);
 
   // get surface plane at point
-  // the terrain is handled as a plane during collision detection 
+  // the terrain is handled as a plane during collision detection
   // and handling
   Plane collider(const glm::vec2&);
 
