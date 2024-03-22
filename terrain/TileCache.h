@@ -37,9 +37,7 @@ class TileCache
 
   Texture* tile_texture_cached(const TileId&, const TileType&);
 
-  float terrain_elevation(const Coordinate&);
-
-  void invalidate_gpu_cache();
+  float elevation(const Coordinate&);
 
  private:
   std::unordered_map<std::string, std::unique_ptr<Texture>> m_gpu_cache;

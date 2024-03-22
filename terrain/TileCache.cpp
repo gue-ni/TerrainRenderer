@@ -71,32 +71,6 @@ Texture* TileCache::tile_texture_cached(const TileId& tile, const TileType& tile
   return m_gpu_cache[name].get();
 }
 
-void TileCache::invalidate_gpu_cache()
-{
-#if 0
-  auto now = std::chrono::system_clock::now();
-  const std::chrono::milliseconds max_duration(2000);  // TODO: find sensible value
-
-  uint removed = 0;
-
-  for (auto it = m_gpu_cache.begin(); it != m_gpu_cache.end();) {
-    auto& [cache_info, texture] = it->second;
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - cache_info.last_accessed);
-
-    if (duration > max_duration) {
-      it = m_gpu_cache.erase(it);  // does this really delete the unique_ptr?
-      removed++;
-    } else {
-      ++it;
-    }
-  }
-
-  if (removed > 0) {
-    // std::cout << "gpu cache size " << m_gpu_cache.size() << std::endl;
-  }
-#endif
-}
-
 std::unique_ptr<Texture> TileCache::create_texture(const Image& image)
 {
   auto texture = std::make_unique<Texture>();
@@ -131,7 +105,7 @@ Image* TileCache::request_image(const TileId& tile, const TileType& tile_type)
   }
 }
 
-float TileCache::terrain_elevation(const Coordinate& coord)
+float TileCache::elevation(const Coordinate& coord)
 {
   TileId tile(coord, 7);  // probably not the best, as this is very low res
 

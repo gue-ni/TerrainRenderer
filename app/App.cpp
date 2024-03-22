@@ -23,11 +23,7 @@ App::App(size_t width, size_t height)
   float fov = 45.0f, aspect_ratio = float(width) / float(height), near = 1.0f, far = 100000.0f;
   m_camera.set_attributes(glm::radians(fov), aspect_ratio, near, far);
 
-#if 1
   glm::vec2 camera_position = m_terrain.coordinate_to_point(root);
-#else
-  glm::vec2 camera_position = glm::vec2(0.0f);
-#endif
 
   float camera_altitude = 5000.0f * m_terrain.scaling_factor();
   m_camera.set_local_position(glm::vec3(camera_position.x, camera_altitude, camera_position.y));
@@ -44,7 +40,12 @@ void App::render(float dt)
 
   render_terrain();
 
-  render_ui();
+  if (m_render_ui) {
+    render_ui();
+  }
+
+  ImGui::Render();
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
   SDL_GL_SwapWindow(m_window);
 }
@@ -58,7 +59,7 @@ void App::render_ui()
   ImGui::SetNextWindowPos(ImVec2(10, 10));
 
   ImGui::SetNextWindowSize(ImVec2(400, 200), ImGuiCond_FirstUseEver);
-  ImGui::Begin("Config", nullptr, window_flags);
+  ImGui::Begin("Options", nullptr, window_flags);
 
   glm::vec3 pos = m_camera.local_position();
   glm::vec2 pos2 = {pos.x, pos.z};
@@ -72,7 +73,7 @@ void App::render_ui()
   ImGui::Text("Camera Pos: %.2f, %.2f, %.2f", pos.x, pos.y, pos.z);
   ImGui::Text("Lat: %.4f, Lon: %.4f", coord.lat, coord.lon);
   ImGui::Text("Heading %d", heading);
-  ImGui::Text("Terrain Elevation: %.2f", m_terrain.terrain_elevation(pos2));
+  ImGui::Text("Terrain Elevation: %.2f", m_terrain.elevation(pos2));
   ImGui::Text("Altitude over terrain: %.2f", m_terrain.altitude_over_terrain(pos2, pos.y));
   ImGui::Text("Zoom Level Range: [%d, %d] (%d)", m_terrain.min_zoom, m_terrain.max_zoom,
               m_terrain.max_zoom - m_terrain.min_zoom);
@@ -105,9 +106,6 @@ void App::render_ui()
     m_terrain.reload_shaders();
   }
   ImGui::End();
-
-  ImGui::Render();
-  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void App::run()
@@ -144,6 +142,9 @@ void App::read_input(float dt)
             break;
           case SDLK_r:
             m_terrain.reload_shaders();
+            break;
+          case SDLK_i:
+            m_render_ui = !m_render_ui;
             break;
         }
         break;

@@ -3,6 +3,7 @@
 
 #include "../gfx/gfx.h"
 #include "Chunk.h"
+#include "Collision.h"
 #include "Common.h"
 #include "Cube.h"
 #include "QuadTree.h"
@@ -21,9 +22,14 @@ class TerrainRenderer
   void reload_shaders();
 
   // get terrain elevation in meters
-  float terrain_elevation(const glm::vec2&);
+  float elevation(const glm::vec2&);
 
   float altitude_over_terrain(const glm::vec2&, float altitude);
+
+  // get surface plane at point
+  // the terrain is handled as a plane during collision detection
+  // and handling
+  Plane collider(const glm::vec2&);
 
   // relation of terrain unit to meters
   // divide to go from game coordinates to meters
@@ -45,6 +51,7 @@ class TerrainRenderer
   bool manual_zoom{false};
   bool shading{true};
   bool frustum_culling{true};
+  bool smart_lod{true};
   float fog_far{2000.0f};
   float fog_density{0.66f};
   float max_horizon{500.0f};
